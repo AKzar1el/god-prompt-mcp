@@ -1,0 +1,23 @@
+{
+  "name": "god-prompt-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for GodPrompt — the universal AI software development system prompt",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "generate-content": "node scripts/generate-content.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0",
+    "agents": "^0.0.98",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250313.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.14.1"
+  }
+}
