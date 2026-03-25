@@ -7,7 +7,7 @@
   "durable_objects": {
     "bindings": [
       {
-        "name": "GOD_PROMPT_MCP",
+        "name": "GodPromptMCP",
         "class_name": "GodPromptMCP"
       }
     ]
@@ -15,7 +15,7 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_classes": ["GodPromptMCP"]
+      "new_sqlite_classes": ["GodPromptMCP"]
     }
   ]
 }
