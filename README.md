@@ -1,8 +1,6 @@
 # GodPrompt MCP Server
 
-A remote [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server that serves [GodPrompt](https://github.com/AKzar1el/god-prompt) — the universal system prompt for AI software development.
-
-Deployed on **Cloudflare Workers** (free tier). No authentication required.
+A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server for [GodPrompt](https://github.com/AKzar1el/god-prompt) — production-grade AI software-development workflows with task routing, TDD, debugging protocols, verification gates, and progressive disclosure.
 
 ## Tools
 
@@ -22,50 +20,51 @@ For minimum context usage, start with `get_core_skill`, then load `get_protocols
 
 ## Connect
 
-### Claude.ai / Claude Desktop
+### Glama
 
-Add as a remote MCP server:
-```
-https://god-prompt-mcp.<your-account>.workers.dev/mcp
+GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-prompt-mcp). Use the server page to inspect the tools and connect it to a supported MCP client.
+
+### Local stdio
+
+```bash
+npm install
+npm run build
+node dist/stdio.js
 ```
 
-### Claude Desktop (via mcp-remote proxy)
+Example client configuration:
 
 ```json
 {
   "mcpServers": {
     "god-prompt": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://god-prompt-mcp.<your-account>.workers.dev/mcp"
-      ]
+      "command": "node",
+      "args": ["/absolute/path/to/god-prompt-mcp/dist/stdio.js"]
     }
   }
 }
 ```
 
-### Cursor / Other MCP Clients
-
-Use the `/mcp` endpoint URL with your client's MCP configuration.
-
 ## Development
 
 ```bash
 npm install
-npm run dev        # Local development on port 8788
-npm run deploy     # Deploy to Cloudflare Workers
+npm run build
+npm test
 ```
+
+`npm test` builds the stdio server, performs the MCP initialization handshake, and verifies the expected tool list.
 
 ## Updating Content
 
-To update the GodPrompt content:
+To update the embedded GodPrompt content:
 
-1. Pull latest from the [god-prompt repo](https://github.com/AKzar1el/god-prompt)
-2. Run the content generator: `npm run generate-content`
-3. Deploy: `npm run deploy`
+1. Pull the latest content from the [GodPrompt repository](https://github.com/AKzar1el/god-prompt).
+2. Run `npm run generate-content`.
+3. Run `npm test` before publishing a new server release.
 
 ## License
 
-[MIT](https://github.com/AKzar1el/god-prompt/blob/main/LICENSE)
+[MIT](LICENSE)
+
+Project page: [GodPrompt](https://tomiseregi.si/projects/god-prompt)
