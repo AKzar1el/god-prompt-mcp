@@ -55,6 +55,8 @@ npm test
 
 `npm test` builds the stdio server, performs the MCP initialization handshake, and verifies the expected tool list.
 
+Repository discovery metadata is kept in `server.json` for MCP Registry-compatible consumers and `glama.json` for Glama.
+
 ## Updating Content
 
 To update the embedded GodPrompt content:
@@ -67,4 +69,8 @@ To update the embedded GodPrompt content:
 
 [MIT](LICENSE)
 
-Project page: [GodPrompt](https://tomiseregi.si/projects/god-prompt)
+## Project & related MCP servers
+
+Project page: [GodPrompt — AI software-development system prompt](https://tomiseregi.si/projects/god-prompt) · [GodPrompt source](https://github.com/AKzar1el/god-prompt)
+
+Related MCP servers: [Google Search Console](https://github.com/AKzar1el/mcp-gsc) · [GEO Tracker](https://github.com/AKzar1el/mcp-geo) · [Web Validator](https://github.com/AKzar1el/mcp-web-validator) · [Google News & Trends](https://github.com/AKzar1el/mcp-trendpulse)

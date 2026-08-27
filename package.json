@@ -3,7 +3,31 @@
   "version": "1.0.0",
   "description": "MCP server for GodPrompt — the universal AI software development system prompt",
   "private": true,
+  "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AKzar1el/god-prompt-mcp.git"
+  },
+  "homepage": "https://tomiseregi.si/projects/god-prompt",
+  "bugs": {
+    "url": "https://github.com/AKzar1el/god-prompt-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "god-prompt",
+    "prompt-engineering",
+    "system-prompt",
+    "coding-assistant",
+    "ai-agent",
+    "tdd",
+    "debugging",
+    "software-engineering"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "build": "tsc -p tsconfig.build.json",
