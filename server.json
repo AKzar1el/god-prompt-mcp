@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.AKzar1el/god-prompt-mcp",
+  "title": "GodPrompt MCP Server",
+  "description": "GodPrompt workflows for TDD, debugging, verification, task routing, and progressive disclosure.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/AKzar1el/god-prompt-mcp",
+    "source": "github",
+    "id": "1191386679"
+  },
+  "websiteUrl": "https://tomiseregi.si/projects/god-prompt",
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "license": "MIT",
+      "tags": [
+        "mcp",
+        "model-context-protocol",
+        "prompt-engineering",
+        "system-prompt",
+        "coding-assistant",
+        "software-engineering",
+        "tdd",
+        "debugging",
+        "verification"
+      ]
+    }
+  }
+}
