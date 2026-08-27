@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "build": "tsc -p tsconfig.build.json",
     "deploy": "wrangler deploy",
     "test": "node --test tests/stdio.test.mjs",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
