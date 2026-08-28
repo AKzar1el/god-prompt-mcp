@@ -7,6 +7,14 @@ export const SERVER_INFO = {
   version: VERSION,
 } as const;
 
+// Version 1.0.0 was generated before the source layout moved from core/* to
+// SKILL.md + references/*. Normalize only those legacy links at the serving
+// boundary; regenerated content from the repaired generator makes this a no-op.
+const CORE_SKILL = CONTENT.CORE_SKILL
+  .replaceAll("core/01-PROTOCOLS.md", "references/01-PROTOCOLS.md")
+  .replaceAll("core/02-GATES.md", "references/02-GATES.md")
+  .replaceAll("core/03-ANTI-PATTERNS.md", "references/03-ANTI-PATTERNS.md");
+
 const TASK_TYPES = {
   BUILD: {
     triggers: ["create", "implement", "add", "feature", "build", "make", "new"],
@@ -112,13 +120,13 @@ export function registerGodPromptTools(server: McpServer): void {
 
   server.tool(
     "get_core_skill",
-    `Returns SKILL.md — the core protocol that should be loaded on every message. This is the lean base context (~${Math.round(CONTENT.CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Start here for progressive disclosure.`,
+    `Returns SKILL.md — the core protocol that should be loaded on every message. This is the lean base context (~${Math.round(CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Start here for progressive disclosure.`,
     {},
     async () => ({
       content: [
         {
           type: "text",
-          text: CONTENT.CORE_SKILL,
+          text: CORE_SKILL,
         },
       ],
     })
@@ -218,7 +226,7 @@ export function registerGodPromptTools(server: McpServer): void {
               repo: "https://github.com/AKzar1el/god-prompt",
               files: {
                 "GodPrompt.md": `${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB — full single-file payload`,
-                "SKILL.md": `${Math.round(CONTENT.CORE_SKILL.length / 1024)}KB — core protocol (always-on)`,
+                "SKILL.md": `${Math.round(CORE_SKILL.length / 1024)}KB — core protocol (always-on)`,
                 "references/01-PROTOCOLS.md": `${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB — deep execution guides`,
                 "references/02-GATES.md": `${Math.round(CONTENT.GATES.length / 1024)}KB — verification checklists`,
                 "references/03-ANTI-PATTERNS.md": `${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB — red flags & recovery`,
