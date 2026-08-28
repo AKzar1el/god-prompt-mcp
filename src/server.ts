@@ -98,7 +98,7 @@ function classifyTask(description: string): {
 export function registerGodPromptTools(server: McpServer): void {
   server.tool(
     "get_god_prompt",
-    `Returns the complete GodPrompt.md — a single-file universal system prompt for AI software development (${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB, ~1145 lines). Use this when you want the full payload in one shot. For progressive disclosure (smaller context), use the core/* tools instead.`,
+    `Returns the complete GodPrompt.md — a single-file universal system prompt for AI software development (${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB, ~1145 lines). Use this when you want the full payload in one shot. For progressive disclosure (smaller context), use get_core_skill and the reference tools instead.`,
     {},
     async () => ({
       content: [
@@ -112,7 +112,7 @@ export function registerGodPromptTools(server: McpServer): void {
 
   server.tool(
     "get_core_skill",
-    `Returns core/00-THE-SKILL.md — the core protocol that should be loaded on every message. This is the lean base context (~${Math.round(CONTENT.CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Start here for progressive disclosure.`,
+    `Returns SKILL.md — the core protocol that should be loaded on every message. This is the lean base context (~${Math.round(CONTENT.CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Start here for progressive disclosure.`,
     {},
     async () => ({
       content: [
@@ -126,7 +126,7 @@ export function registerGodPromptTools(server: McpServer): void {
 
   server.tool(
     "get_protocols",
-    `Returns core/01-PROTOCOLS.md — deep execution guides for each task type (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN). Load this when the task requires detailed protocol steps beyond the core skill. ~${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB.`,
+    `Returns references/01-PROTOCOLS.md — deep execution guides for each task type (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN). Load this when the task requires detailed protocol steps beyond the core skill. ~${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB.`,
     {},
     async () => ({
       content: [
@@ -140,7 +140,7 @@ export function registerGodPromptTools(server: McpServer): void {
 
   server.tool(
     "get_gates",
-    `Returns core/02-GATES.md — verification checklists, THE GATE (pre-completion verification), and structured report templates for every deliverable type. Load when you need to verify work before claiming completion. ~${Math.round(CONTENT.GATES.length / 1024)}KB.`,
+    `Returns references/02-GATES.md — verification checklists, THE GATE (pre-completion verification), and structured report templates for every deliverable type. Load when you need to verify work before claiming completion. ~${Math.round(CONTENT.GATES.length / 1024)}KB.`,
     {},
     async () => ({
       content: [
@@ -154,7 +154,7 @@ export function registerGodPromptTools(server: McpServer): void {
 
   server.tool(
     "get_anti_patterns",
-    `Returns core/03-ANTI-PATTERNS.md — red flags, rationalizations, and recovery patterns. Covers the 10 most dangerous anti-patterns that lead to broken code, scope creep, and false confidence. Load when you catch yourself rationalizing. ~${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB.`,
+    `Returns references/03-ANTI-PATTERNS.md — red flags, rationalizations, and recovery patterns. Covers the 10 most dangerous anti-patterns that lead to broken code, scope creep, and false confidence. Load when you catch yourself rationalizing. ~${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB.`,
     {},
     async () => ({
       content: [
@@ -214,14 +214,14 @@ export function registerGodPromptTools(server: McpServer): void {
               version: VERSION,
               name: "GodPrompt",
               description:
-                "The universal system prompt for AI software development. Enforces zero-hallucination protocols, test-driven execution, and verification gates.",
+                "Provides GodPrompt's task-routing, test-driven execution guidance, and verification gates.",
               repo: "https://github.com/AKzar1el/god-prompt",
               files: {
                 "GodPrompt.md": `${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB — full single-file payload`,
-                "core/00-THE-SKILL.md": `${Math.round(CONTENT.CORE_SKILL.length / 1024)}KB — core protocol (always-on)`,
-                "core/01-PROTOCOLS.md": `${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB — deep execution guides`,
-                "core/02-GATES.md": `${Math.round(CONTENT.GATES.length / 1024)}KB — verification checklists`,
-                "core/03-ANTI-PATTERNS.md": `${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB — red flags & recovery`,
+                "SKILL.md": `${Math.round(CONTENT.CORE_SKILL.length / 1024)}KB — core protocol (always-on)`,
+                "references/01-PROTOCOLS.md": `${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB — deep execution guides`,
+                "references/02-GATES.md": `${Math.round(CONTENT.GATES.length / 1024)}KB — verification checklists`,
+                "references/03-ANTI-PATTERNS.md": `${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB — red flags & recovery`,
               },
               task_types: Object.entries(TASK_TYPES).map(([type, info]) => ({
                 type,
