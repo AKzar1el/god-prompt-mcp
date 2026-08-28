@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Generates src/content.ts from the god-prompt repo files.
+ * Generates src/content.ts from the current god-prompt repository layout.
  *
  * Usage:
  *   node scripts/generate-content.mjs [path-to-god-prompt-repo]
@@ -16,10 +16,10 @@ const repoPath = resolve(process.argv[2] || join(import.meta.dirname, "../../god
 
 const files = {
   GOD_PROMPT: "GodPrompt.md",
-  CORE_SKILL: "core/00-THE-SKILL.md",
-  PROTOCOLS: "core/01-PROTOCOLS.md",
-  GATES: "core/02-GATES.md",
-  ANTI_PATTERNS: "core/03-ANTI-PATTERNS.md",
+  CORE_SKILL: "SKILL.md",
+  PROTOCOLS: "references/01-PROTOCOLS.md",
+  GATES: "references/02-GATES.md",
+  ANTI_PATTERNS: "references/03-ANTI-PATTERNS.md",
 };
 
 console.log(`Reading from: ${repoPath}`);
