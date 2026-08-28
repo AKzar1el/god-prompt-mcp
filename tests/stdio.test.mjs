@@ -37,7 +37,13 @@ function request(child, pending, id, method, params = {}) {
   });
 }
 
-test("builds a stdio MCP server exposing all GodPrompt tools", async (t) => {
+function toolText(result) {
+  const item = result.content.find((entry) => entry.type === "text");
+  assert.ok(item, "Expected text content from MCP tool");
+  return item.text;
+}
+
+test("builds a stdio MCP server exposing current GodPrompt content", async (t) => {
   const build = spawnSync("npm", ["run", "build"], {
     encoding: "utf8",
     shell: process.platform === "win32",
@@ -111,7 +117,30 @@ test("builds a stdio MCP server exposing all GodPrompt tools", async (t) => {
 
   const listed = await request(child, pending, 2, "tools/list");
   const toolNames = listed.tools.map((tool) => tool.name).sort();
-
   assert.deepEqual(toolNames, EXPECTED_TOOLS);
+
+  const core = await request(child, pending, 3, "tools/call", {
+    name: "get_core_skill",
+    arguments: {},
+  });
+  const coreText = toolText(core);
+  assert.match(coreText, /references\/01-PROTOCOLS\.md/);
+  assert.match(coreText, /references\/02-GATES\.md/);
+  assert.match(coreText, /references\/03-ANTI-PATTERNS\.md/);
+  assert.doesNotMatch(coreText, /core\/01-PROTOCOLS\.md/);
+  assert.doesNotMatch(coreText, /core\/02-GATES\.md/);
+  assert.doesNotMatch(coreText, /core\/03-ANTI-PATTERNS\.md/);
+
+  const versionResult = await request(child, pending, 4, "tools/call", {
+    name: "get_version",
+    arguments: {},
+  });
+  const version = JSON.parse(toolText(versionResult));
+  assert.ok(version.files["SKILL.md"]);
+  assert.ok(version.files["references/01-PROTOCOLS.md"]);
+  assert.ok(version.files["references/02-GATES.md"]);
+  assert.ok(version.files["references/03-ANTI-PATTERNS.md"]);
+  assert.equal(version.files["core/00-THE-SKILL.md"], undefined);
+
   assert.equal(protocolError, null, `Non-JSON output on stdout: ${protocolError}`);
 });
