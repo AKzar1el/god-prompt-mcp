@@ -39,8 +39,14 @@ jobs:
       - name: Validate MCPB manifest
         run: npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
 
-      - name: Keep production dependencies only
-        run: npm prune --omit=dev --ignore-scripts
+      - name: Prepare audited local runtime dependencies
+        run: |
+          npm pkg delete dependencies.agents
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm prune --omit=dev --ignore-scripts
+          npm audit --omit=dev --audit-level=high
+          test ! -d node_modules/agents
+          node --input-type=module -e "await import('@modelcontextprotocol/sdk/server/stdio.js'); await import('./dist/server.js')"
 
       - name: Pack MCPB
         run: npx -y @anthropic-ai/mcpb@2.1.2 pack . god-prompt-mcp-1.0.1.mcpb
@@ -54,6 +60,10 @@ jobs:
           grep -q '^node_modules/' "${RUNNER_TEMP}/mcpb-files.txt"
           if grep -Eq '^(src|tests|\.github)/' "${RUNNER_TEMP}/mcpb-files.txt"; then
             echo '::error::Development-only files leaked into the MCPB bundle.'
+            exit 1
+          fi
+          if grep -Eq '^(dist/index\.js|node_modules/agents/)' "${RUNNER_TEMP}/mcpb-files.txt"; then
+            echo '::error::Remote Worker-only runtime leaked into the local MCPB bundle.'
             exit 1
           fi
           sha256sum god-prompt-mcp-1.0.1.mcpb
