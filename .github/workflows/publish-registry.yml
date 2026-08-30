@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - server.json
+      - manifest.json
+      - package.json
+      - package-lock.json
       - .github/workflows/publish-registry.yml
   push:
     branches:
@@ -26,14 +29,17 @@ jobs:
         run: |
           node - <<'NODE'
           const server = require('./server.json');
-          const expected = {
-            registryType: 'mcpb',
-            identifier: 'https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.0/god-prompt-mcp-1.0.0.mcpb',
-            fileSha256: 'ce6f7adbebe2854cce8b6f4233d77c07e21c104719779908fd56d14a3d098c7e',
-            transport: { type: 'stdio' },
-          };
+          const manifest = require('./manifest.json');
+          const pkg = require('./package.json');
+          const version = pkg.version;
           if (server.name !== 'io.github.AKzar1el/god-prompt-mcp') throw new Error('Registry name drift');
-          if (JSON.stringify(server.packages?.[0]) !== JSON.stringify(expected)) throw new Error('MCPB metadata drift');
+          if (server.version !== version || manifest.version !== version) throw new Error('version metadata drift');
+          const expectedIdentifier = `https://github.com/AKzar1el/god-prompt-mcp/releases/download/v${version}/god-prompt-mcp-${version}.mcpb`;
+          const artifact = server.packages?.[0];
+          if (artifact?.registryType !== 'mcpb') throw new Error('Registry package type drift');
+          if (artifact.identifier !== expectedIdentifier) throw new Error('MCPB release URL drift');
+          if (!/^[a-f0-9]{64}$/.test(artifact.fileSha256 ?? '')) throw new Error('MCPB SHA-256 is missing or invalid');
+          if (JSON.stringify(artifact.transport) !== JSON.stringify({ type: 'stdio' })) throw new Error('MCPB transport drift');
           NODE
 
       - name: Install mcp-publisher
@@ -43,16 +49,89 @@ jobs:
       - name: Validate server.json
         run: ./mcp-publisher validate server.json
 
+  release-mcpb:
+    name: Release verified MCPB artifact
+    if: github.event_name == 'push'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build stdio server
+        run: npm run build
+
+      - name: Validate MCPB manifest
+        run: npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
+
+      - name: Keep production dependencies only
+        run: npm prune --omit=dev --ignore-scripts
+
+      - name: Pack and verify MCPB
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          ASSET="god-prompt-mcp-${VERSION}.mcpb"
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . "$ASSET"
+          ACTUAL_SHA="$(sha256sum "$ASSET" | cut -d' ' -f1)"
+          EXPECTED_SHA="$(node -p "require('./server.json').packages[0].fileSha256")"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          unzip -Z1 "$ASSET" > "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -Fx 'manifest.json' "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -Fx 'dist/stdio.js' "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -Fx 'assets/logo-400.png' "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -q '^node_modules/' "${RUNNER_TEMP}/mcpb-files.txt"
+          if grep -Eq '^(src|tests|\.github)/' "${RUNNER_TEMP}/mcpb-files.txt"; then
+            echo '::error::Development-only files leaked into the MCPB bundle.'
+            exit 1
+          fi
+
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+          ASSET="god-prompt-mcp-${VERSION}.mcpb"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes "GodPrompt MCP ${VERSION}: Claude Desktop/MCPB metadata and compatibility release."
+          fi
+
   publish:
     name: Publish to official MCP Registry
     if: github.event_name == 'push'
-    needs: validate
+    needs: release-mcpb
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify published release asset hash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+          ASSET="god-prompt-mcp-${VERSION}.mcpb"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ASSET" --dir "${RUNNER_TEMP}"
+          ACTUAL_SHA="$(sha256sum "${RUNNER_TEMP}/${ASSET}" | cut -d' ' -f1)"
+          EXPECTED_SHA="$(node -p "require('./server.json').packages[0].fileSha256")"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
 
       - name: Install mcp-publisher
         run: |
