@@ -105,7 +105,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   });
 
   assert.equal(initialized.serverInfo.name, "god-prompt-mcp");
-  assert.equal(initialized.serverInfo.version, "1.0.0");
+  assert.equal(initialized.serverInfo.version, "1.0.1");
 
   child.stdin.write(
     `${JSON.stringify({
