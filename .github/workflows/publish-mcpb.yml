@@ -1,0 +1,93 @@
+name: Build MCPB bundle
+
+on:
+  pull_request:
+    paths:
+      - manifest.json
+      - .mcpbignore
+      - package.json
+      - package-lock.json
+      - src/**
+      - tests/**
+      - assets/logo-400.png
+      - .github/workflows/publish-mcpb.yml
+  push:
+    branches:
+      - main
+    paths:
+      - manifest.json
+      - .mcpbignore
+      - .github/workflows/publish-mcpb.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Validate and pack MCPB
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build stdio server
+        run: npm run build
+
+      - name: Validate MCPB manifest
+        run: npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
+
+      - name: Keep production dependencies only
+        run: npm prune --omit=dev --ignore-scripts
+
+      - name: Pack MCPB
+        run: npx -y @anthropic-ai/mcpb@2.1.2 pack . god-prompt-mcp-1.0.0.mcpb
+
+      - name: Verify bundle contents and hash
+        run: |
+          unzip -Z1 god-prompt-mcp-1.0.0.mcpb > "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -Fx 'manifest.json' "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -Fx 'dist/stdio.js' "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -Fx 'assets/logo-400.png' "${RUNNER_TEMP}/mcpb-files.txt"
+          grep -q '^node_modules/' "${RUNNER_TEMP}/mcpb-files.txt"
+          if grep -Eq '^(src|tests|\.github)/' "${RUNNER_TEMP}/mcpb-files.txt"; then
+            echo '::error::Development-only files leaked into the MCPB bundle.'
+            exit 1
+          fi
+          sha256sum god-prompt-mcp-1.0.0.mcpb
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: god-prompt-mcp-1.0.0-mcpb
+          path: god-prompt-mcp-1.0.0.mcpb
+          if-no-files-found: error
+
+  publish-release-asset:
+    name: Attach MCPB to v1.0.0 release
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download bundle artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: god-prompt-mcp-1.0.0-mcpb
+
+      - name: Upload to existing v1.0.0 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha256sum god-prompt-mcp-1.0.0.mcpb
+          gh release upload v1.0.0 god-prompt-mcp-1.0.0.mcpb --repo "$GITHUB_REPOSITORY" --clobber
