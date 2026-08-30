@@ -11,13 +11,6 @@ on:
       - tests/**
       - assets/logo-400.png
       - .github/workflows/publish-mcpb.yml
-  push:
-    branches:
-      - main
-    paths:
-      - manifest.json
-      - .mcpbignore
-      - .github/workflows/publish-mcpb.yml
 
 permissions:
   contents: read
