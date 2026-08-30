@@ -76,7 +76,10 @@ jobs:
             echo '::error::Remote Worker-only runtime leaked into the local MCPB bundle.'
             exit 1
           fi
-          sha256sum god-prompt-mcp-1.0.1.mcpb
+          EXPECTED_SHA='8ed575803c067d75e79e2773bdf32a7052b0317e4e39be85cdfab785473feba6'
+          ACTUAL_SHA="$(sha256sum god-prompt-mcp-1.0.1.mcpb | cut -d' ' -f1)"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          printf '%s  %s\n' "$ACTUAL_SHA" 'god-prompt-mcp-1.0.1.mcpb'
 
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
