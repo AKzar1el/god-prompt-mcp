@@ -1,0 +1,112 @@
+name: Docker MCP Registry Smoke
+
+on:
+  push:
+    branches: ["chore/docker-mcp-registry"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+      - run: npm test
+
+      - name: Build Docker MCP Registry image
+        run: docker build -f Dockerfile.mcp-registry -t god-prompt-mcp:registry .
+
+      - name: Verify non-root runtime
+        run: test "$(docker inspect --format '{{.Config.User}}' god-prompt-mcp:registry)" = "10001:10001"
+
+      - name: Verify MCP initialization and tool discovery in container
+        run: |
+          cat > /tmp/docker-mcp-smoke.mjs <<'EOF'
+          import assert from "node:assert/strict";
+          import { spawn } from "node:child_process";
+          import { createInterface } from "node:readline";
+
+          const expectedTools = [
+            "classify_task",
+            "get_anti_patterns",
+            "get_core_skill",
+            "get_gates",
+            "get_god_prompt",
+            "get_protocols",
+            "get_version",
+          ];
+
+          const child = spawn("docker", ["run", "--rm", "-i", "god-prompt-mcp:registry"], {
+            stdio: ["pipe", "pipe", "pipe"],
+          });
+
+          let stderr = "";
+          child.stderr.setEncoding("utf8");
+          child.stderr.on("data", (chunk) => {
+            stderr += chunk;
+          });
+
+          const pending = new Map();
+          const lines = createInterface({ input: child.stdout });
+          lines.on("line", (line) => {
+            if (!line.trim()) return;
+            const message = JSON.parse(line);
+            if (message.id !== undefined && pending.has(message.id)) {
+              const waiter = pending.get(message.id);
+              pending.delete(message.id);
+              if (message.error) waiter.reject(new Error(JSON.stringify(message.error)));
+              else waiter.resolve(message.result);
+            }
+          });
+
+          function request(id, method, params = {}) {
+            return new Promise((resolve, reject) => {
+              const timer = setTimeout(() => {
+                pending.delete(id);
+                reject(new Error(`Timed out waiting for ${method}; stderr: ${stderr}`));
+              }, 10000);
+              pending.set(id, {
+                resolve: (value) => {
+                  clearTimeout(timer);
+                  resolve(value);
+                },
+                reject: (error) => {
+                  clearTimeout(timer);
+                  reject(error);
+                },
+              });
+              child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id, method, params })}\n`);
+            });
+          }
+
+          try {
+            const initialized = await request(1, "initialize", {
+              protocolVersion: "2025-03-26",
+              capabilities: {},
+              clientInfo: { name: "docker-registry-smoke", version: "1.0.0" },
+            });
+            assert.equal(initialized.serverInfo.name, "god-prompt-mcp");
+
+            child.stdin.write(`${JSON.stringify({
+              jsonrpc: "2.0",
+              method: "notifications/initialized",
+              params: {},
+            })}\n`);
+
+            const listed = await request(2, "tools/list");
+            assert.deepEqual(listed.tools.map((tool) => tool.name).sort(), expectedTools);
+          } finally {
+            child.stdin.end();
+            child.kill();
+          }
+          EOF
+          node /tmp/docker-mcp-smoke.mjs
