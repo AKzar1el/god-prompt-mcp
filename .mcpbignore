@@ -1,0 +1,14 @@
+.github/
+.gitignore
+src/
+tests/
+scripts/
+tsconfig.json
+tsconfig.build.json
+worker-configuration.d.ts
+wrangler.jsonc
+glama.json
+llms-install.md
+server.json
+package-lock.json
+*.mcpb
