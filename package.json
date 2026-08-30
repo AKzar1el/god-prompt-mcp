@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for GodPrompt — the universal AI software development system prompt",
   "private": true,
   "license": "MIT",
