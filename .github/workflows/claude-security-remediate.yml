@@ -1,0 +1,50 @@
+name: Remediate Claude MCPB production dependencies
+
+on:
+  push:
+    branches:
+      - chore/claude-desktop-directory
+    paths:
+      - .github/workflows/claude-security-remediate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/claude-desktop-directory
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Move Worker-only dependency out of local runtime graph
+        run: |
+          npm pkg delete dependencies.agents
+          npm pkg set 'devDependencies.agents=^0.0.98'
+          npm install --package-lock-only
+
+      - name: Apply non-breaking audit updates
+        run: npm audit fix --package-lock-only
+
+      - name: Verify local production dependency graph
+        run: |
+          npm ci --ignore-scripts
+          npm audit --omit=dev --audit-level=high
+          npm test
+          npm run build
+
+      - name: Commit package metadata only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "fix: harden MCPB production dependency graph"
+          git push origin HEAD:chore/claude-desktop-directory
