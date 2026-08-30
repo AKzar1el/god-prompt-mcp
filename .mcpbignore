@@ -11,4 +11,5 @@ glama.json
 llms-install.md
 server.json
 package-lock.json
+dist/index.js
 *.mcpb
