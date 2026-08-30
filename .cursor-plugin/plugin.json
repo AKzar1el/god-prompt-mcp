@@ -1,0 +1,30 @@
+{
+  "name": "god-prompt-mcp",
+  "displayName": "GodPrompt MCP",
+  "version": "1.0.2",
+  "description": "Software-engineering workflow guidance for task routing, TDD, debugging, verification, and progressive disclosure in Cursor.",
+  "author": {
+    "name": "Tomi Šeregi"
+  },
+  "publisher": "Tomi Šeregi",
+  "homepage": "https://tomiseregi.si/projects/god-prompt",
+  "repository": "https://github.com/AKzar1el/god-prompt-mcp",
+  "license": "MIT",
+  "logo": "assets/logo-400.png",
+  "keywords": [
+    "mcp",
+    "software-engineering",
+    "tdd",
+    "debugging",
+    "verification",
+    "coding-assistant"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "tdd",
+    "debugging",
+    "verification",
+    "agent-workflows"
+  ],
+  "mcpServers": "mcp.json"
+}

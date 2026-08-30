@@ -42,6 +42,10 @@ GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-
 
 Kiro installs and builds the stdio server directly from this GitHub repository. The package remains unpublished on npm; Node.js 20+ and Git are required.
 
+### Cursor
+
+The repository includes a Cursor plugin manifest and `mcp.json` for Marketplace or local plugin installation. Cursor runs the same local stdio server through `npx -y github:AKzar1el/god-prompt-mcp`.
+
 ### Claude Desktop extension
 
 GitHub releases include a `.mcpb` bundle for one-click local installation in MCPB-compatible clients such as Claude Desktop. The bundle runs the same local stdio server and does not require an API key or account.
