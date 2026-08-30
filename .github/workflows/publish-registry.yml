@@ -8,6 +8,7 @@ on:
       - package.json
       - package-lock.json
       - .mcpbignore
+      - scripts/normalize-mcpb.mjs
       - .github/workflows/publish-registry.yml
   push:
     branches:
@@ -92,6 +93,8 @@ jobs:
           VERSION="$(node -p "require('./package.json').version")"
           ASSET="god-prompt-mcp-${VERSION}.mcpb"
           npx -y @anthropic-ai/mcpb@2.1.2 pack . "$ASSET"
+          node scripts/normalize-mcpb.mjs "$ASSET"
+          unzip -t "$ASSET"
           ACTUAL_SHA="$(sha256sum "$ASSET" | cut -d' ' -f1)"
           EXPECTED_SHA="$(node -p "require('./server.json').packages[0].fileSha256")"
           test "$ACTUAL_SHA" = "$EXPECTED_SHA"
