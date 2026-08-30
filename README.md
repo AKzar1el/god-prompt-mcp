@@ -67,13 +67,14 @@ Example client configuration:
 }
 ```
 
-## Privacy and data handling
+## Privacy Policy
 
-GodPrompt MCP is a local stdio server. Its content tools return static GodPrompt material bundled with the installed extension. `classify_task` evaluates the supplied task description in the local Node.js process and does not send it to an external API.
+GodPrompt MCP is a local stdio server. Its content tools return static GodPrompt material bundled with the installed extension, and `classify_task` evaluates the supplied task description in the local Node.js process.
 
-The server itself has no telemetry, analytics, external service integration, or server-side persistence. It does not retain tool inputs after the local process handles a request. The MCP host or AI client can process conversation and tool data under its own policies independently of this server.
-
-General privacy information: [tomiseregi.si/privacy](https://tomiseregi.si/privacy). For support or bug reports, use [GitHub Issues](https://github.com/AKzar1el/god-prompt-mcp/issues).
+- **Data collection and use:** the server has no telemetry or analytics and does not collect account data. Tool input is used only to produce the requested local response.
+- **Storage and retention:** the server has no server-side persistence and does not retain tool inputs after a request completes.
+- **Third-party sharing:** the server does not transmit tool inputs or bundled GodPrompt content to an external API or third party. The MCP host or AI client may process conversation and tool data under its own policies independently of this server.
+- **Contact and policy:** see [tomiseregi.si/privacy](https://tomiseregi.si/privacy) for the current privacy policy and contact information. For support or bug reports, use [GitHub Issues](https://github.com/AKzar1el/god-prompt-mcp/issues).
 
 ## Development
 
