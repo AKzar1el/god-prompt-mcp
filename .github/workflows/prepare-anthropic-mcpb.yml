@@ -1,0 +1,95 @@
+name: Prepare Anthropic MCPB submission
+
+on:
+  push:
+    branches:
+      - chore/anthropic-mcpb-1.0.2
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/anthropic-mcpb-1.0.2
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Apply scoped metadata update
+        run: |
+          npm version 1.0.2 --no-git-tag-version
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          manifest.version = '1.0.2';
+          manifest.author = { name: 'Tomi Šeregi', url: 'https://github.com/AKzar1el' };
+          fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+          NODE
+
+      - name: Install and verify source
+        run: |
+          npm ci
+          npm test
+          npm run build
+          npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
+
+      - name: Prepare audited local runtime dependencies
+        run: |
+          npm pkg delete dependencies.agents
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm prune --omit=dev --ignore-scripts
+          npm audit fix --omit=dev --ignore-scripts
+          npm audit --omit=dev --audit-level=high
+          test ! -d node_modules/agents
+          node --input-type=module -e "await import('@modelcontextprotocol/sdk/server/stdio.js'); await import('./dist/server.js')"
+
+      - name: Build deterministic MCPB and synchronize release metadata
+        run: |
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . first.mcpb
+          node scripts/normalize-mcpb.mjs first.mcpb
+          sleep 2
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . second.mcpb
+          node scripts/normalize-mcpb.mjs second.mcpb
+          cmp -s first.mcpb second.mcpb
+          unzip -t first.mcpb
+          SHA="$(sha256sum first.mcpb | cut -d' ' -f1)"
+          echo "MCPB SHA-256: ${SHA}"
+          SHA="$SHA" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const sha = process.env.SHA;
+          const server = JSON.parse(fs.readFileSync('server.json', 'utf8'));
+          server.version = '1.0.2';
+          server.packages[0].identifier = 'https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.2/god-prompt-mcp-1.0.2.mcpb';
+          server.packages[0].fileSha256 = sha;
+          fs.writeFileSync('server.json', JSON.stringify(server, null, 2) + '\n');
+
+          const workflowPath = '.github/workflows/publish-mcpb.yml';
+          let workflow = fs.readFileSync(workflowPath, 'utf8');
+          workflow = workflow.replaceAll('1.0.1', '1.0.2');
+          workflow = workflow.replace(/EXPECTED_SHA='[a-f0-9]{64}'/, `EXPECTED_SHA='${sha}'`);
+          fs.writeFileSync(workflowPath, workflow);
+          NODE
+
+      - name: Ensure final metadata validates
+        run: |
+          node -e "const p=require('./package.json'),m=require('./manifest.json'),s=require('./server.json'); if(p.version!=='1.0.2'||m.version!==p.version||s.version!==p.version) process.exit(1); if(m.author.url!=='https://github.com/AKzar1el') process.exit(1);"
+          npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
+
+      - name: Commit prepared submission metadata
+        run: |
+          rm -f first.mcpb second.mcpb
+          git checkout -- package-lock.json package.json || true
+          npm version 1.0.2 --no-git-tag-version
+          git rm .github/workflows/prepare-anthropic-mcpb.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add package.json package-lock.json manifest.json server.json .github/workflows/publish-mcpb.yml
+          git commit -m "chore: prepare GodPrompt MCPB 1.0.2"
+          git push origin HEAD:chore/anthropic-mcpb-1.0.2
