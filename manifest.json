@@ -15,7 +15,9 @@
   "homepage": "https://tomiseregi.si/projects/god-prompt",
   "documentation": "https://github.com/AKzar1el/god-prompt-mcp#readme",
   "support": "https://github.com/AKzar1el/god-prompt-mcp/issues",
-  "privacy_policies": [],
+  "privacy_policies": [
+    "https://tomiseregi.si/privacy"
+  ],
   "icon": "assets/logo-400.png",
   "server": {
     "type": "node",
