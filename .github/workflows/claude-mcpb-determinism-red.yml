@@ -29,10 +29,13 @@ jobs:
           npm prune --omit=dev --ignore-scripts
           npm audit fix --omit=dev --ignore-scripts
           npm audit --omit=dev --audit-level=high
-      - name: Prove two official packs are not byte-identical
+      - name: Verify normalized packs are byte-identical
         run: |
           npx -y @anthropic-ai/mcpb@2.1.2 pack . first.mcpb
+          node scripts/normalize-mcpb.mjs first.mcpb
           sleep 2
           npx -y @anthropic-ai/mcpb@2.1.2 pack . second.mcpb
+          node scripts/normalize-mcpb.mjs second.mcpb
           sha256sum first.mcpb second.mcpb
           cmp -s first.mcpb second.mcpb
+          unzip -t first.mcpb
