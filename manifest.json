@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "god-prompt-mcp",
   "display_name": "GodPrompt MCP",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GodPrompt workflows for TDD, debugging, verification, task routing, and progressive disclosure.",
   "author": {
     "name": "Tomi Šeregi",
@@ -14,6 +14,10 @@
   },
   "homepage": "https://tomiseregi.si/projects/god-prompt",
   "documentation": "https://github.com/AKzar1el/god-prompt-mcp#readme",
+  "support": "https://github.com/AKzar1el/god-prompt-mcp/issues",
+  "privacy_policies": [
+    "https://tomiseregi.si/privacy"
+  ],
   "icon": "assets/logo-400.png",
   "server": {
     "type": "node",

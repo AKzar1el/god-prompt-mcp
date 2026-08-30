@@ -105,7 +105,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   });
 
   assert.equal(initialized.serverInfo.name, "god-prompt-mcp");
-  assert.equal(initialized.serverInfo.version, "1.0.0");
+  assert.equal(initialized.serverInfo.version, "1.0.1");
 
   child.stdin.write(
     `${JSON.stringify({
@@ -118,6 +118,12 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   const listed = await request(child, pending, 2, "tools/list");
   const toolNames = listed.tools.map((tool) => tool.name).sort();
   assert.deepEqual(toolNames, EXPECTED_TOOLS);
+  for (const tool of listed.tools) {
+    assert.equal(typeof tool.title, "string", `${tool.name} must expose a title`);
+    assert.ok(tool.title.trim(), `${tool.name} must expose a non-empty title`);
+    assert.equal(tool.annotations?.readOnlyHint, true, `${tool.name} must be read-only`);
+    assert.equal(tool.annotations?.destructiveHint, false, `${tool.name} must be non-destructive`);
+  }
 
   const core = await request(child, pending, 3, "tools/call", {
     name: "get_core_skill",

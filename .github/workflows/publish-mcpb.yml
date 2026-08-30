@@ -9,6 +9,7 @@ on:
       - package-lock.json
       - src/**
       - tests/**
+      - scripts/normalize-mcpb.mjs
       - assets/logo-400.png
       - .github/workflows/publish-mcpb.yml
 
@@ -39,15 +40,30 @@ jobs:
       - name: Validate MCPB manifest
         run: npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
 
-      - name: Keep production dependencies only
-        run: npm prune --omit=dev --ignore-scripts
+      - name: Prepare audited local runtime dependencies
+        run: |
+          npm pkg delete dependencies.agents
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm prune --omit=dev --ignore-scripts
+          npm audit fix --omit=dev --ignore-scripts
+          npm audit --omit=dev --audit-level=high
+          test ! -d node_modules/agents
+          node --input-type=module -e "await import('@modelcontextprotocol/sdk/server/stdio.js'); await import('./dist/server.js')"
 
-      - name: Pack MCPB
-        run: npx -y @anthropic-ai/mcpb@2.1.2 pack . god-prompt-mcp-1.0.0.mcpb
+      - name: Pack deterministic MCPB
+        run: |
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . first.mcpb
+          node scripts/normalize-mcpb.mjs first.mcpb
+          sleep 2
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . second.mcpb
+          node scripts/normalize-mcpb.mjs second.mcpb
+          cmp -s first.mcpb second.mcpb
+          unzip -t first.mcpb
+          mv first.mcpb god-prompt-mcp-1.0.1.mcpb
 
       - name: Verify bundle contents and hash
         run: |
-          unzip -Z1 god-prompt-mcp-1.0.0.mcpb > "${RUNNER_TEMP}/mcpb-files.txt"
+          unzip -Z1 god-prompt-mcp-1.0.1.mcpb > "${RUNNER_TEMP}/mcpb-files.txt"
           grep -Fx 'manifest.json' "${RUNNER_TEMP}/mcpb-files.txt"
           grep -Fx 'dist/stdio.js' "${RUNNER_TEMP}/mcpb-files.txt"
           grep -Fx 'assets/logo-400.png' "${RUNNER_TEMP}/mcpb-files.txt"
@@ -56,31 +72,18 @@ jobs:
             echo '::error::Development-only files leaked into the MCPB bundle.'
             exit 1
           fi
-          sha256sum god-prompt-mcp-1.0.0.mcpb
+          if grep -Eq '^(dist/index\.js|node_modules/agents/)' "${RUNNER_TEMP}/mcpb-files.txt"; then
+            echo '::error::Remote Worker-only runtime leaked into the local MCPB bundle.'
+            exit 1
+          fi
+          EXPECTED_SHA='8ed575803c067d75e79e2773bdf32a7052b0317e4e39be85cdfab785473feba6'
+          ACTUAL_SHA="$(sha256sum god-prompt-mcp-1.0.1.mcpb | cut -d' ' -f1)"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          printf '%s  %s\n' "$ACTUAL_SHA" 'god-prompt-mcp-1.0.1.mcpb'
 
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: god-prompt-mcp-1.0.0-mcpb
-          path: god-prompt-mcp-1.0.0.mcpb
+          name: god-prompt-mcp-1.0.1-mcpb
+          path: god-prompt-mcp-1.0.1.mcpb
           if-no-files-found: error
-
-  publish-release-asset:
-    name: Attach MCPB to v1.0.0 release
-    if: github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download bundle artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: god-prompt-mcp-1.0.0-mcpb
-
-      - name: Upload to existing v1.0.0 release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          sha256sum god-prompt-mcp-1.0.0.mcpb
-          gh release upload v1.0.0 god-prompt-mcp-1.0.0.mcpb --repo "$GITHUB_REPOSITORY" --clobber

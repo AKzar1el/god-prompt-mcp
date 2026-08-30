@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: VERSION,
+  version: "1.0.1",
 } as const;
 
 // Version 1.0.0 was generated before the source layout moved from core/* to
@@ -14,6 +14,13 @@ const CORE_SKILL = CONTENT.CORE_SKILL
   .replaceAll("core/01-PROTOCOLS.md", "references/01-PROTOCOLS.md")
   .replaceAll("core/02-GATES.md", "references/02-GATES.md")
   .replaceAll("core/03-ANTI-PATTERNS.md", "references/03-ANTI-PATTERNS.md");
+
+const READ_ONLY_ANNOTATIONS = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+} as const;
 
 const TASK_TYPES = {
   BUILD: {
@@ -104,10 +111,13 @@ function classifyTask(description: string): {
 }
 
 export function registerGodPromptTools(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "get_god_prompt",
-    `Returns the complete GodPrompt.md — a single-file universal system prompt for AI software development (${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB, ~1145 lines). Use this when you want the full payload in one shot. For progressive disclosure (smaller context), use get_core_skill and the reference tools instead.`,
-    {},
+    {
+      title: "Get full GodPrompt",
+      description: `Returns the complete GodPrompt.md — a single-file universal system prompt for AI software development (${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB, ~1145 lines). Use this when you want the full payload in one shot. For progressive disclosure (smaller context), use get_core_skill and the reference tools instead.`,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
     async () => ({
       content: [
         {
@@ -118,10 +128,13 @@ export function registerGodPromptTools(server: McpServer): void {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_core_skill",
-    `Returns SKILL.md — the core protocol that should be loaded on every message. This is the lean base context (~${Math.round(CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Start here for progressive disclosure.`,
-    {},
+    {
+      title: "Get core GodPrompt skill",
+      description: `Returns SKILL.md — the core protocol that should be loaded on every message. This is the lean base context (~${Math.round(CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Start here for progressive disclosure.`,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
     async () => ({
       content: [
         {
@@ -132,10 +145,13 @@ export function registerGodPromptTools(server: McpServer): void {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_protocols",
-    `Returns references/01-PROTOCOLS.md — deep execution guides for each task type (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN). Load this when the task requires detailed protocol steps beyond the core skill. ~${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB.`,
-    {},
+    {
+      title: "Get GodPrompt protocols",
+      description: `Returns references/01-PROTOCOLS.md — deep execution guides for each task type (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN). Load this when the task requires detailed protocol steps beyond the core skill. ~${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB.`,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
     async () => ({
       content: [
         {
@@ -146,10 +162,13 @@ export function registerGodPromptTools(server: McpServer): void {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_gates",
-    `Returns references/02-GATES.md — verification checklists, THE GATE (pre-completion verification), and structured report templates for every deliverable type. Load when you need to verify work before claiming completion. ~${Math.round(CONTENT.GATES.length / 1024)}KB.`,
-    {},
+    {
+      title: "Get GodPrompt verification gates",
+      description: `Returns references/02-GATES.md — verification checklists, THE GATE (pre-completion verification), and structured report templates for every deliverable type. Load when you need to verify work before claiming completion. ~${Math.round(CONTENT.GATES.length / 1024)}KB.`,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
     async () => ({
       content: [
         {
@@ -160,10 +179,13 @@ export function registerGodPromptTools(server: McpServer): void {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "get_anti_patterns",
-    `Returns references/03-ANTI-PATTERNS.md — red flags, rationalizations, and recovery patterns. Covers the 10 most dangerous anti-patterns that lead to broken code, scope creep, and false confidence. Load when you catch yourself rationalizing. ~${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB.`,
-    {},
+    {
+      title: "Get GodPrompt anti-patterns",
+      description: `Returns references/03-ANTI-PATTERNS.md — red flags, rationalizations, and recovery patterns. Covers the 10 most dangerous anti-patterns that lead to broken code, scope creep, and false confidence. Load when you catch yourself rationalizing. ~${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB.`,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
     async () => ({
       content: [
         {
@@ -174,10 +196,12 @@ export function registerGodPromptTools(server: McpServer): void {
     })
   );
 
-  server.tool(
+  server.registerTool(
     "classify_task",
-    "Classify a task description into one of GodPrompt's 9 task types (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN) and return the matching protocol name. Useful for routing tasks through the right workflow.",
     {
+      title: "Classify software-development task",
+      description: "Classify a task description into one of GodPrompt's 9 task types (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN) and return the matching protocol name. Useful for routing tasks through the right workflow.",
+      inputSchema: {
       description: z
         .string()
         .min(3, "Task description must be at least 3 characters")
@@ -185,6 +209,8 @@ export function registerGodPromptTools(server: McpServer): void {
         .describe(
           "The task description to classify, e.g. 'fix the login bug' or 'build a REST API for user auth'"
         ),
+    },
+      annotations: READ_ONLY_ANNOTATIONS,
     },
     async ({ description }) => {
       const result = classifyTask(description);
@@ -209,10 +235,13 @@ export function registerGodPromptTools(server: McpServer): void {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "get_version",
-    "Returns the current GodPrompt version and a summary of what's included.",
-    {},
+    {
+      title: "Get GodPrompt version",
+      description: "Returns the current GodPrompt version and a summary of what's included.",
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
     async () => ({
       content: [
         {
