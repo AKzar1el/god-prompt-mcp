@@ -10,6 +10,16 @@
     "id": "1191386679"
   },
   "websiteUrl": "https://tomiseregi.si/projects/god-prompt",
+  "packages": [
+    {
+      "registryType": "mcpb",
+      "identifier": "https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.0/god-prompt-mcp-1.0.0.mcpb",
+      "fileSha256": "ce6f7adbebe2854cce8b6f4233d77c07e21c104719779908fd56d14a3d098c7e",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
   "_meta": {
     "io.modelcontextprotocol.registry/publisher-provided": {
       "license": "MIT",
