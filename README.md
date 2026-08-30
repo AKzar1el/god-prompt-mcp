@@ -18,6 +18,12 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server for [G
 
 For minimum context usage, start with `get_core_skill`, then load `get_protocols`, `get_gates`, or `get_anti_patterns` only when the task requires deeper guidance. Use `get_god_prompt` when you want everything in one shot.
 
+## Example queries
+
+- "Classify this refactor and tell me which GodPrompt workflow applies."
+- "Show me the verification gates I should satisfy before I claim this bug fix is complete."
+- "Load the debugging protocol for a failing integration test without loading the full GodPrompt."
+
 ## Evaluation
 
 GodPrompt's benchmark methodology, deterministic task corpus, evaluator logic, and published run artifacts live in the source project: [GodPrompt Bench](https://github.com/AKzar1el/god-prompt/tree/main/bench).
@@ -35,6 +41,10 @@ GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-
 [![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=god-prompt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22github%3AAKzar1el%2Fgod-prompt-mcp%22%5D%2C%22disabled%22%3Afalse%2C%22autoApprove%22%3A%5B%5D%7D)
 
 Kiro installs and builds the stdio server directly from this GitHub repository. The package remains unpublished on npm; Node.js 20+ and Git are required.
+
+### Claude Desktop extension
+
+GitHub releases include a `.mcpb` bundle for one-click local installation in MCPB-compatible clients such as Claude Desktop. The bundle runs the same local stdio server and does not require an API key or account.
 
 ### Local stdio
 
@@ -56,6 +66,14 @@ Example client configuration:
   }
 }
 ```
+
+## Privacy and data handling
+
+GodPrompt MCP is a local stdio server. Its content tools return static GodPrompt material bundled with the installed extension. `classify_task` evaluates the supplied task description in the local Node.js process and does not send it to an external API.
+
+The server itself has no telemetry, analytics, external service integration, or server-side persistence. It does not retain tool inputs after the local process handles a request. The MCP host or AI client can process conversation and tool data under its own policies independently of this server.
+
+General privacy information: [tomiseregi.si/privacy](https://tomiseregi.si/privacy). For support or bug reports, use [GitHub Issues](https://github.com/AKzar1el/god-prompt-mcp/issues).
 
 ## Development
 
