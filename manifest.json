@@ -2,11 +2,11 @@
   "manifest_version": "0.3",
   "name": "god-prompt-mcp",
   "display_name": "GodPrompt MCP",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "GodPrompt workflows for TDD, debugging, verification, task routing, and progressive disclosure.",
   "author": {
     "name": "Tomi Šeregi",
-    "url": "https://tomiseregi.si/"
+    "url": "https://github.com/AKzar1el"
   },
   "repository": {
     "type": "git",
