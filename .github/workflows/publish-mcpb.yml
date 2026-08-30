@@ -9,6 +9,7 @@ on:
       - package-lock.json
       - src/**
       - tests/**
+      - scripts/normalize-mcpb.mjs
       - assets/logo-400.png
       - .github/workflows/publish-mcpb.yml
 
@@ -49,8 +50,16 @@ jobs:
           test ! -d node_modules/agents
           node --input-type=module -e "await import('@modelcontextprotocol/sdk/server/stdio.js'); await import('./dist/server.js')"
 
-      - name: Pack MCPB
-        run: npx -y @anthropic-ai/mcpb@2.1.2 pack . god-prompt-mcp-1.0.1.mcpb
+      - name: Pack deterministic MCPB
+        run: |
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . first.mcpb
+          node scripts/normalize-mcpb.mjs first.mcpb
+          sleep 2
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . second.mcpb
+          node scripts/normalize-mcpb.mjs second.mcpb
+          cmp -s first.mcpb second.mcpb
+          unzip -t first.mcpb
+          mv first.mcpb god-prompt-mcp-1.0.1.mcpb
 
       - name: Verify bundle contents and hash
         run: |
