@@ -1,0 +1,176 @@
+name: Publish stdio container
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - Dockerfile.mcp-registry
+      - package.json
+      - package-lock.json
+      - src/**
+      - .github/workflows/publish-container.yml
+  push:
+    branches: [main]
+    paths:
+      - Dockerfile.mcp-registry
+      - package.json
+      - package-lock.json
+      - src/**
+      - .github/workflows/publish-container.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build, smoke test, and publish GHCR image
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image metadata
+        id: meta
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          SHORT_SHA="${GITHUB_SHA::12}"
+          IMAGE="ghcr.io/akzar1el/god-prompt-mcp"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Build image
+        shell: bash
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          SHORT_SHA="${{ steps.meta.outputs.short_sha }}"
+          docker build \
+            --pull \
+            --file Dockerfile.mcp-registry \
+            --label "org.opencontainers.image.source=https://github.com/AKzar1el/god-prompt-mcp" \
+            --label "org.opencontainers.image.version=${VERSION}" \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --tag "${IMAGE}:sha-${SHORT_SHA}" \
+            --tag "${IMAGE}:latest" \
+            .
+
+      - name: Smoke test stdio MCP image
+        shell: bash
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          SHORT_SHA="${{ steps.meta.outputs.short_sha }}"
+          test "$(docker run --rm --entrypoint id "${IMAGE}:sha-${SHORT_SHA}" -u)" = "10001"
+
+          cat > "${RUNNER_TEMP}/mcp-smoke.mjs" <<'NODE'
+          import { spawn } from 'node:child_process';
+
+          const image = process.argv[2];
+          const child = spawn('docker', ['run', '--rm', '-i', image], { stdio: ['pipe', 'pipe', 'inherit'] });
+          let buffer = '';
+          let nextId = 1;
+          const pending = new Map();
+          const timeout = setTimeout(() => {
+            child.kill('SIGKILL');
+            console.error('MCP container smoke test timed out');
+            process.exit(1);
+          }, 20000);
+
+          child.stdout.setEncoding('utf8');
+          child.stdout.on('data', (chunk) => {
+            buffer += chunk;
+            for (;;) {
+              const newline = buffer.indexOf('\n');
+              if (newline < 0) break;
+              const line = buffer.slice(0, newline).trim();
+              buffer = buffer.slice(newline + 1);
+              if (!line) continue;
+              const message = JSON.parse(line);
+              if (message.id != null && pending.has(message.id)) {
+                pending.get(message.id)(message);
+                pending.delete(message.id);
+              }
+            }
+          });
+
+          const send = (message) => child.stdin.write(JSON.stringify(message) + '\n');
+          const request = (method, params) => {
+            const id = nextId++;
+            return new Promise((resolve) => {
+              pending.set(id, resolve);
+              send({ jsonrpc: '2.0', id, method, params });
+            });
+          };
+
+          try {
+            const init = await request('initialize', {
+              protocolVersion: '2025-11-25',
+              capabilities: {},
+              clientInfo: { name: 'ghcr-smoke', version: '1.0' },
+            });
+            if (!init.result) throw new Error('initialize failed');
+            send({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} });
+            const listed = await request('tools/list', {});
+            const names = (listed.result?.tools ?? []).map((tool) => tool.name).sort();
+            const expected = [
+              'classify_task',
+              'get_anti_patterns',
+              'get_core_skill',
+              'get_gates',
+              'get_god_prompt',
+              'get_protocols',
+              'get_version',
+            ].sort();
+            if (JSON.stringify(names) !== JSON.stringify(expected)) {
+              throw new Error(`tool surface mismatch: ${JSON.stringify(names)}`);
+            }
+            clearTimeout(timeout);
+            child.stdin.end();
+            child.kill('SIGTERM');
+          } catch (error) {
+            clearTimeout(timeout);
+            child.kill('SIGKILL');
+            console.error(error);
+            process.exit(1);
+          }
+          NODE
+
+          node "${RUNNER_TEMP}/mcp-smoke.mjs" "${IMAGE}:sha-${SHORT_SHA}"
+
+      - name: Preserve immutable version tag
+        if: github.event_name != 'pull_request'
+        id: version_tag
+        shell: bash
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          if docker manifest inspect "${IMAGE}:${VERSION}" >/dev/null 2>&1; then
+            echo "publish_version=false" >> "$GITHUB_OUTPUT"
+            echo "Version tag ${IMAGE}:${VERSION} already exists; leaving it immutable."
+          else
+            echo "publish_version=true" >> "$GITHUB_OUTPUT"
+            docker tag "${IMAGE}:latest" "${IMAGE}:${VERSION}"
+          fi
+
+      - name: Push image tags
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          IMAGE="${{ steps.meta.outputs.image }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          SHORT_SHA="${{ steps.meta.outputs.short_sha }}"
+          docker push "${IMAGE}:sha-${SHORT_SHA}"
+          docker push "${IMAGE}:latest"
+          if [ "${{ steps.version_tag.outputs.publish_version }}" = "true" ]; then
+            docker push "${IMAGE}:${VERSION}"
+          fi
