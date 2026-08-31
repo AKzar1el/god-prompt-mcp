@@ -10,9 +10,19 @@ const stdioSource = await readFile(
   "utf8"
 );
 
-test("keeps GodPrompt unpublished while exposing a Git-installable stdio binary", () => {
-  assert.equal(packageJson.private, true);
+test("exposes a public npm-installable stdio binary with a bounded package surface", () => {
+  assert.equal(packageJson.private, false);
+  assert.equal(packageJson.publishConfig?.access, "public");
+  assert.equal(packageJson.publishConfig?.registry, "https://registry.npmjs.org/");
+  assert.deepEqual(packageJson.files, [
+    "dist/stdio.js",
+    "dist/server.js",
+    "dist/content.js",
+    "README.md",
+    "LICENSE",
+  ]);
   assert.equal(packageJson.bin?.["god-prompt-mcp"], "dist/stdio.js");
   assert.equal(packageJson.scripts?.prepare, "npm run build");
+  assert.equal(packageJson.scripts?.prepublishOnly, "npm test");
   assert.match(stdioSource, /^#!\/usr\/bin\/env node\n/);
 });
