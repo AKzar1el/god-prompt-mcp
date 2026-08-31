@@ -1,0 +1,167 @@
+name: Verify npm package
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - package.json
+      - package-lock.json
+      - src/**
+      - .github/workflows/package.yml
+  push:
+    branches: [main]
+    paths:
+      - package.json
+      - package-lock.json
+      - src/**
+      - .github/workflows/package.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      - name: Verify public-package metadata
+        run: |
+          node - <<'NODE'
+          const pkg = require('./package.json');
+          const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/content.js', 'README.md', 'LICENSE'];
+          if (pkg.name !== 'god-prompt-mcp') throw new Error('package name drift');
+          if (pkg.version !== '1.0.2') throw new Error('package version drift');
+          if (pkg.private !== false) throw new Error('package must be explicitly public');
+          if (pkg.publishConfig?.access !== 'public') throw new Error('publishConfig.access must be public');
+          if (pkg.publishConfig?.registry !== 'https://registry.npmjs.org/') throw new Error('publishConfig.registry drift');
+          if (JSON.stringify(pkg.files) !== JSON.stringify(expectedFiles)) throw new Error('npm files allowlist drift');
+          if (pkg.bin?.['god-prompt-mcp'] !== 'dist/stdio.js') throw new Error('stdio binary drift');
+          NODE
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build package
+        run: npm run build
+
+      - name: Pack and audit file list
+        id: pack
+        shell: bash
+        run: |
+          npm pack --json > "${RUNNER_TEMP}/npm-pack.json"
+          TARBALL="$(node -p "require('${RUNNER_TEMP}/npm-pack.json')[0].filename")"
+          echo "tarball=${TARBALL}" >> "$GITHUB_OUTPUT"
+          node - <<'NODE'
+          const pack = require(process.env.RUNNER_TEMP + '/npm-pack.json')[0];
+          const names = new Set(pack.files.map((f) => f.path));
+          const required = ['package.json', 'README.md', 'LICENSE', 'dist/stdio.js', 'dist/server.js', 'dist/content.js'];
+          for (const file of required) {
+            if (!names.has(file)) throw new Error(`missing packaged file: ${file}`);
+          }
+          for (const file of names) {
+            if (/^(src|tests|\.github)\//.test(file)) throw new Error(`development file leaked into package: ${file}`);
+            if (file === 'dist/index.js') throw new Error('Cloudflare Worker entry leaked into stdio npm package');
+          }
+          NODE
+
+      - name: Install packed package in a clean project
+        shell: bash
+        run: |
+          APP="${RUNNER_TEMP}/god-prompt-npm-smoke"
+          mkdir -p "$APP"
+          cd "$APP"
+          npm init -y >/dev/null
+          npm install --ignore-scripts "${GITHUB_WORKSPACE}/${{ steps.pack.outputs.tarball }}"
+
+      - name: Verify installed MCP tool surface
+        shell: bash
+        run: |
+          APP="${RUNNER_TEMP}/god-prompt-npm-smoke"
+          cd "$APP"
+          node <<'NODE'
+          const { spawn } = require('node:child_process');
+          const path = require('node:path');
+
+          const bin = path.join(process.cwd(), 'node_modules', '.bin', 'god-prompt-mcp');
+          const child = spawn(bin, [], { stdio: ['pipe', 'pipe', 'inherit'] });
+          let buffer = '';
+          let nextId = 1;
+          const pending = new Map();
+
+          const timeout = setTimeout(() => {
+            child.kill('SIGKILL');
+            throw new Error('MCP smoke test timed out');
+          }, 15000);
+
+          child.stdout.setEncoding('utf8');
+          child.stdout.on('data', (chunk) => {
+            buffer += chunk;
+            for (;;) {
+              const newline = buffer.indexOf('\n');
+              if (newline < 0) break;
+              const line = buffer.slice(0, newline).trim();
+              buffer = buffer.slice(newline + 1);
+              if (!line) continue;
+              const message = JSON.parse(line);
+              if (message.id != null && pending.has(message.id)) {
+                pending.get(message.id)(message);
+                pending.delete(message.id);
+              }
+            }
+          });
+
+          function send(message) {
+            child.stdin.write(JSON.stringify(message) + '\n');
+          }
+
+          function request(method, params) {
+            const id = nextId++;
+            return new Promise((resolve) => {
+              pending.set(id, resolve);
+              send({ jsonrpc: '2.0', id, method, params });
+            });
+          }
+
+          (async () => {
+            const init = await request('initialize', {
+              protocolVersion: '2025-11-25',
+              capabilities: {},
+              clientInfo: { name: 'npm-smoke', version: '1.0' },
+            });
+            if (!init.result) throw new Error('initialize failed');
+            send({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} });
+            const listed = await request('tools/list', {});
+            const names = (listed.result?.tools ?? []).map((tool) => tool.name).sort();
+            const expected = [
+              'classify_task',
+              'get_anti_patterns',
+              'get_core_skill',
+              'get_gates',
+              'get_god_prompt',
+              'get_protocols',
+              'get_version',
+            ].sort();
+            if (JSON.stringify(names) !== JSON.stringify(expected)) {
+              throw new Error(`tool surface mismatch: ${JSON.stringify(names)}`);
+            }
+            clearTimeout(timeout);
+            child.stdin.end();
+            child.kill('SIGTERM');
+          })().catch((error) => {
+            clearTimeout(timeout);
+            child.kill('SIGKILL');
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
