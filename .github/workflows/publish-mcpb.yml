@@ -78,6 +78,8 @@ jobs:
           fi
           EXPECTED_SHA='d02c3eadda48d80fc87192bc2a24211a1d988db3a0b335c893d08ae00652a8c6'
           ACTUAL_SHA="$(sha256sum god-prompt-mcp-1.0.2.mcpb | cut -d' ' -f1)"
+          echo "Expected MCPB SHA-256: $EXPECTED_SHA"
+          echo "Actual MCPB SHA-256:   $ACTUAL_SHA"
           test "$ACTUAL_SHA" = "$EXPECTED_SHA"
           printf '%s  %s\n' "$ACTUAL_SHA" 'god-prompt-mcp-1.0.2.mcpb'
 
