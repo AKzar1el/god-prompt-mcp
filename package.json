@@ -2,9 +2,16 @@
   "name": "god-prompt-mcp",
   "version": "1.0.2",
   "description": "MCP server for GodPrompt — the universal AI software development system prompt",
-  "private": true,
+  "private": false,
   "license": "MIT",
   "type": "module",
+  "files": [
+    "dist/stdio.js",
+    "dist/server.js",
+    "dist/content.js",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "god-prompt-mcp": "dist/stdio.js"
   },
@@ -31,11 +38,16 @@
   "engines": {
     "node": ">=20"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "build": "tsc -p tsconfig.build.json",
     "deploy": "wrangler deploy",
     "test": "node --test tests/*.test.mjs",
+    "prepublishOnly": "npm test",
     "prepare": "npm run build",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "generate-content": "node scripts/generate-content.mjs"
