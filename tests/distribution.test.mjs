@@ -86,6 +86,7 @@ test("dispatches npm publishing explicitly from the registry release workflow", 
 test("uses the setup-node OIDC path without the v6 dummy auth-token fallback", () => {
   assert.match(npmPublishWorkflow, /actions\/setup-node@v7/);
   assert.doesNotMatch(npmPublishWorkflow, /NODE_AUTH_TOKEN\s*:/);
+  assert.doesNotMatch(npmPublishWorkflow, /registry-url\s*:/);
 });
 
 test("binds McpAgent to the Durable Object name required by serve()", () => {
