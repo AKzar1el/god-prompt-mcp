@@ -24,5 +24,5 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.equal(packageJson.bin?.["god-prompt-mcp"], "dist/stdio.js");
   assert.equal(packageJson.scripts?.prepare, "npm run build");
   assert.equal(packageJson.scripts?.prepublishOnly, "npm test");
-  assert.match(stdioSource, /^#!\/usr\/bin\/env node\n/);
+  assert.match(stdioSource, /^#!\/usr\/bin\/env node\r?\n/);
 });
