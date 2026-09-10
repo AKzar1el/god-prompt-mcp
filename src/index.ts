@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerGodPromptTools, SERVER_INFO } from "./server.js";
 
 type Env = {
-  GOD_PROMPT_MCP: DurableObjectNamespace;
+  MCP_OBJECT: DurableObjectNamespace;
 };
 
 export class GodPromptMCP extends McpAgent<Env, Record<string, never>> {

@@ -7,7 +7,7 @@
   "durable_objects": {
     "bindings": [
       {
-        "name": "GodPromptMCP",
+        "name": "MCP_OBJECT",
         "class_name": "GodPromptMCP"
       }
     ]

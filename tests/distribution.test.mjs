@@ -12,6 +12,10 @@ const stdioSource = await readFile(
   new URL("../src/stdio.ts", import.meta.url),
   "utf8"
 );
+const workerSource = await readFile(
+  new URL("../src/index.ts", import.meta.url),
+  "utf8"
+);
 const npmPublishWorkflow = await readFile(
   new URL("../.github/workflows/publish-npm.yml", import.meta.url),
   "utf8"
@@ -19,6 +23,9 @@ const npmPublishWorkflow = await readFile(
 const registryPublishWorkflow = await readFile(
   new URL("../.github/workflows/publish-registry.yml", import.meta.url),
   "utf8"
+);
+const wranglerConfig = JSON.parse(
+  await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8")
 );
 
 test("exposes a public npm-installable stdio binary with a bounded package surface", () => {
@@ -57,4 +64,14 @@ test("dispatches npm publishing explicitly from the registry release workflow", 
   assert.match(npmPublishWorkflow, /test "\$TAG_SHA" = "\$\{\{ inputs\.source_sha \}\}"/);
   assert.match(npmPublishWorkflow, /npm view "god-prompt-mcp@\$\{VERSION\}" version/);
   assert.match(npmPublishWorkflow, /already published; skipping/);
+});
+
+test("binds McpAgent to the Durable Object name required by serve()", () => {
+  assert.deepEqual(wranglerConfig.durable_objects?.bindings, [
+    {
+      name: "MCP_OBJECT",
+      class_name: "GodPromptMCP",
+    },
+  ]);
+  assert.match(workerSource, /MCP_OBJECT:\s*DurableObjectNamespace/);
 });
