@@ -31,6 +31,25 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
+      - name: Diagnose OIDC identity without exposing the token
+        shell: bash
+        run: |
+          node <<'NODE'
+          const requestUrl = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          requestUrl.searchParams.set('audience', 'npm:registry.npmjs.org');
+          const response = await fetch(requestUrl, {
+            headers: { Authorization: `bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}` },
+          });
+          if (!response.ok) throw new Error(`GitHub OIDC request failed: ${response.status}`);
+          const { value } = await response.json();
+          const payload = JSON.parse(Buffer.from(value.split('.')[1], 'base64url').toString('utf8'));
+          const keys = [
+            'iss', 'aud', 'repository', 'repository_owner', 'workflow',
+            'job_workflow_ref', 'ref', 'sha', 'event_name', 'environment',
+          ];
+          console.log(JSON.stringify(Object.fromEntries(keys.map((key) => [key, payload[key] ?? null])), null, 2));
+          NODE
+
       - name: Verify source, release, and npm versions
         shell: bash
         run: |
@@ -69,4 +88,4 @@ jobs:
       - if: steps.npm-version.outputs.published == 'false'
         run: npm pack --dry-run
       - if: steps.npm-version.outputs.published == 'false'
-        run: npm publish
+        run: npm publish --loglevel verbose
