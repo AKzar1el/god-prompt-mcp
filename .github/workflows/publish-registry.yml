@@ -16,8 +16,6 @@ on:
       - main
     paths:
       - server.json
-      - .github/workflows/publish-npm.yml
-      - .github/workflows/publish-registry.yml
 
 permissions:
   contents: read
