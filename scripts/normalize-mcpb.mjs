@@ -10,6 +10,8 @@ const ZIP64_U16_SENTINEL = 0xffff;
 const ZIP64_U32_SENTINEL = 0xffffffff;
 const FIXED_DOS_TIME = 0x0000;
 const FIXED_DOS_DATE = 0x0021; // 1980-01-01
+const ZIP_HOST_UNIX = 3;
+const CANONICAL_FILE_MODE = 0o644;
 
 function assertRange(buffer, offset, length, label) {
   if (!Number.isInteger(offset) || !Number.isInteger(length) || offset < 0 || length < 0 || offset + length > buffer.length) {
@@ -82,6 +84,8 @@ export function normalizeMcpbBuffer(input) {
 
     buffer.writeUInt16LE(FIXED_DOS_TIME, cursor + 12);
     buffer.writeUInt16LE(FIXED_DOS_DATE, cursor + 14);
+    buffer.writeUInt8(ZIP_HOST_UNIX, cursor + 5);
+    buffer.writeUInt32LE(CANONICAL_FILE_MODE << 16, cursor + 38);
     buffer.writeUInt16LE(FIXED_DOS_TIME, localHeaderOffset + 10);
     buffer.writeUInt16LE(FIXED_DOS_DATE, localHeaderOffset + 12);
 

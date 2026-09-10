@@ -16,6 +16,13 @@ const workerSource = await readFile(
   new URL("../src/index.ts", import.meta.url),
   "utf8"
 );
+const gitAttributes = await readFile(
+  new URL("../.gitattributes", import.meta.url),
+  "utf8"
+).catch(() => "");
+const buildTsconfig = JSON.parse(
+  await readFile(new URL("../tsconfig.build.json", import.meta.url), "utf8")
+);
 const npmPublishWorkflow = await readFile(
   new URL("../.github/workflows/publish-npm.yml", import.meta.url),
   "utf8"
@@ -49,6 +56,11 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
 test("keeps the Worker-only Agents SDK out of npm runtime dependencies", () => {
   assert.equal(packageJson.dependencies?.agents, undefined);
   assert.equal(packageJson.devDependencies?.agents, "^0.0.98");
+});
+
+test("pins cross-platform bundle inputs to LF line endings", () => {
+  assert.match(gitAttributes, /^\* text=auto eol=lf$/m);
+  assert.equal(buildTsconfig.compilerOptions?.newLine, "lf");
 });
 
 test("dispatches npm publishing explicitly from the registry release workflow", () => {
