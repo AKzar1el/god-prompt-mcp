@@ -32,19 +32,27 @@ The MCP server does not run the benchmark or claim model-level superiority itsel
 
 ## Connect
 
+### npm / npx (recommended)
+
+```bash
+npx -y god-prompt-mcp
+```
+
+The public npm package runs the local stdio server directly. It requires Node.js 20+ and no API key or account.
+
 ### Glama
 
 GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-prompt-mcp). Use the server page to inspect the tools and connect it to a supported MCP client.
 
 ### Kiro
 
-[![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=god-prompt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22github%3AAKzar1el%2Fgod-prompt-mcp%22%5D%2C%22disabled%22%3Afalse%2C%22autoApprove%22%3A%5B%5D%7D)
+[![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=god-prompt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22god-prompt-mcp%22%5D%2C%22disabled%22%3Afalse%2C%22autoApprove%22%3A%5B%5D%7D)
 
-Kiro installs and builds the stdio server directly from this GitHub repository. The package remains unpublished on npm; Node.js 20+ and Git are required.
+Kiro launches the published npm package through `npx`. Node.js 20+ is required.
 
 ### Cursor
 
-The repository includes a Cursor plugin manifest and `mcp.json` for Marketplace or local plugin installation. Cursor runs the same local stdio server through `npx -y github:AKzar1el/god-prompt-mcp`.
+The repository includes a Cursor plugin manifest and `mcp.json` for Marketplace or local plugin installation. Cursor runs the same local stdio server through `npx -y god-prompt-mcp`.
 
 ### Claude Desktop extension
 

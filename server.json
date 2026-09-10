@@ -18,6 +18,14 @@
       "transport": {
         "type": "stdio"
       }
+    },
+    {
+      "registryType": "npm",
+      "identifier": "god-prompt-mcp",
+      "version": "1.0.3",
+      "transport": {
+        "type": "stdio"
+      }
     }
   ],
   "_meta": {

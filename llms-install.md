@@ -1,25 +1,24 @@
 # llms-install.md — Cline and agent installation guide for GodPrompt MCP
 
-This file is for AI agents such as Cline installing the **local stdio** GodPrompt MCP server directly from its canonical GitHub repository.
+This file is for AI agents such as Cline installing the **local stdio** GodPrompt MCP server from its public npm package.
 
 ## Requirements
 
 - Node.js 20 or newer
 - `npm` / `npx`
-- Git
-- Internet access for the initial GitHub package install
+- Internet access for the initial npm package install
 
 No API keys or environment variables are required.
 
 ## Recommended install path
 
-The package intentionally remains unpublished on npm. Run it directly from GitHub:
+Run the published package directly with `npx`:
 
 ```bash
-npx -y github:AKzar1el/god-prompt-mcp
+npx -y god-prompt-mcp
 ```
 
-The repository declares a `bin` entry and a `prepare` build step, so the Git-backed npm install builds the stdio server before launch.
+The package declares a `bin` entry for the local stdio server and does not require an API key.
 
 ## Cline configuration
 
@@ -30,7 +29,7 @@ For the Cline IDE extension, open **MCP Servers → Configure → Configure MCP 
   "mcpServers": {
     "god-prompt": {
       "command": "npx",
-      "args": ["-y", "github:AKzar1el/god-prompt-mcp"],
+      "args": ["-y", "god-prompt-mcp"],
       "disabled": false,
       "autoApprove": []
     }
@@ -55,7 +54,7 @@ Keep `autoApprove` empty so the user can see when workflow guidance is requested
 
 ## Fallback: cloned checkout
 
-If a Git-backed `npx` install is unavailable, clone and build the repository explicitly:
+If the npm install path is unavailable, clone and build the repository explicitly:
 
 ```bash
 git clone https://github.com/AKzar1el/god-prompt-mcp.git

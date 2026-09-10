@@ -36,12 +36,17 @@ jobs:
           const version = pkg.version;
           if (server.name !== 'io.github.AKzar1el/god-prompt-mcp') throw new Error('Registry name drift');
           if (server.version !== version || manifest.version !== version) throw new Error('version metadata drift');
+          if (pkg.mcpName !== server.name) throw new Error('npm MCP ownership metadata drift');
           const expectedIdentifier = `https://github.com/AKzar1el/god-prompt-mcp/releases/download/v${version}/god-prompt-mcp-${version}.mcpb`;
-          const artifact = server.packages?.[0];
+          const artifact = server.packages?.find((entry) => entry.registryType === 'mcpb');
           if (artifact?.registryType !== 'mcpb') throw new Error('Registry package type drift');
           if (artifact.identifier !== expectedIdentifier) throw new Error('MCPB release URL drift');
           if (!/^[a-f0-9]{64}$/.test(artifact.fileSha256 ?? '')) throw new Error('MCPB SHA-256 is missing or invalid');
           if (JSON.stringify(artifact.transport) !== JSON.stringify({ type: 'stdio' })) throw new Error('MCPB transport drift');
+          const npmPackage = server.packages?.find((entry) => entry.registryType === 'npm');
+          if (npmPackage?.identifier !== pkg.name) throw new Error('npm Registry package name drift');
+          if (npmPackage?.version !== version) throw new Error('npm Registry package version drift');
+          if (JSON.stringify(npmPackage.transport) !== JSON.stringify({ type: 'stdio' })) throw new Error('npm Registry transport drift');
           NODE
 
       - name: Install mcp-publisher
@@ -135,6 +140,24 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Wait for matching npm release
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          for attempt in $(seq 1 30); do
+            if [ "$(npm view "god-prompt-mcp@${VERSION}" version 2>/dev/null || true)" = "$VERSION" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "god-prompt-mcp@${VERSION} was not visible on npm before Registry publication." >&2
+          exit 1
 
       - name: Verify published release asset hash
         env:
