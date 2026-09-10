@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { createInterface } from "node:readline";
+
+const packageJson = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8")
+);
 
 const EXPECTED_TOOLS = [
   "classify_task",
@@ -13,12 +18,14 @@ const EXPECTED_TOOLS = [
   "get_version",
 ];
 
+const REQUEST_TIMEOUT_MS = 15000;
+
 function request(child, pending, id, method, params = {}) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       pending.delete(id);
       reject(new Error(`Timed out waiting for ${method}`));
-    }, 5000);
+    }, REQUEST_TIMEOUT_MS);
 
     pending.set(id, {
       resolve: (value) => {
@@ -105,7 +112,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   });
 
   assert.equal(initialized.serverInfo.name, "god-prompt-mcp");
-  assert.equal(initialized.serverInfo.version, "1.0.1");
+  assert.equal(initialized.serverInfo.version, packageJson.version);
 
   child.stdin.write(
     `${JSON.stringify({

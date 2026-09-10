@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.1",
+  version: "1.0.3",
 } as const;
 
 // Version 1.0.0 was generated before the source layout moved from core/* to

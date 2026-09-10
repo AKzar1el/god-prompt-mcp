@@ -41,7 +41,9 @@ jobs:
           const pkg = require('./package.json');
           const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/content.js', 'README.md', 'LICENSE'];
           if (pkg.name !== 'god-prompt-mcp') throw new Error('package name drift');
-          if (pkg.version !== '1.0.2') throw new Error('package version drift');
+          const serverSource = require('fs').readFileSync('src/server.ts', 'utf8');
+          const match = serverSource.match(/version:\s*"([^"]+)"/);
+          if (!match || match[1] !== pkg.version) throw new Error('package/server version drift');
           if (pkg.private !== false) throw new Error('package must be explicitly public');
           if (pkg.publishConfig?.access !== 'public') throw new Error('publishConfig.access must be public');
           if (pkg.publishConfig?.registry !== 'https://registry.npmjs.org/') throw new Error('publishConfig.registry drift');
