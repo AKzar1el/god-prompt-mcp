@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "god-prompt-mcp",
   "display_name": "GodPrompt MCP",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "GodPrompt workflows for TDD, debugging, verification, task routing, and progressive disclosure.",
   "author": {
     "name": "Tomi Šeregi",
