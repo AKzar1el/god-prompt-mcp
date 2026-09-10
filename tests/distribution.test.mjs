@@ -83,6 +83,11 @@ test("dispatches npm publishing explicitly from the registry release workflow", 
   assert.match(npmPublishWorkflow, /already published; skipping/);
 });
 
+test("uses the setup-node OIDC path without the v6 dummy auth-token fallback", () => {
+  assert.match(npmPublishWorkflow, /actions\/setup-node@v7/);
+  assert.doesNotMatch(npmPublishWorkflow, /NODE_AUTH_TOKEN\s*:/);
+});
+
 test("binds McpAgent to the Durable Object name required by serve()", () => {
   assert.deepEqual(wranglerConfig.durable_objects?.bindings, [
     {
