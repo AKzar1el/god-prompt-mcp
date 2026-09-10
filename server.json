@@ -3,7 +3,7 @@
   "name": "io.github.AKzar1el/god-prompt-mcp",
   "title": "GodPrompt MCP Server",
   "description": "GodPrompt workflows for TDD, debugging, verification, task routing, and progressive disclosure.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "repository": {
     "url": "https://github.com/AKzar1el/god-prompt-mcp",
     "source": "github",
@@ -13,8 +13,8 @@
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.3/god-prompt-mcp-1.0.3.mcpb",
-      "fileSha256": "0890e9cece882b689599a3212a4ff69f43240493acbb980e906881356b2f874b",
+      "identifier": "https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.4/god-prompt-mcp-1.0.4.mcpb",
+      "fileSha256": "ac521b39a0ce802a8eddd5b2e0193add7522ffcd9d90ddb2c5a376e0db6fa6ff",
       "transport": {
         "type": "stdio"
       }
@@ -22,7 +22,7 @@
     {
       "registryType": "npm",
       "identifier": "god-prompt-mcp",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "transport": {
         "type": "stdio"
       }

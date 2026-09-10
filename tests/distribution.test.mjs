@@ -46,6 +46,11 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.match(stdioSource, /^#!\/usr\/bin\/env node\r?\n/);
 });
 
+test("keeps the Worker-only Agents SDK out of npm runtime dependencies", () => {
+  assert.equal(packageJson.dependencies?.agents, undefined);
+  assert.equal(packageJson.devDependencies?.agents, "^0.0.98");
+});
+
 test("dispatches npm publishing explicitly from the registry release workflow", () => {
   assert.match(registryPublishWorkflow, /actions:\s*write/);
   assert.match(registryPublishWorkflow, /npm view "god-prompt-mcp" version/);
