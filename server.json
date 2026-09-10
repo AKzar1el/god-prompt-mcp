@@ -14,7 +14,7 @@
     {
       "registryType": "mcpb",
       "identifier": "https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.4/god-prompt-mcp-1.0.4.mcpb",
-      "fileSha256": "ac521b39a0ce802a8eddd5b2e0193add7522ffcd9d90ddb2c5a376e0db6fa6ff",
+      "fileSha256": "3ead8ac345837ff97d8c92f462617eba2f8702b6ae69d9176abf06b55a3a8aa2",
       "transport": {
         "type": "stdio"
       }
