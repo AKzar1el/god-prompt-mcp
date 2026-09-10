@@ -60,7 +60,7 @@ export function normalizeMcpbBuffer(input) {
   }
 
   let cursor = centralDirectoryOffset;
-  let normalizedEntries = 0;
+  const entries = [];
 
   for (let index = 0; index < totalEntries; index += 1) {
     assertRange(buffer, cursor, 46, `Central-directory entry ${index}`);
@@ -72,6 +72,12 @@ export function normalizeMcpbBuffer(input) {
     const extraFieldLength = buffer.readUInt16LE(cursor + 30);
     const commentLength = buffer.readUInt16LE(cursor + 32);
     const localHeaderOffset = buffer.readUInt32LE(cursor + 42);
+    const entryLength = 46 + fileNameLength + extraFieldLength + commentLength;
+
+    assertRange(buffer, cursor, entryLength, `Central-directory entry ${index}`);
+    const fileName = Buffer.from(
+      buffer.subarray(cursor + 46, cursor + 46 + fileNameLength)
+    );
 
     if (localHeaderOffset === ZIP64_U32_SENTINEL) {
       throw new Error(`ZIP64 local-header offset is not supported at entry ${index}`);
@@ -89,17 +95,78 @@ export function normalizeMcpbBuffer(input) {
     buffer.writeUInt16LE(FIXED_DOS_TIME, localHeaderOffset + 10);
     buffer.writeUInt16LE(FIXED_DOS_DATE, localHeaderOffset + 12);
 
-    const entryLength = 46 + fileNameLength + extraFieldLength + commentLength;
-    assertRange(buffer, cursor, entryLength, `Central-directory entry ${index}`);
+    entries.push({
+      index,
+      fileName,
+      localHeaderOffset,
+      centralRecord: Buffer.from(buffer.subarray(cursor, cursor + entryLength)),
+    });
     cursor += entryLength;
-    normalizedEntries += 1;
   }
 
   if (cursor !== centralDirectoryOffset + centralDirectorySize) {
     throw new Error("ZIP central-directory size does not match parsed entries");
   }
 
-  return { buffer, normalizedEntries };
+  const entriesByOffset = [...entries].sort(
+    (left, right) => left.localHeaderOffset - right.localHeaderOffset
+  );
+  const prefixLength = entriesByOffset[0]?.localHeaderOffset ?? centralDirectoryOffset;
+  if (prefixLength > centralDirectoryOffset) {
+    throw new Error("ZIP local-file records start after the central directory");
+  }
+
+  for (let index = 0; index < entriesByOffset.length; index += 1) {
+    const entry = entriesByOffset[index];
+    const nextOffset =
+      entriesByOffset[index + 1]?.localHeaderOffset ?? centralDirectoryOffset;
+    if (nextOffset <= entry.localHeaderOffset) {
+      throw new Error("ZIP local-file offsets are not strictly increasing");
+    }
+    assertRange(
+      buffer,
+      entry.localHeaderOffset,
+      nextOffset - entry.localHeaderOffset,
+      `Local-file record ${entry.index}`
+    );
+    entry.localRecord = Buffer.from(
+      buffer.subarray(entry.localHeaderOffset, nextOffset)
+    );
+  }
+
+  const canonicalEntries = [...entries].sort((left, right) => {
+    const byName = Buffer.compare(left.fileName, right.fileName);
+    return byName || left.index - right.index;
+  });
+  const localChunks = [Buffer.from(buffer.subarray(0, prefixLength))];
+  const centralChunks = [];
+  let nextLocalOffset = prefixLength;
+
+  for (const entry of canonicalEntries) {
+    if (!entry.localRecord) {
+      throw new Error(`Missing local-file record for central entry ${entry.index}`);
+    }
+    localChunks.push(entry.localRecord);
+    const centralRecord = Buffer.from(entry.centralRecord);
+    centralRecord.writeUInt32LE(nextLocalOffset, 42);
+    centralChunks.push(centralRecord);
+    nextLocalOffset += entry.localRecord.length;
+  }
+
+  if (nextLocalOffset !== centralDirectoryOffset) {
+    throw new Error("ZIP local-file records do not end at the central directory");
+  }
+
+  const postCentral = Buffer.from(
+    buffer.subarray(centralDirectoryOffset + centralDirectorySize, eocdOffset)
+  );
+  const eocd = Buffer.from(buffer.subarray(eocdOffset));
+  eocd.writeUInt32LE(nextLocalOffset, 16);
+
+  return {
+    buffer: Buffer.concat([...localChunks, ...centralChunks, postCentral, eocd]),
+    normalizedEntries: entries.length,
+  };
 }
 
 export async function normalizeMcpbFile(filePath) {
