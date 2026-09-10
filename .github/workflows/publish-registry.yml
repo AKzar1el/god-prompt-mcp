@@ -9,12 +9,14 @@ on:
       - package-lock.json
       - .mcpbignore
       - scripts/normalize-mcpb.mjs
+      - .github/workflows/publish-npm.yml
       - .github/workflows/publish-registry.yml
   push:
     branches:
       - main
     paths:
       - server.json
+      - .github/workflows/publish-npm.yml
       - .github/workflows/publish-registry.yml
 
 permissions:
@@ -62,6 +64,7 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
     steps:
       - uses: actions/checkout@v4
@@ -130,6 +133,17 @@ jobs:
             gh release create "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes "GodPrompt MCP ${VERSION}: Claude Desktop/MCPB metadata and compatibility release."
           fi
 
+      - name: Dispatch npm publication after bootstrap
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "god-prompt-mcp" version >/dev/null 2>&1; then
+            gh workflow run publish-npm.yml --repo "$GITHUB_REPOSITORY" --ref main -f version="$VERSION" -f source_sha="$GITHUB_SHA"
+          else
+            echo "god-prompt-mcp is not bootstrapped on npm yet; skipping automated publication dispatch."
+          fi
+
   publish:
     name: Publish to official MCP Registry
     if: github.event_name == 'push'
@@ -146,7 +160,19 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
+      - name: Check npm bootstrap state
+        id: npm-bootstrap
+        shell: bash
+        run: |
+          if npm view "god-prompt-mcp" version >/dev/null 2>&1; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "god-prompt-mcp is not bootstrapped on npm yet; Registry publication remains intentionally deferred."
+          fi
+
       - name: Wait for matching npm release
+        if: steps.npm-bootstrap.outputs.available == 'true'
         shell: bash
         run: |
           VERSION="$(node -p "require('./package.json').version")"
@@ -160,6 +186,7 @@ jobs:
           exit 1
 
       - name: Verify published release asset hash
+        if: steps.npm-bootstrap.outputs.available == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -172,11 +199,14 @@ jobs:
           test "$ACTUAL_SHA" = "$EXPECTED_SHA"
 
       - name: Install mcp-publisher
+        if: steps.npm-bootstrap.outputs.available == 'true'
         run: |
           curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
 
       - name: Log in with GitHub OIDC
+        if: steps.npm-bootstrap.outputs.available == 'true'
         run: ./mcp-publisher login github-oidc
 
       - name: Publish server.json
+        if: steps.npm-bootstrap.outputs.available == 'true'
         run: ./mcp-publisher publish server.json

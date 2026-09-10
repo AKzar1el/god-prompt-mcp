@@ -1,8 +1,16 @@
 name: Publish npm package
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        description: Exact package version created by the release workflow
+        type: string
+      source_sha:
+        required: true
+        description: Exact main commit that produced the release artifact
+        type: string
 
 permissions:
   contents: read
@@ -13,19 +21,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
           registry-url: https://registry.npmjs.org
-          cache: npm
+          package-manager-cache: false
 
-      - name: Verify release and npm versions
+      - name: Verify source, release, and npm versions
         shell: bash
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          test "v${VERSION}" = "${{ github.event.release.tag_name }}"
+          test "$VERSION" = "${{ inputs.version }}"
+          test "$(git rev-parse HEAD)" = "${{ inputs.source_sha }}"
+          TAG_SHA="$(git rev-list -n 1 "v${VERSION}")"
+          test "$TAG_SHA" = "${{ inputs.source_sha }}"
           NPM_VERSION="$(npm --version)"
           node - "$NPM_VERSION" <<'NODE'
           const [major, minor, patch] = process.argv[2].split('.').map(Number);
@@ -34,8 +48,26 @@ jobs:
           }
           NODE
 
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npm pack --dry-run
-      - run: npm publish
+      - name: Check whether the exact version is already published
+        id: npm-version
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          PUBLISHED_VERSION="$(npm view "god-prompt-mcp@${VERSION}" version 2>/dev/null || true)"
+          if [ "$PUBLISHED_VERSION" = "$VERSION" ]; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "god-prompt-mcp@${VERSION} is already published; skipping duplicate publication."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.npm-version.outputs.published == 'false'
+        run: npm ci
+      - if: steps.npm-version.outputs.published == 'false'
+        run: npm test
+      - if: steps.npm-version.outputs.published == 'false'
+        run: npm run build
+      - if: steps.npm-version.outputs.published == 'false'
+        run: npm pack --dry-run
+      - if: steps.npm-version.outputs.published == 'false'
+        run: npm publish

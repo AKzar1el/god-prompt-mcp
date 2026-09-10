@@ -12,6 +12,14 @@ const stdioSource = await readFile(
   new URL("../src/stdio.ts", import.meta.url),
   "utf8"
 );
+const npmPublishWorkflow = await readFile(
+  new URL("../.github/workflows/publish-npm.yml", import.meta.url),
+  "utf8"
+);
+const registryPublishWorkflow = await readFile(
+  new URL("../.github/workflows/publish-registry.yml", import.meta.url),
+  "utf8"
+);
 
 test("exposes a public npm-installable stdio binary with a bounded package surface", () => {
   assert.equal(packageJson.private, false);
@@ -29,4 +37,24 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.equal(packageJson.scripts?.prepare, "npm run build");
   assert.equal(packageJson.scripts?.prepublishOnly, "npm test");
   assert.match(stdioSource, /^#!\/usr\/bin\/env node\r?\n/);
+});
+
+test("dispatches npm publishing explicitly from the registry release workflow", () => {
+  assert.match(registryPublishWorkflow, /actions:\s*write/);
+  assert.match(registryPublishWorkflow, /npm view "god-prompt-mcp" version/);
+  assert.match(
+    registryPublishWorkflow,
+    /gh workflow run publish-npm\.yml[^\n]*--ref main/
+  );
+  assert.match(registryPublishWorkflow, /-f version="\$VERSION"/);
+  assert.match(registryPublishWorkflow, /-f source_sha="\$GITHUB_SHA"/);
+
+  assert.match(npmPublishWorkflow, /workflow_dispatch:/);
+  assert.match(npmPublishWorkflow, /version:\s*\n\s*required:\s*true/);
+  assert.match(npmPublishWorkflow, /source_sha:\s*\n\s*required:\s*true/);
+  assert.match(npmPublishWorkflow, /ref:\s*\$\{\{ inputs\.source_sha \}\}/);
+  assert.match(npmPublishWorkflow, /test "\$VERSION" = "\$\{\{ inputs\.version \}\}"/);
+  assert.match(npmPublishWorkflow, /test "\$TAG_SHA" = "\$\{\{ inputs\.source_sha \}\}"/);
+  assert.match(npmPublishWorkflow, /npm view "god-prompt-mcp@\$\{VERSION\}" version/);
+  assert.match(npmPublishWorkflow, /already published; skipping/);
 });
