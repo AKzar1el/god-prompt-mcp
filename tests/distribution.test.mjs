@@ -83,6 +83,13 @@ test("dispatches npm publishing explicitly from the registry release workflow", 
   assert.match(npmPublishWorkflow, /already published; skipping/);
 });
 
+test("does not release on workflow-only main pushes", () => {
+  const pushBlock = registryPublishWorkflow.match(/\n  push:\n([\s\S]*?)\n\npermissions:/)?.[1] ?? "";
+  assert.match(pushBlock, /server\.json/);
+  assert.doesNotMatch(pushBlock, /publish-npm\.yml/);
+  assert.doesNotMatch(pushBlock, /publish-registry\.yml/);
+});
+
 test("uses the setup-node OIDC path without the v6 dummy auth-token fallback", () => {
   assert.match(npmPublishWorkflow, /actions\/setup-node@v7/);
   assert.doesNotMatch(npmPublishWorkflow, /NODE_AUTH_TOKEN\s*:/);
