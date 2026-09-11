@@ -2,6 +2,14 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server for [GodPrompt](https://github.com/AKzar1el/god-prompt) — AI software-development workflow guidance with task routing, TDD, debugging protocols, verification gates, and progressive disclosure.
 
+## Agent Harness Review — US$49
+
+For the seven-day `GP-RS1` experiment, GodPrompt offers one bounded paid service for developers and small teams whose coding agents lose context, overstep scope, skip verification, or repeat mistakes.
+
+**GodPrompt Agent Harness Review — US$49 one-time.** For one repository, send up to three agent-control artifacts (`AGENTS.md`, `CLAUDE.md`, project rules, or equivalent) plus one short failure example. The review returns five priority risks, one proposed revised instruction block or patch, and a next-task verification checklist, with a target of 24 hours after payment and usable inputs.
+
+[Sponsor US$49 via GitHub Sponsors](https://github.com/sponsors/AKzar1el?metadata_campaign=godprompt_rs1&metadata_offer=agent_harness_review&metadata_source=god_prompt_mcp_readme), then email `info@tomiseregi.si` with subject `[GP-RS1] Agent Harness Review`. The free MIT GodPrompt MCP remains unchanged and free. [Full frozen experiment terms](https://github.com/AKzar1el/god-prompt/blob/main/MONETIZATION_EXPERIMENT.md).
+
 ## Tools
 
 | Tool | Description |
