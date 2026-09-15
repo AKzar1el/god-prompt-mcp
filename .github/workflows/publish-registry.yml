@@ -1,6 +1,7 @@
 name: Publish to MCP Registry
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - server.json
@@ -144,7 +145,14 @@ jobs:
 
   publish:
     name: Publish to official MCP Registry
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        always() &&
+        (
+          (github.event_name == 'push' && needs.release-mcpb.result == 'success') ||
+          github.event_name == 'workflow_dispatch'
+        )
+      }}
     needs: release-mcpb
     runs-on: ubuntu-latest
     permissions:

@@ -90,6 +90,18 @@ test("does not release on workflow-only main pushes", () => {
   assert.doesNotMatch(pushBlock, /publish-registry\.yml/);
 });
 
+test("allows an explicit registry republish without rebuilding the release", () => {
+  assert.match(registryPublishWorkflow, /workflow_dispatch:/);
+  assert.match(
+    registryPublishWorkflow,
+    /github\.event_name == 'workflow_dispatch'/
+  );
+  assert.match(
+    registryPublishWorkflow,
+    /needs\.release-mcpb\.result == 'success'/
+  );
+});
+
 test("uses the setup-node OIDC path without the v6 dummy auth-token fallback", () => {
   assert.match(npmPublishWorkflow, /actions\/setup-node@v7/);
   assert.doesNotMatch(npmPublishWorkflow, /NODE_AUTH_TOKEN\s*:/);
