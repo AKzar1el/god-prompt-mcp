@@ -4,7 +4,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server for [G
 
 ## Agent Harness Review — US$49
 
-For the operator-authorized `GP-RS1` window through **2026-09-21 15:15 Europe/Ljubljana**, GodPrompt offers one bounded paid service for developers and small teams whose coding agents lose context, overstep scope, skip verification, or repeat mistakes.
+Under the active `GP-RS1` standing mission, GodPrompt offers one bounded paid service for developers and small teams whose coding agents lose context, overstep scope, skip verification, or repeat mistakes. The mission has no automatic terminal date; it continues until Tomi explicitly pauses or stops it, or replaces it with a project-specific goal or kill criterion.
 
 **GodPrompt Agent Harness Review — US$49 one-time.** For one repository, send up to three agent-control artifacts (`AGENTS.md`, `CLAUDE.md`, project rules, or equivalent) plus one short failure example. The review returns five priority risks, one proposed revised instruction block or patch, and a next-task verification checklist, with a target of 24 hours after payment and usable inputs.
 
