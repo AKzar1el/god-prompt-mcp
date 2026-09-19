@@ -58,6 +58,22 @@ GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-
 
 Kiro launches the published npm package through `npx`. Node.js 20+ is required.
 
+### Visual Studio Code
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_GodPrompt_MCP-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect?url=vscode:mcp/install?%7B%22name%22%3A%22god-prompt-mcp%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22god-prompt-mcp%22%5D%7D)
+
+VS Code installs the local stdio server through the published npm package. Node.js 20+ is required; no API key is needed.
+
+### OpenAI Codex
+
+GodPrompt's standards-compatible Agent Skill can be installed directly from this repository with Codex's built-in `$skill-installer`:
+
+```text
+$skill-installer install https://github.com/AKzar1el/god-prompt-mcp/tree/main/skills/god-prompt
+```
+
+After installation, Codex can load the `god-prompt` skill from its normal skill discovery path. The MCP server remains separately available through `npx -y god-prompt-mcp`.
+
 ### Cursor
 
 The repository includes a native Cursor plugin manifest plus a portable Agent Plugins 1.0 manifest. Cursor Marketplace can use `.cursor-plugin/plugin.json` with `cursor-mcp.json`; Agent Plugins-compatible clients can use root `plugin.json` with `mcp.json`. Both launch the same local stdio server through `npx -y god-prompt-mcp`.
