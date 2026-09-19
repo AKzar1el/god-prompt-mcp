@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.12",
+  version: "1.0.13",
 } as const;
 
 // Version 1.0.0 was generated before the source layout moved from core/* to
@@ -72,6 +72,11 @@ const TASK_TYPES = {
 
 type TaskType = keyof typeof TASK_TYPES;
 
+function hasTrigger(text: string, trigger: string): boolean {
+  const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-z0-9])${escaped}($|[^a-z0-9])`).test(text);
+}
+
 function classifyTask(description: string): {
   type: TaskType;
   confidence: number;
@@ -82,7 +87,7 @@ function classifyTask(description: string): {
   const scores: Partial<Record<TaskType, number>> = {};
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
-    const matches = info.triggers.filter((t) => lower.includes(t));
+    const matches = info.triggers.filter((trigger) => hasTrigger(lower, trigger));
     if (matches.length > 0) {
       scores[type as TaskType] = matches.length;
     }
