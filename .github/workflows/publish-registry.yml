@@ -130,7 +130,15 @@ jobs:
           TAG="v${VERSION}"
           ASSET="god-prompt-mcp-${VERSION}.mcpb"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --clobber
+            IS_IMMUTABLE="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isImmutable --jq '.isImmutable')"
+            if [ "$IS_IMMUTABLE" = "true" ]; then
+              EXPECTED_SHA="$(node -p "require('./server.json').packages[0].fileSha256")"
+              gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ASSET" --dir "$RUNNER_TEMP"
+              RELEASE_SHA="$(sha256sum "$RUNNER_TEMP/$ASSET" | cut -d' ' -f1)"
+              test "$RELEASE_SHA" = "$EXPECTED_SHA"
+            else
+              gh release upload "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --clobber
+            fi
           else
             gh release create "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes "GodPrompt MCP ${VERSION}: Claude Desktop/MCPB metadata and compatibility release."
           fi
