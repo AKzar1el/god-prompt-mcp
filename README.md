@@ -74,6 +74,16 @@ $skill-installer install https://github.com/AKzar1el/god-prompt-mcp/tree/main/sk
 
 After installation, Codex can load the `god-prompt` skill from its normal skill discovery path. The MCP server remains separately available through `npx -y god-prompt-mcp`.
 
+### GitHub CLI Agent Skills (preview)
+
+GitHub CLI 2.100+ can install the same portable Agent Skill directly into supported coding agents without cloning the repository:
+
+```bash
+gh skill install AKzar1el/god-prompt-mcp skills/god-prompt --agent codex --scope user
+```
+
+Replace `codex` with another supported host such as `github-copilot`, `claude-code`, or `cursor`. The explicit `skills/god-prompt` path intentionally selects the portable skill rather than another distribution-specific package in this repository.
+
 ### Cursor
 
 The repository includes a native Cursor plugin manifest plus a portable Agent Plugins 1.0 manifest. Cursor Marketplace can use `.cursor-plugin/plugin.json` with `cursor-mcp.json`; Agent Plugins-compatible clients can use root `plugin.json` with `mcp.json`. Both launch the same local stdio server through `npx -y god-prompt-mcp`.
