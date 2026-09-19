@@ -8,6 +8,9 @@ const packageJson = JSON.parse(
 const serverJson = JSON.parse(
   await readFile(new URL("../server.json", import.meta.url), "utf8")
 );
+const mcpbManifest = JSON.parse(
+  await readFile(new URL("../manifest.json", import.meta.url), "utf8")
+);
 const stdioSource = await readFile(
   new URL("../src/stdio.ts", import.meta.url),
   "utf8"
@@ -91,6 +94,8 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
   assert.equal(agentPlugin.version, packageJson.version);
   assert.equal(cursorPlugin.version, packageJson.version);
   assert.equal(claudePlugin.version, packageJson.version);
+  assert.equal(mcpbManifest.version, packageJson.version);
+  assert.equal(serverJson.version, packageJson.version);
   assert.deepEqual(agentMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
   assert.deepEqual(claudeMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
   assert.deepEqual(cursorMcp.mcpServers?.["god-prompt-mcp"], {
