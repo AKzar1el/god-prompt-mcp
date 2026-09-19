@@ -27,6 +27,10 @@ const llmsInstall = await readFile(
   new URL("../llms-install.md", import.meta.url),
   "utf8"
 );
+const mcpbIgnore = await readFile(
+  new URL("../.mcpbignore", import.meta.url),
+  "utf8"
+);
 const buildTsconfig = JSON.parse(
   await readFile(new URL("../tsconfig.build.json", import.meta.url), "utf8")
 );
@@ -117,6 +121,7 @@ test("keeps the public Node runtime on maintained LTS lines", () => {
   assert.doesNotMatch(registryPublishWorkflow, /node-version:\s*20/);
   assert.match(llmsInstall, /Node\.js 22 or newer/);
   assert.doesNotMatch(llmsInstall, /Node\.js 20 or newer/);
+  assert.match(mcpbIgnore, /^SECURITY\.md$/m);
 });
 
 test("pins cross-platform bundle inputs to LF line endings", () => {

@@ -14,3 +14,4 @@ server.json
 package-lock.json
 dist/index.js
 *.mcpb
+SECURITY.md
