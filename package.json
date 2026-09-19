@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "mcpName": "io.github.AKzar1el/god-prompt-mcp",
   "description": "MCP server for GodPrompt — the universal AI software development system prompt",
   "private": false,
@@ -41,7 +41,7 @@
     "software-engineering"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "publishConfig": {
     "access": "public",

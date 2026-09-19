@@ -30,6 +30,14 @@ const npmPublishWorkflow = await readFile(
   new URL("../.github/workflows/publish-npm.yml", import.meta.url),
   "utf8"
 );
+const ciWorkflow = await readFile(
+  new URL("../.github/workflows/ci.yml", import.meta.url),
+  "utf8"
+);
+const mcpbPublishWorkflow = await readFile(
+  new URL("../.github/workflows/publish-mcpb.yml", import.meta.url),
+  "utf8"
+);
 const registryPublishWorkflow = await readFile(
   new URL("../.github/workflows/publish-registry.yml", import.meta.url),
   "utf8"
@@ -93,6 +101,16 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
 test("keeps the Worker-only Agents SDK out of npm runtime dependencies", () => {
   assert.equal(packageJson.dependencies?.agents, undefined);
   assert.equal(packageJson.devDependencies?.agents, "^0.0.98");
+});
+
+test("keeps the public Node runtime on maintained LTS lines", () => {
+  assert.equal(packageJson.engines?.node, ">=22");
+  assert.equal(mcpbManifest.compatibility?.runtimes?.node, packageJson.engines.node);
+  assert.match(ciWorkflow, /node-version: \["22", "24"\]/);
+  assert.doesNotMatch(ciWorkflow, /node-version:\s*["']?20/);
+  assert.match(mcpbPublishWorkflow, /node-version:\s*22/);
+  assert.doesNotMatch(mcpbPublishWorkflow, /node-version:\s*20/);
+  assert.doesNotMatch(registryPublishWorkflow, /node-version:\s*20/);
 });
 
 test("pins cross-platform bundle inputs to LF line endings", () => {
