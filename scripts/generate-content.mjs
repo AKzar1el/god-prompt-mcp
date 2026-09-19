@@ -9,7 +9,7 @@
  * If no path is provided, defaults to ../god-prompt (sibling directory).
  */
 
-import { readFileSync, writeFileSync } from "fs";
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
 
 const repoPath = resolve(process.argv[2] || join(import.meta.dirname, "../../god-prompt"));
@@ -21,6 +21,13 @@ const files = {
   GATES: "references/02-GATES.md",
   ANTI_PATTERNS: "references/03-ANTI-PATTERNS.md",
 };
+
+const skillFiles = [
+  ["SKILL.md", "SKILL.md"],
+  ["references/01-PROTOCOLS.md", "references/01-PROTOCOLS.md"],
+  ["references/02-GATES.md", "references/02-GATES.md"],
+  ["references/03-ANTI-PATTERNS.md", "references/03-ANTI-PATTERNS.md"],
+];
 
 console.log(`Reading from: ${repoPath}`);
 
@@ -44,3 +51,10 @@ output += `export const VERSION = "${version}";\n`;
 const outPath = join(import.meta.dirname, "../src/content.ts");
 writeFileSync(outPath, output);
 console.log(`\nWrote ${outPath} (${output.length} bytes)`);
+
+const skillDir = join(import.meta.dirname, "../skills/god-prompt");
+mkdirSync(join(skillDir, "references"), { recursive: true });
+for (const [source, destination] of skillFiles) {
+  copyFileSync(join(repoPath, source), join(skillDir, destination));
+}
+console.log(`Synced Agent Skill to ${skillDir}`);
