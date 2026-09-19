@@ -46,7 +46,7 @@ The MCP server does not run the benchmark or claim model-level superiority itsel
 npx -y god-prompt-mcp
 ```
 
-The public npm package runs the local stdio server directly. It requires Node.js 20+ and no API key or account.
+The public npm package runs the local stdio server directly. It requires Node.js 22+ and no API key or account.
 
 ### Glama
 
@@ -56,13 +56,13 @@ GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-
 
 [![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=god-prompt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22god-prompt-mcp%22%5D%2C%22disabled%22%3Afalse%2C%22autoApprove%22%3A%5B%5D%7D)
 
-Kiro launches the published npm package through `npx`. Node.js 20+ is required.
+Kiro launches the published npm package through `npx`. Node.js 22+ is required.
 
 ### Visual Studio Code
 
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_GodPrompt_MCP-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect?url=vscode:mcp/install?%7B%22name%22%3A%22god-prompt-mcp%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22god-prompt-mcp%22%5D%7D)
 
-VS Code installs the local stdio server through the published npm package. Node.js 20+ is required; no API key is needed.
+VS Code installs the local stdio server through the published npm package. Node.js 22+ is required; no API key is needed.
 
 ### OpenAI Codex
 
