@@ -23,6 +23,10 @@ const gitAttributes = await readFile(
   new URL("../.gitattributes", import.meta.url),
   "utf8"
 ).catch(() => "");
+const llmsInstall = await readFile(
+  new URL("../llms-install.md", import.meta.url),
+  "utf8"
+);
 const buildTsconfig = JSON.parse(
   await readFile(new URL("../tsconfig.build.json", import.meta.url), "utf8")
 );
@@ -111,6 +115,8 @@ test("keeps the public Node runtime on maintained LTS lines", () => {
   assert.match(mcpbPublishWorkflow, /node-version:\s*22/);
   assert.doesNotMatch(mcpbPublishWorkflow, /node-version:\s*20/);
   assert.doesNotMatch(registryPublishWorkflow, /node-version:\s*20/);
+  assert.match(llmsInstall, /Node\.js 22 or newer/);
+  assert.doesNotMatch(llmsInstall, /Node\.js 20 or newer/);
 });
 
 test("pins cross-platform bundle inputs to LF line endings", () => {

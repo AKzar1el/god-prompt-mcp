@@ -4,7 +4,7 @@ This file is for AI agents such as Cline installing the **local stdio** GodPromp
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 22 or newer
 - `npm` / `npx`
 - Internet access for the initial npm package install
 
