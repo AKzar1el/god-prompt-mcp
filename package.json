@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "mcpName": "io.github.AKzar1el/god-prompt-mcp",
   "description": "MCP server for GodPrompt — the universal AI software development system prompt",
   "private": false,
@@ -58,7 +58,7 @@
     "generate-content": "node scripts/generate-content.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.29.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
