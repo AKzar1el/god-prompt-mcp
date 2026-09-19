@@ -60,7 +60,15 @@ Kiro launches the published npm package through `npx`. Node.js 20+ is required.
 
 ### Cursor
 
-The repository includes a Cursor plugin manifest and `mcp.json` for Marketplace or local plugin installation. Cursor runs the same local stdio server through `npx -y god-prompt-mcp`.
+The repository includes a native Cursor plugin manifest plus a portable Agent Plugins 1.0 manifest. Cursor Marketplace can use `.cursor-plugin/plugin.json` with `cursor-mcp.json`; Agent Plugins-compatible clients can use root `plugin.json` with `mcp.json`. Both launch the same local stdio server through `npx -y god-prompt-mcp`.
+
+### GitHub Copilot
+
+GitHub Copilot CLI supports the portable Agent Plugins 1.0 package at the repository root. Install it directly from GitHub with `copilot plugin install AKzar1el/god-prompt-mcp`.
+
+### Claude Code
+
+The repository also includes `.claude-plugin/plugin.json` and `.mcp.json`, so the same MCP server can be validated and submitted as a Claude Code community plugin without a separate implementation.
 
 ### Claude Desktop extension
 

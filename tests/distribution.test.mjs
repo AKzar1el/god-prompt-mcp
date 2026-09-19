@@ -8,6 +8,9 @@ const packageJson = JSON.parse(
 const serverJson = JSON.parse(
   await readFile(new URL("../server.json", import.meta.url), "utf8")
 );
+const mcpbManifest = JSON.parse(
+  await readFile(new URL("../manifest.json", import.meta.url), "utf8")
+);
 const stdioSource = await readFile(
   new URL("../src/stdio.ts", import.meta.url),
   "utf8"
@@ -33,6 +36,24 @@ const registryPublishWorkflow = await readFile(
 );
 const wranglerConfig = JSON.parse(
   await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8")
+);
+const agentPlugin = JSON.parse(
+  await readFile(new URL("../plugin.json", import.meta.url), "utf8")
+);
+const agentMcp = JSON.parse(
+  await readFile(new URL("../mcp.json", import.meta.url), "utf8")
+);
+const cursorPlugin = JSON.parse(
+  await readFile(new URL("../.cursor-plugin/plugin.json", import.meta.url), "utf8")
+);
+const cursorMcp = JSON.parse(
+  await readFile(new URL("../cursor-mcp.json", import.meta.url), "utf8")
+);
+const claudePlugin = JSON.parse(
+  await readFile(new URL("../.claude-plugin/plugin.json", import.meta.url), "utf8")
+);
+const claudeMcp = JSON.parse(
+  await readFile(new URL("../.mcp.json", import.meta.url), "utf8")
 );
 
 test("exposes a public npm-installable stdio binary with a bounded package surface", () => {
@@ -61,6 +82,27 @@ test("keeps the Worker-only Agents SDK out of npm runtime dependencies", () => {
 test("pins cross-platform bundle inputs to LF line endings", () => {
   assert.match(gitAttributes, /^\* text=auto eol=lf$/m);
   assert.equal(buildTsconfig.compilerOptions?.newLine, "lf");
+});
+
+test("keeps agent-platform plugin manifests aligned with the public npm package", () => {
+  const expectedServer = {
+    type: "stdio",
+    command: "npx",
+    args: ["-y", "god-prompt-mcp"],
+  };
+
+  assert.equal(agentPlugin.version, packageJson.version);
+  assert.equal(cursorPlugin.version, packageJson.version);
+  assert.equal(claudePlugin.version, packageJson.version);
+  assert.equal(mcpbManifest.version, packageJson.version);
+  assert.equal(serverJson.version, packageJson.version);
+  assert.deepEqual(agentMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
+  assert.deepEqual(claudeMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
+  assert.deepEqual(cursorMcp.mcpServers?.["god-prompt-mcp"], {
+    command: "npx",
+    args: ["-y", "god-prompt-mcp"],
+  });
+  assert.equal(cursorPlugin.mcpServers, "cursor-mcp.json");
 });
 
 test("dispatches npm publishing explicitly from the registry release workflow", () => {

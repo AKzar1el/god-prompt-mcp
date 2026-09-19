@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "god-prompt-mcp",
+  "version": "1.0.7",
+  "description": "GodPrompt engineering workflows for task routing, TDD, debugging, verification, and progressive disclosure through MCP.",
+  "author": {
+    "name": "Tomi Šeregi"
+  },
+  "homepage": "https://tomiseregi.si/projects/god-prompt",
+  "repository": "https://github.com/AKzar1el/god-prompt-mcp",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "software-engineering",
+    "tdd",
+    "debugging",
+    "verification",
+    "coding-assistant"
+  ]
+}

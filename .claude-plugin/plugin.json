@@ -1,0 +1,11 @@
+{
+  "name": "god-prompt-mcp",
+  "description": "GodPrompt engineering workflows for task routing, TDD, debugging, verification, and progressive disclosure through MCP.",
+  "version": "1.0.7",
+  "author": {
+    "name": "Tomi Šeregi"
+  },
+  "homepage": "https://tomiseregi.si/projects/god-prompt",
+  "repository": "https://github.com/AKzar1el/god-prompt-mcp",
+  "license": "MIT"
+}
