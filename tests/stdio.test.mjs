@@ -149,7 +149,14 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.doesNotMatch(coreText, /core\/02-GATES\.md/);
   assert.doesNotMatch(coreText, /core\/03-ANTI-PATTERNS\.md/);
 
-  const versionResult = await request(child, pending, 4, "tools/call", {
+  const planClassification = await request(child, pending, 4, "tools/call", {
+    name: "classify_task",
+    arguments: { description: "Plan the project rollout" },
+  });
+  const planResult = JSON.parse(toolText(planClassification));
+  assert.equal(planResult.task_type, "PLAN");
+
+  const versionResult = await request(child, pending, 5, "tools/call", {
     name: "get_version",
     arguments: {},
   });
