@@ -132,6 +132,11 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(tool.annotations?.destructiveHint, false, `${tool.name} must be non-destructive`);
   }
 
+  const coreTool = listed.tools.find((tool) => tool.name === "get_core_skill");
+  assert.ok(coreTool, "get_core_skill must be listed");
+  assert.match(coreTool.description, /start of a task|context reset/i);
+  assert.doesNotMatch(coreTool.description, /loaded on every message/i);
+
   const core = await request(child, pending, 3, "tools/call", {
     name: "get_core_skill",
     arguments: {},
