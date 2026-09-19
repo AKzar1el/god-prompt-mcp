@@ -55,6 +55,22 @@ const claudePlugin = JSON.parse(
 const claudeMcp = JSON.parse(
   await readFile(new URL("../.mcp.json", import.meta.url), "utf8")
 );
+const agentSkill = await readFile(
+  new URL("../skills/god-prompt/SKILL.md", import.meta.url),
+  "utf8"
+);
+const agentSkillProtocols = await readFile(
+  new URL("../skills/god-prompt/references/01-PROTOCOLS.md", import.meta.url),
+  "utf8"
+);
+const agentSkillGates = await readFile(
+  new URL("../skills/god-prompt/references/02-GATES.md", import.meta.url),
+  "utf8"
+);
+const agentSkillAntiPatterns = await readFile(
+  new URL("../skills/god-prompt/references/03-ANTI-PATTERNS.md", import.meta.url),
+  "utf8"
+);
 
 test("exposes a public npm-installable stdio binary with a bounded package surface", () => {
   assert.equal(packageJson.private, false);
@@ -103,6 +119,16 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
     args: ["-y", "god-prompt-mcp"],
   });
   assert.equal(cursorPlugin.mcpServers, "cursor-mcp.json");
+});
+
+test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", () => {
+  assert.match(agentSkill, /^---\r?\nname: god-prompt\r?\n/m);
+  assert.match(agentSkill, /references\/01-PROTOCOLS\.md/);
+  assert.match(agentSkill, /references\/02-GATES\.md/);
+  assert.match(agentSkill, /references\/03-ANTI-PATTERNS\.md/);
+  assert.match(agentSkillProtocols, /# .*Protocol/i);
+  assert.match(agentSkillGates, /# .*Gate/i);
+  assert.match(agentSkillAntiPatterns, /# .*Anti-Pattern/i);
 });
 
 test("dispatches npm publishing explicitly from the registry release workflow", () => {
