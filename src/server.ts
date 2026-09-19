@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.11",
+  version: "1.0.12",
 } as const;
 
 // Version 1.0.0 was generated before the source layout moved from core/* to
@@ -132,7 +132,7 @@ export function registerGodPromptTools(server: McpServer): void {
     "get_core_skill",
     {
       title: "Get core GodPrompt skill",
-      description: `Returns SKILL.md — the core protocol that should be loaded on every message. This is the lean base context (~${Math.round(CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Start here for progressive disclosure.`,
+      description: `Returns SKILL.md — the lean core protocol (~${Math.round(CORE_SKILL.length / 1024)}KB) covering the universal 6-phase protocol, Three Iron Laws, and task auto-classification. Load it at the start of a task or after a context reset, then reuse that context instead of reloading it on every message. Start here for progressive disclosure.`,
       annotations: READ_ONLY_ANNOTATIONS,
     },
     async () => ({
