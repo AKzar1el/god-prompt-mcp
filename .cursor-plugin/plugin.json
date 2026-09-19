@@ -26,5 +26,5 @@
     "verification",
     "agent-workflows"
   ],
-  "mcpServers": "mcp.json"
+  "mcpServers": "cursor-mcp.json"
 }
