@@ -3,6 +3,7 @@
 src/
 tests/
 scripts/
+distribution/
 tsconfig.json
 tsconfig.build.json
 worker-configuration.d.ts

@@ -12,6 +12,7 @@ const skill = await readFile(
 const reviewTests = JSON.parse(
   await readFile(new URL("../distribution/openai/review-tests.json", import.meta.url), "utf8")
 );
+const mcpbIgnore = await readFile(new URL("../.mcpbignore", import.meta.url), "utf8");
 
 test("keeps the OpenAI review package portable and skill-only", () => {
   assert.equal(plugin.$schema, "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json");
@@ -21,6 +22,7 @@ test("keeps the OpenAI review package portable and skill-only", () => {
   assert.equal(plugin.repository, "https://github.com/AKzar1el/god-prompt-mcp");
   assert.equal(plugin.extensions, undefined);
   assert.match(skill, /^---\r?\nname: god-prompt\r?\n/m);
+  assert.match(mcpbIgnore, /^distribution\/$/m);
 });
 
 test("uses a scoped trigger instead of the universal internal trigger contract", () => {
