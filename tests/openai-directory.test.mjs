@@ -5,6 +5,9 @@ import { readFile } from "node:fs/promises";
 const plugin = JSON.parse(
   await readFile(new URL("../distribution/openai/plugin.json", import.meta.url), "utf8")
 );
+const packageJson = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8")
+);
 const skill = await readFile(
   new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url),
   "utf8"
@@ -17,7 +20,7 @@ const mcpbIgnore = await readFile(new URL("../.mcpbignore", import.meta.url), "u
 test("keeps the OpenAI review package portable and skill-only", () => {
   assert.equal(plugin.$schema, "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json");
   assert.equal(plugin.name, "god-prompt");
-  assert.equal(plugin.version, "1.0.9");
+  assert.equal(plugin.version, packageJson.version);
   assert.equal(plugin.license, "MIT");
   assert.equal(plugin.repository, "https://github.com/AKzar1el/god-prompt-mcp");
   assert.equal(plugin.extensions, undefined);
