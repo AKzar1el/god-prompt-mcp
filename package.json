@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "mcpName": "io.github.AKzar1el/god-prompt-mcp",
   "description": "MCP server for GodPrompt — the universal AI software development system prompt",
   "private": false,
@@ -21,6 +21,10 @@
     "url": "git+https://github.com/AKzar1el/god-prompt-mcp.git"
   },
   "homepage": "https://tomiseregi.si/projects/god-prompt",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/AKzar1el/sponsorships?tier_id=657478&metadata_campaign=godprompt_rs1&metadata_offer=agent_harness_review&metadata_source=npm"
+  },
   "bugs": {
     "url": "https://github.com/AKzar1el/god-prompt-mcp/issues"
   },
