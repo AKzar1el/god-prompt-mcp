@@ -118,6 +118,15 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent code
 
 Replace `codex` with another supported agent when needed. The current CLI discovers the repository's portable `god-prompt` skill directly and installs `SKILL.md` plus its referenced protocol files; the MCP server remains separately available through `npx -y god-prompt-mcp`.
 
+### JetBrains AI Assistant
+
+JetBrains AI Assistant 2026.2 can use GodPrompt through both supported agent surfaces:
+
+- **Agent Skill:** in **Settings → Tools → AI Assistant → Skills**, open **Manage External Registries** and add `https://github.com/AKzar1el/god-prompt-mcp`. The existing `skills/god-prompt` package can then be installed for supported skill-aware agents such as Codex or Claude Agent.
+- **MCP tools:** in **Settings → Tools → AI Assistant → Model Context Protocol (MCP)**, add a stdio server with command `npx` and arguments `-y`, `god-prompt-mcp`. Enable **Pass custom MCP servers** for the coding agent that should receive GodPrompt's progressive-disclosure tools.
+
+The Agent Skill supplies the reusable workflow; the MCP server supplies GodPrompt's callable tools. Node.js 22+ is required for the MCP server.
+
 ### Cursor
 
 The repository includes a native Cursor plugin manifest plus a portable Agent Plugins 1.0 manifest. Cursor Marketplace can use `.cursor-plugin/plugin.json` with `cursor-mcp.json`; Agent Plugins-compatible clients can use root `plugin.json` with `mcp.json`. Both launch the same local stdio server through `npx -y god-prompt-mcp`.
