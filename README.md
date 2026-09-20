@@ -70,6 +70,14 @@ Both paths ultimately launch the published npm package through `npx`. Node.js 22
 
 ### Visual Studio Code
 
+VS Code can use GodPrompt as both a portable Agent Skill and a local MCP server. Install the skill at user scope so VS Code discovers it from `~/.copilot/skills`:
+
+```bash
+gh skill install AKzar1el/god-prompt-mcp skills/god-prompt --agent github-copilot --scope user
+```
+
+Then add the MCP server for the callable tools:
+
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_GodPrompt_MCP-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect?url=vscode:mcp/install?%7B%22name%22%3A%22god-prompt-mcp%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22god-prompt-mcp%22%5D%7D)
 
 VS Code installs the local stdio server through the published npm package. Node.js 22+ is required; no API key is needed.
