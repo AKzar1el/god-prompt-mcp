@@ -66,13 +66,21 @@ VS Code installs the local stdio server through the published npm package. Node.
 
 ### OpenAI Codex
 
-GodPrompt's standards-compatible Agent Skill can be installed directly from this repository with Codex's built-in `$skill-installer`:
+GodPrompt can be used in Codex as either a portable Agent Skill or a native local MCP server.
+
+Install the standards-compatible Agent Skill directly from this repository with Codex's built-in `$skill-installer`:
 
 ```text
 $skill-installer install https://github.com/AKzar1el/god-prompt-mcp/tree/main/skills/god-prompt
 ```
 
-After installation, Codex can load the `god-prompt` skill from its normal skill discovery path. The MCP server remains separately available through `npx -y god-prompt-mcp`.
+Or register the published stdio server with Codex's native MCP CLI:
+
+```bash
+codex mcp add god-prompt -- npx -y god-prompt-mcp
+```
+
+Run `codex mcp list` to verify the registration. The Agent Skill gives Codex the reusable workflow directly; MCP adds GodPrompt's progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
 ### GitHub CLI Agent Skills (preview)
 
