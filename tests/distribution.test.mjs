@@ -171,6 +171,13 @@ test("dispatches npm publishing explicitly from the registry release workflow", 
   assert.match(npmPublishWorkflow, /already published; skipping/);
 });
 
+test("uses generated release notes instead of a generic compatibility template", () => {
+  assert.match(registryPublishWorkflow, /gh release create[^\n]*--generate-notes/);
+  assert.doesNotMatch(
+    registryPublishWorkflow,
+    /Claude Desktop\/MCPB metadata and compatibility release/
+  );
+});
 test("does not release on workflow-only main pushes", () => {
   const pushBlock = registryPublishWorkflow.match(/\n  push:\n([\s\S]*?)\n\npermissions:/)?.[1] ?? "";
   assert.match(pushBlock, /server\.json/);
