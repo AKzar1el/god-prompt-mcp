@@ -54,6 +54,9 @@ const agentMcp = JSON.parse(
 const copilotMarketplace = JSON.parse(
   await readFile(new URL("../.github/plugin/marketplace.json", import.meta.url), "utf8")
 );
+const gitlabMarketplace = JSON.parse(
+  await readFile(new URL("../marketplace.json", import.meta.url), "utf8")
+);
 const cursorPlugin = JSON.parse(
   await readFile(new URL("../.cursor-plugin/plugin.json", import.meta.url), "utf8")
 );
@@ -172,6 +175,18 @@ test("keeps the GitHub Copilot marketplace aligned with the portable plugin", ()
       description: agentPlugin.description,
       version: packageJson.version,
       source: ".",
+    },
+  ]);
+});
+
+test("keeps the GitLab Duo marketplace aligned with the portable plugin", () => {
+  assert.equal(gitlabMarketplace.name, "god-prompt");
+  assert.deepEqual(gitlabMarketplace.plugins, [
+    {
+      name: agentPlugin.name,
+      description: agentPlugin.description,
+      version: packageJson.version,
+      source: "./",
     },
   ]);
 });
