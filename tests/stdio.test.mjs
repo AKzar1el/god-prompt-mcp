@@ -167,5 +167,34 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.ok(version.files["references/03-ANTI-PATTERNS.md"]);
   assert.equal(version.files["core/00-THE-SKILL.md"], undefined);
 
+  const { default: worker } = await import(`../dist/index.js?smoke=${Date.now()}`);
+  const workerInitialize = new Request("https://example.test/mcp", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 10,
+      method: "initialize",
+      params: {
+        protocolVersion: "2025-03-26",
+        capabilities: {},
+        clientInfo: { name: "god-prompt-worker-test", version: "1.0.0" },
+      },
+    }),
+  });
+  const workerResponse = await worker.fetch(workerInitialize, {}, {});
+  assert.equal(workerResponse.status, 200);
+  assert.match(await workerResponse.text(), /god-prompt-mcp/);
+
+  const wrongPathResponse = await worker.fetch(
+    new Request("https://example.test/not-mcp", { method: "GET" }),
+    {},
+    {}
+  );
+  assert.equal(wrongPathResponse.status, 404);
+
   assert.equal(protocolError, null, `Non-JSON output on stdout: ${protocolError}`);
 });
