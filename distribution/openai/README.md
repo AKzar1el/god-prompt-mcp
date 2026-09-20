@@ -10,5 +10,10 @@ authentication is available. `review-tests.json` contains the five positive and 
 negative cases required for review preparation. Actual public submission remains a human
 portal action and is not performed by repository automation.
 
+The directory also includes `.codex-plugin/plugin.json` as the compatibility manifest used
+by current OpenAI Agents API plugin loading. It points only at the same scoped `skills/`
+package, so API use does not broaden the Plugin Directory trigger contract or add an MCP
+runtime dependency.
+
 Before submission, re-check the current OpenAI Plugin Directory documentation and confirm
 the portal still accepts a skill-only plugin with the same test fields and review policy.

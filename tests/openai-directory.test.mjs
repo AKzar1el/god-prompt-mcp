@@ -5,6 +5,12 @@ import { readFile } from "node:fs/promises";
 const plugin = JSON.parse(
   await readFile(new URL("../distribution/openai/plugin.json", import.meta.url), "utf8")
 );
+const codexPlugin = JSON.parse(
+  await readFile(
+    new URL("../distribution/openai/.codex-plugin/plugin.json", import.meta.url),
+    "utf8"
+  )
+);
 const packageJson = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8")
 );
@@ -26,6 +32,14 @@ test("keeps the OpenAI review package portable and skill-only", () => {
   assert.equal(plugin.extensions, undefined);
   assert.match(skill, /^---\r?\nname: god-prompt\r?\n/m);
   assert.match(mcpbIgnore, /^distribution\/$/m);
+});
+
+test("keeps the scoped package compatible with OpenAI Agents API plugin loading", () => {
+  assert.equal(codexPlugin.name, plugin.name);
+  assert.equal(codexPlugin.version, packageJson.version);
+  assert.equal(codexPlugin.description, plugin.description);
+  assert.equal(codexPlugin.skills, "./skills/");
+  assert.equal(codexPlugin.mcpServers, undefined);
 });
 
 test("uses a scoped trigger instead of the universal internal trigger contract", () => {
