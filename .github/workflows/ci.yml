@@ -28,3 +28,7 @@ jobs:
 
       - name: Test stdio MCP
         run: npm test
+
+      - name: Verify modern stdio with MCP Inspector
+        if: matrix.node-version == '24'
+        run: npx -y @modelcontextprotocol/inspector@2.7.0 --cli node dist/stdio.js --protocol-era modern --method tools/list --format json
