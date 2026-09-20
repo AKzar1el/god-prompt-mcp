@@ -118,6 +118,40 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent code
 
 Replace `codex` with another supported agent when needed. The current CLI discovers the repository's portable `god-prompt` skill directly and installs `SKILL.md` plus its referenced protocol files; the MCP server remains separately available through `npx -y god-prompt-mcp`.
 
+### Zed
+
+Zed can use GodPrompt as both a native Agent Skill and a local MCP context server. Install the complete portable skill, including its referenced protocol files, with:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent zed --copy -y
+```
+
+For MCP tools, open **Settings → AI → MCP Servers → Add Server → Add Local Server**, set the command to `npx`, and pass `-y` and `god-prompt-mcp` as arguments. Zed loads project skills from `.agents/skills/` and can forward configured MCP servers to supported external agents. Node.js 22+ is required for the MCP server.
+
+### OpenCode
+
+OpenCode natively discovers Agent Skills from `.agents/skills/` and supports local MCP servers. Install the same portable GodPrompt skill with:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent opencode --copy -y
+```
+
+To expose GodPrompt's MCP tools as well, add a local server to `opencode.json` or `opencode.jsonc`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "god-prompt": {
+      "type": "local",
+      "command": ["npx", "-y", "god-prompt-mcp"]
+    }
+  }
+}
+```
+
+The Agent Skill provides the reusable workflow; MCP adds the seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+
 ### JetBrains AI Assistant
 
 JetBrains AI Assistant 2026.2 can use GodPrompt through both supported agent surfaces:
