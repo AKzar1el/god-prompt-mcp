@@ -54,9 +54,19 @@ GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-
 
 ### Kiro
 
+Install this repository as a native **Kiro Power** to get the portable GodPrompt Agent Skill and MCP server together. In Kiro, open **Powers → Add Custom Power → Import power from GitHub**, enter:
+
+```text
+https://github.com/AKzar1el/god-prompt-mcp
+```
+
+Kiro reads the repository's Agent Plugins 1.0 `plugin.json`, `skills/`, and `mcp.json`; the bundled MCP server activates with the Power instead of requiring a separate user-level MCP entry.
+
+If you only want the MCP server, use the direct install button:
+
 [![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=god-prompt-mcp&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22god-prompt-mcp%22%5D%2C%22disabled%22%3Afalse%2C%22autoApprove%22%3A%5B%5D%7D)
 
-Kiro launches the published npm package through `npx`. Node.js 22+ is required.
+Both paths ultimately launch the published npm package through `npx`. Node.js 22+ is required for the MCP server.
 
 ### Visual Studio Code
 
