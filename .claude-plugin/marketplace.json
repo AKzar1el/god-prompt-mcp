@@ -1,0 +1,14 @@
+{
+  "name": "god-prompt",
+  "owner": {
+    "name": "GodPrompt"
+  },
+  "plugins": [
+    {
+      "name": "god-prompt-mcp",
+      "description": "GodPrompt engineering workflows for task routing, TDD, debugging, verification, and progressive disclosure through MCP.",
+      "version": "1.0.15",
+      "source": "./"
+    }
+  ]
+}
