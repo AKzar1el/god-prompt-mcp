@@ -138,7 +138,7 @@ jobs:
               gh release upload "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --clobber
             fi
           else
-            gh release create "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes "GodPrompt MCP ${VERSION}: Claude Desktop/MCPB metadata and compatibility release."
+            gh release create "$TAG" "$ASSET" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
           fi
 
       - name: Dispatch npm publication after bootstrap
