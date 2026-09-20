@@ -198,3 +198,94 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
 
   assert.equal(protocolError, null, `Non-JSON output on stdout: ${protocolError}`);
 });
+
+test("serves the MCP 2026-07-28 era over stdio", async (t) => {
+  const build = spawnSync("npm", ["run", "build"], {
+    encoding: "utf8",
+    shell: process.platform === "win32",
+  });
+
+  assert.equal(
+    build.status,
+    0,
+    `npm run build failed\nstdout:\n${build.stdout}\nstderr:\n${build.stderr}`
+  );
+
+  const child = spawn(process.execPath, ["dist/stdio.js"], {
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  t.after(() => child.kill());
+
+  let stderr = "";
+  child.stderr.setEncoding("utf8");
+  child.stderr.on("data", (chunk) => {
+    stderr += chunk;
+  });
+
+  const pending = new Map();
+  let protocolError = null;
+  const lines = createInterface({ input: child.stdout });
+  lines.on("line", (line) => {
+    if (!line.trim()) return;
+    try {
+      const message = JSON.parse(line);
+      if (message.id !== undefined && pending.has(message.id)) {
+        const waiter = pending.get(message.id);
+        pending.delete(message.id);
+        if (message.error) {
+          waiter.reject(new Error(JSON.stringify(message.error)));
+        } else {
+          waiter.resolve(message.result);
+        }
+      }
+    } catch (error) {
+      protocolError = error;
+    }
+  });
+
+  child.on("exit", (code) => {
+    if (code !== null && code !== 0) {
+      for (const waiter of pending.values()) {
+        waiter.reject(
+          new Error(`stdio server exited with code ${code}\nstderr:\n${stderr}`)
+        );
+      }
+      pending.clear();
+    }
+  });
+
+  const requestMeta = {
+    "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    "io.modelcontextprotocol/clientInfo": {
+      name: "god-prompt-modern-stdio-test",
+      version: "1.0.0",
+    },
+    "io.modelcontextprotocol/clientCapabilities": {},
+  };
+
+  const discovered = await request(
+    child,
+    pending,
+    "modern-discover",
+    "server/discover",
+    { _meta: requestMeta }
+  );
+  assert.deepEqual(discovered.supportedVersions, ["2026-07-28"]);
+  assert.equal(
+    discovered._meta?.["io.modelcontextprotocol/serverInfo"]?.name,
+    "god-prompt-mcp"
+  );
+  assert.equal(
+    discovered._meta?.["io.modelcontextprotocol/serverInfo"]?.version,
+    packageJson.version
+  );
+
+  const listed = await request(child, pending, "modern-tools", "tools/list", {
+    _meta: requestMeta,
+  });
+  assert.deepEqual(
+    listed.tools.map((tool) => tool.name).sort(),
+    EXPECTED_TOOLS
+  );
+  assert.equal(protocolError, null, `Non-JSON output on stdout: ${protocolError}`);
+});

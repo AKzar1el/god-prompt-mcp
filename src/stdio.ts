@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/server";
-import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { registerGodPromptTools, SERVER_INFO } from "./server.js";
 
-const server = new McpServer(SERVER_INFO);
-registerGodPromptTools(server);
+function createServer(): McpServer {
+  const server = new McpServer(SERVER_INFO);
+  registerGodPromptTools(server);
+  return server;
+}
 
-await server.connect(new StdioServerTransport());
+await serveStdio(createServer);
