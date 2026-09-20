@@ -63,6 +63,9 @@ const claudePlugin = JSON.parse(
 const claudeMcp = JSON.parse(
   await readFile(new URL("../.mcp.json", import.meta.url), "utf8")
 );
+const geminiExtension = JSON.parse(
+  await readFile(new URL("../gemini-extension.json", import.meta.url), "utf8")
+);
 const agentSkill = await readFile(
   new URL("../skills/god-prompt/SKILL.md", import.meta.url),
   "utf8"
@@ -130,10 +133,15 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
   assert.equal(agentPlugin.version, packageJson.version);
   assert.equal(cursorPlugin.version, packageJson.version);
   assert.equal(claudePlugin.version, packageJson.version);
+  assert.equal(geminiExtension.version, packageJson.version);
   assert.equal(mcpbManifest.version, packageJson.version);
   assert.equal(serverJson.version, packageJson.version);
   assert.deepEqual(agentMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
   assert.deepEqual(claudeMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
+  assert.deepEqual(geminiExtension.mcpServers?.["god-prompt-mcp"], {
+    command: "npx",
+    args: ["-y", "god-prompt-mcp"],
+  });
   assert.deepEqual(cursorMcp.mcpServers?.["god-prompt-mcp"], {
     command: "npx",
     args: ["-y", "god-prompt-mcp"],

@@ -84,13 +84,19 @@ Run `codex mcp list` to verify the registration. The Agent Skill gives Codex the
 
 ### Gemini CLI
 
-Gemini CLI can register the published local stdio server directly with its native MCP command:
+Install the repository as a native Gemini CLI extension to get both the portable GodPrompt Agent Skill and the MCP server in one step:
+
+```bash
+gemini extensions install https://github.com/AKzar1el/god-prompt-mcp
+```
+
+Or register only the published local stdio server with Gemini CLI's native MCP command:
 
 ```bash
 gemini mcp add god-prompt npx -- -y god-prompt-mcp
 ```
 
-Run `gemini mcp list` to verify the connection. This writes the standard `mcpServers` entry for `npx -y god-prompt-mcp`; Node.js 22+ is required and GodPrompt itself needs no API key.
+Run `gemini extensions list` to verify the extension or `gemini mcp list` to verify the direct MCP registration. Node.js 22+ is required for the MCP server; GodPrompt itself needs no API key.
 
 ### GitHub CLI Agent Skills (preview)
 
