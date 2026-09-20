@@ -246,6 +246,17 @@ copilot plugin install god-prompt-mcp@god-prompt
 
 This keeps the marketplace entry, portable plugin, skill, and MCP server in one versioned repository instead of maintaining a second Copilot-specific package.
 
+### GitLab Duo CLI
+
+GitLab Duo CLI 9.15+ supports Agent Plugins and Git-backed plugin marketplaces. Register this repository once, then install the same portable plugin:
+
+```bash
+duo plugin marketplace add https://github.com/AKzar1el/god-prompt-mcp.git
+duo plugin install god-prompt-mcp@god-prompt
+```
+
+The installed plugin bundles the existing `god-prompt` Agent Skill and pinned local MCP server, so GitLab Duo users get both workflow guidance and callable tools from the same versioned repository.
+
 ### Claude Code
 
 The repository also includes `.claude-plugin/plugin.json` and `.mcp.json`, so the same MCP server can be validated and submitted as a Claude Code community plugin without a separate implementation.
