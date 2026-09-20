@@ -167,3 +167,25 @@ jobs:
             process.exit(1);
           });
           NODE
+
+  ubuntu26-compatibility:
+    runs-on: ubuntu-26.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build package
+        run: npm run build
+
+      - name: Verify package can be created
+        run: npm pack --dry-run
