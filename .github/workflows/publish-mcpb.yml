@@ -42,13 +42,11 @@ jobs:
 
       - name: Prepare audited local runtime dependencies
         run: |
-          npm pkg delete dependencies.agents
           npm install --package-lock-only --ignore-scripts --no-audit --no-fund
           npm prune --omit=dev --ignore-scripts
           npm audit fix --omit=dev --ignore-scripts
           npm audit --omit=dev --audit-level=high
-          test ! -d node_modules/agents
-          node --input-type=module -e "await import('@modelcontextprotocol/sdk/server/stdio.js'); await import('./dist/server.js')"
+          node --input-type=module -e "await import('@modelcontextprotocol/server/stdio'); await import('./dist/server.js')"
 
       - name: Pack deterministic MCPB
         run: |

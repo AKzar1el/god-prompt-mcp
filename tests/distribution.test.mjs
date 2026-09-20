@@ -98,9 +98,11 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.match(stdioSource, /^#!\/usr\/bin\/env node\r?\n/);
 });
 
-test("keeps the Worker-only Agents SDK out of npm runtime dependencies", () => {
+test("uses the split MCP SDK v2 without the Workers-only Agents SDK", () => {
+  assert.equal(packageJson.dependencies?.["@modelcontextprotocol/sdk"], undefined);
+  assert.equal(packageJson.dependencies?.["@modelcontextprotocol/server"], "2.0.0");
   assert.equal(packageJson.dependencies?.agents, undefined);
-  assert.equal(packageJson.devDependencies?.agents, "^0.0.98");
+  assert.equal(packageJson.devDependencies?.agents, undefined);
 });
 
 test("keeps the public Node runtime on maintained LTS lines", () => {
@@ -182,12 +184,14 @@ test("uses the setup-node OIDC path without the v6 dummy auth-token fallback", (
   assert.doesNotMatch(npmPublishWorkflow, /registry-url\s*:/);
 });
 
-test("binds McpAgent to the Durable Object name required by serve()", () => {
+test("serves MCP statelessly while preserving the historical Durable Object namespace", () => {
   assert.deepEqual(wranglerConfig.durable_objects?.bindings, [
     {
       name: "MCP_OBJECT",
       class_name: "GodPromptMCP",
     },
   ]);
-  assert.match(workerSource, /MCP_OBJECT:\s*DurableObjectNamespace/);
+  assert.match(workerSource, /createMcpHandler\(createServer\)/);
+  assert.match(workerSource, /export class GodPromptMCP/);
+  assert.doesNotMatch(workerSource, /McpAgent|\.serve\(/);
 });

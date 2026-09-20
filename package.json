@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "mcpName": "io.github.AKzar1el/god-prompt-mcp",
   "description": "MCP server for GodPrompt — the universal AI software development system prompt",
   "private": false,
@@ -58,13 +58,12 @@
     "generate-content": "node scripts/generate-content.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.30.0",
-    "zod": "^3.24.2"
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "^4.2.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250313.0",
-    "agents": "^0.0.98",
+    "@cloudflare/workers-types": "^5.20260918.1",
     "typescript": "^5.7.3",
-    "wrangler": "^4.14.1"
+    "wrangler": "^4.135.0"
   }
 }
