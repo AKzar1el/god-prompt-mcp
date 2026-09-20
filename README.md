@@ -167,15 +167,21 @@ The Agent Skill supplies the reusable workflow; the MCP server supplies GodPromp
 
 ### Devin Desktop / Windsurf
 
-Devin Desktop (formerly Windsurf) can use the existing GodPrompt Agent Skill and local MCP server without another package. For the default Devin Local agent, place the complete portable skill directory at `.agents/skills/god-prompt/`; Devin also discovers project skills under `.devin/skills/` and `.windsurf/skills/`.
+Devin Desktop (formerly Windsurf) and Devin CLI can load GodPrompt's existing Agent Plugins 1.0 package directly from GitHub. After signing in to Devin, install the plugin with:
 
-Register the published stdio MCP server with Devin CLI:
+```bash
+devin plugins install AKzar1el/god-prompt-mcp
+```
+
+The plugin supplies both `skills/god-prompt` and the published local stdio MCP server. Run `devin plugins list` to verify the installation.
+
+If you only want the portable skill, place the complete skill directory at `.agents/skills/god-prompt/`; Devin also discovers project skills under `.devin/skills/` and `.windsurf/skills/`. If you only want the MCP server, register it directly:
 
 ```bash
 devin mcp add god-prompt -- npx -y god-prompt-mcp
 ```
 
-Run `devin mcp list` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+Run `devin mcp list` to verify the direct server registration. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
 ### Cursor
 
