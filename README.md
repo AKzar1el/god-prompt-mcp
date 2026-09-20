@@ -82,6 +82,16 @@ codex mcp add god-prompt -- npx -y god-prompt-mcp
 
 Run `codex mcp list` to verify the registration. The Agent Skill gives Codex the reusable workflow directly; MCP adds GodPrompt's progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
+### Gemini CLI
+
+Gemini CLI can register the published local stdio server directly with its native MCP command:
+
+```bash
+gemini mcp add god-prompt npx -- -y god-prompt-mcp
+```
+
+Run `gemini mcp list` to verify the connection. This writes the standard `mcpServers` entry for `npx -y god-prompt-mcp`; Node.js 22+ is required and GodPrompt itself needs no API key.
+
 ### GitHub CLI Agent Skills (preview)
 
 GitHub CLI 2.100+ can install the same portable Agent Skill directly into supported coding agents without cloning the repository:
