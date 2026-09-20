@@ -124,10 +124,11 @@ test("pins cross-platform bundle inputs to LF line endings", () => {
 });
 
 test("keeps agent-platform plugin manifests aligned with the public npm package", () => {
+  const pinnedPackage = `god-prompt-mcp@${packageJson.version}`;
   const expectedServer = {
     type: "stdio",
     command: "npx",
-    args: ["-y", "god-prompt-mcp"],
+    args: ["-y", pinnedPackage],
   };
 
   assert.equal(agentPlugin.version, packageJson.version);
@@ -140,11 +141,11 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
   assert.deepEqual(claudeMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
   assert.deepEqual(geminiExtension.mcpServers?.["god-prompt-mcp"], {
     command: "npx",
-    args: ["-y", "god-prompt-mcp"],
+    args: ["-y", pinnedPackage],
   });
   assert.deepEqual(cursorMcp.mcpServers?.["god-prompt-mcp"], {
     command: "npx",
-    args: ["-y", "god-prompt-mcp"],
+    args: ["-y", pinnedPackage],
   });
   assert.equal(cursorPlugin.mcpServers, "cursor-mcp.json");
 });
