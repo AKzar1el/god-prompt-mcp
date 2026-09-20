@@ -97,7 +97,7 @@ jobs:
           printf '%s  %s\n' "$ACTUAL_SHA" "$ASSET"
 
       - name: Upload bundle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: god-prompt-mcp-mcpb
           path: god-prompt-mcp-*.mcpb
