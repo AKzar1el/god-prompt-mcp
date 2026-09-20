@@ -165,6 +165,18 @@ JetBrains AI Assistant 2026.2 can use GodPrompt through both supported agent sur
 
 The Agent Skill supplies the reusable workflow; the MCP server supplies GodPrompt's callable tools. Node.js 22+ is required for the MCP server.
 
+### Devin Desktop / Windsurf
+
+Devin Desktop (formerly Windsurf) can use the existing GodPrompt Agent Skill and local MCP server without another package. For the default Devin Local agent, place the complete portable skill directory at `.agents/skills/god-prompt/`; Devin also discovers project skills under `.devin/skills/` and `.windsurf/skills/`.
+
+Register the published stdio MCP server with Devin CLI:
+
+```bash
+devin mcp add god-prompt -- npx -y god-prompt-mcp
+```
+
+Run `devin mcp list` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+
 ### Cursor
 
 The repository includes a native Cursor plugin manifest plus a portable Agent Plugins 1.0 manifest. Cursor Marketplace can use `.cursor-plugin/plugin.json` with `cursor-mcp.json`; Agent Plugins-compatible clients can use root `plugin.json` with `mcp.json`. Both launch the same local stdio server through `npx -y god-prompt-mcp`.
