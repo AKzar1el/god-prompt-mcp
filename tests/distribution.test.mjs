@@ -66,6 +66,9 @@ const cursorMcp = JSON.parse(
 const claudePlugin = JSON.parse(
   await readFile(new URL("../.claude-plugin/plugin.json", import.meta.url), "utf8")
 );
+const claudeMarketplace = JSON.parse(
+  await readFile(new URL("../.claude-plugin/marketplace.json", import.meta.url), "utf8")
+);
 const claudeMcp = JSON.parse(
   await readFile(new URL("../.mcp.json", import.meta.url), "utf8")
 );
@@ -185,6 +188,18 @@ test("keeps the GitLab Duo marketplace aligned with the portable plugin", () => 
     {
       name: agentPlugin.name,
       description: agentPlugin.description,
+      version: packageJson.version,
+      source: "./",
+    },
+  ]);
+});
+
+test("keeps the Claude Code marketplace aligned with the Claude plugin", () => {
+  assert.equal(claudeMarketplace.name, "god-prompt");
+  assert.deepEqual(claudeMarketplace.plugins, [
+    {
+      name: claudePlugin.name,
+      description: claudePlugin.description,
       version: packageJson.version,
       source: "./",
     },

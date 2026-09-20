@@ -259,7 +259,14 @@ The installed plugin bundles the existing `god-prompt` Agent Skill and pinned lo
 
 ### Claude Code
 
-The repository also includes `.claude-plugin/plugin.json` and `.mcp.json`, so the same MCP server can be validated and submitted as a Claude Code community plugin without a separate implementation.
+The repository includes a Claude Code marketplace catalog alongside the existing plugin and MCP manifests, so users can install the same versioned plugin directly from this GitHub repository without waiting for community-directory review. In Claude Code, run:
+
+```text
+/plugin marketplace add AKzar1el/god-prompt-mcp
+/plugin install god-prompt-mcp@god-prompt
+```
+
+The plugin bundles the portable `god-prompt` Agent Skill and the pinned local MCP server. The same package remains structurally ready for Anthropic's reviewed community directory without maintaining a separate implementation.
 
 ### Claude Desktop extension
 
