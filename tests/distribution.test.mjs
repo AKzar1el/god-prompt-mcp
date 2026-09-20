@@ -51,6 +51,9 @@ const agentPlugin = JSON.parse(
 const agentMcp = JSON.parse(
   await readFile(new URL("../mcp.json", import.meta.url), "utf8")
 );
+const copilotMarketplace = JSON.parse(
+  await readFile(new URL("../.github/plugin/marketplace.json", import.meta.url), "utf8")
+);
 const cursorPlugin = JSON.parse(
   await readFile(new URL("../.cursor-plugin/plugin.json", import.meta.url), "utf8")
 );
@@ -158,6 +161,19 @@ test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", (
   assert.match(agentSkillProtocols, /# .*Protocol/i);
   assert.match(agentSkillGates, /# .*Gate/i);
   assert.match(agentSkillAntiPatterns, /# .*Anti-Pattern/i);
+});
+
+test("keeps the GitHub Copilot marketplace aligned with the portable plugin", () => {
+  assert.equal(copilotMarketplace.name, "god-prompt");
+  assert.equal(copilotMarketplace.metadata?.version, packageJson.version);
+  assert.deepEqual(copilotMarketplace.plugins, [
+    {
+      name: agentPlugin.name,
+      description: agentPlugin.description,
+      version: packageJson.version,
+      source: ".",
+    },
+  ]);
 });
 
 test("dispatches npm publishing explicitly from the registry release workflow", () => {

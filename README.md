@@ -229,6 +229,15 @@ GitHub Copilot CLI supports the portable Agent Plugins 1.0 package at the reposi
 
 The plugin includes both the GodPrompt MCP server and a standards-compatible `god-prompt` Agent Skill under `skills/god-prompt/`. Copilot can load the skill automatically when relevant or invoke it explicitly as `/god-prompt`, while MCP remains available for progressive-disclosure tool access.
 
+For team or cloud-agent distribution, the same repository is also a Copilot plugin marketplace:
+
+```bash
+copilot plugin marketplace add AKzar1el/god-prompt-mcp
+copilot plugin install god-prompt-mcp@god-prompt
+```
+
+This keeps the marketplace entry, portable plugin, skill, and MCP server in one versioned repository instead of maintaining a second Copilot-specific package.
+
 ### Claude Code
 
 The repository also includes `.claude-plugin/plugin.json` and `.mcp.json`, so the same MCP server can be validated and submitted as a Claude Code community plugin without a separate implementation.
