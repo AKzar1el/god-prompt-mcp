@@ -130,7 +130,7 @@ For MCP tools, open **Settings → AI → MCP Servers → Add Server → Add Loc
 
 ### OpenCode
 
-OpenCode natively discovers Agent Skills from `.agents/skills/` and supports local MCP servers. Install the same portable GodPrompt skill with:
+OpenCode v2 natively discovers Agent Skills from `.agents/skills/` and supports local MCP servers. Install the same portable GodPrompt skill with:
 
 ```bash
 npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent opencode --copy -y
@@ -142,13 +142,17 @@ To expose GodPrompt's MCP tools as well, add a local server to `opencode.json` o
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "god-prompt": {
-      "type": "local",
-      "command": ["npx", "-y", "god-prompt-mcp"]
+    "servers": {
+      "god-prompt": {
+        "type": "local",
+        "command": ["npx", "-y", "god-prompt-mcp"]
+      }
     }
   }
 }
 ```
+
+OpenCode 1.x used the same server entry directly under `mcp`; the v2 schema shown above nests named servers under `mcp.servers`.
 
 The Agent Skill provides the reusable workflow; MCP adds the seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
