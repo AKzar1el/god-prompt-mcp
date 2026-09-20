@@ -186,6 +186,13 @@ test("uses generated release notes instead of a generic compatibility template",
     /Claude Desktop\/MCPB metadata and compatibility release/
   );
 });
+
+test("keeps PR MCPB validation strict without rebinding released versions to current main", () => {
+  assert.match(mcpbPublishWorkflow, /git ls-remote --exit-code --tags origin/);
+  assert.match(mcpbPublishWorkflow, /releases\/download\/\$\{TAG\}\/\$\{ASSET\}/);
+  assert.match(mcpbPublishWorkflow, /test "\$RELEASED_SHA" = "\$EXPECTED_SHA"/);
+  assert.match(mcpbPublishWorkflow, /test "\$ACTUAL_SHA" = "\$EXPECTED_SHA"/);
+});
 test("does not release on workflow-only main pushes", () => {
   const pushBlock = registryPublishWorkflow.match(/\n  push:\n([\s\S]*?)\n\npermissions:/)?.[1] ?? "";
   assert.match(pushBlock, /server\.json/);

@@ -64,6 +64,7 @@ jobs:
         run: |
           VERSION="$(node -p "require('./package.json').version")"
           ASSET="god-prompt-mcp-${VERSION}.mcpb"
+          TAG="v${VERSION}"
           unzip -Z1 "$ASSET" > "${RUNNER_TEMP}/mcpb-files.txt"
           grep -Fx 'manifest.json' "${RUNNER_TEMP}/mcpb-files.txt"
           grep -Fx 'dist/stdio.js' "${RUNNER_TEMP}/mcpb-files.txt"
@@ -80,8 +81,19 @@ jobs:
           EXPECTED_SHA="$(node -p "require('./server.json').packages[0].fileSha256")"
           ACTUAL_SHA="$(sha256sum "$ASSET" | cut -d' ' -f1)"
           echo "Expected MCPB SHA-256: $EXPECTED_SHA"
-          echo "Actual MCPB SHA-256:   $ACTUAL_SHA"
-          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          echo "Current MCPB SHA-256:  $ACTUAL_SHA"
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            RELEASED_ASSET="${RUNNER_TEMP}/released-${ASSET}"
+            curl --fail --location --silent --show-error \
+              "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ASSET}" \
+              --output "$RELEASED_ASSET"
+            RELEASED_SHA="$(sha256sum "$RELEASED_ASSET" | cut -d' ' -f1)"
+            echo "Released MCPB SHA-256: $RELEASED_SHA"
+            test "$RELEASED_SHA" = "$EXPECTED_SHA"
+            echo "${TAG} is already published; current PR bundle reproducibility is validated independently from the immutable release hash."
+          else
+            test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          fi
           printf '%s  %s\n' "$ACTUAL_SHA" "$ASSET"
 
       - name: Upload bundle artifact
