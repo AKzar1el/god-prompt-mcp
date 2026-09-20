@@ -237,6 +237,15 @@ The repository also includes `.claude-plugin/plugin.json` and `.mcp.json`, so th
 
 GitHub releases include a `.mcpb` bundle for one-click local installation in MCPB-compatible clients such as Claude Desktop. The bundle runs the same local stdio server and does not require an API key or account.
 
+Current GitHub releases are immutable and include a release attestation. With GitHub CLI installed, verify the release and your downloaded MCPB before installing it:
+
+```bash
+gh release verify <release-tag> --repo AKzar1el/god-prompt-mcp
+gh release verify-asset <release-tag> <downloaded-mcpb> --repo AKzar1el/god-prompt-mcp
+```
+
+The asset check verifies that the local MCPB exactly matches the file recorded in the published release attestation.
+
 ### Local stdio
 
 ```bash
