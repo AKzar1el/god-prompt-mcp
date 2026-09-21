@@ -146,6 +146,19 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent code
 
 Replace `codex` with another supported agent when needed. The current CLI discovers the repository's portable `god-prompt` skill directly and installs `SKILL.md` plus its referenced protocol files; the MCP server remains separately available through `npx -y god-prompt-mcp`.
 
+### Cline
+
+Cline SDK / Hub 0.0.83+ can load GodPrompt's existing Agent Plugins 1.0 package directly. Cline discovers user-installed plugin packages under `~/.agents/plugins/*`, validates the root `plugin.json`, exposes valid `skills/` entries, and starts valid servers from the root `mcp.json` without writing them into `cline_mcp_settings.json`.
+
+Install the repository into Cline's user plugin directory:
+
+```bash
+mkdir -p ~/.agents/plugins
+git clone --depth 1 https://github.com/AKzar1el/god-prompt-mcp ~/.agents/plugins/god-prompt-mcp
+```
+
+On the next settings refresh or session build, Cline can expose the `god-prompt` Agent Skill and launch the bundled local stdio server, whose root `mcp.json` pins the published GodPrompt MCP package version. Cline intentionally does **not** auto-scan workspace `.agents/plugins` directories, so merely opening a repository cannot activate repository-controlled MCP servers; SDK hosts that deliberately trust another package root can opt in through `agentPluginPaths`.
+
 ### Amp
 
 Amp can load GodPrompt as an Agent Skill and expose the MCP tools only when that skill is relevant. Install the portable skill with:
