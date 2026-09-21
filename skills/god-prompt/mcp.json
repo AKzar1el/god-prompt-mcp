@@ -1,0 +1,18 @@
+{
+  "god-prompt-mcp": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "god-prompt-mcp@1.0.20"
+    ],
+    "includeTools": [
+      "get_version",
+      "classify_task",
+      "get_core_rules",
+      "get_phase",
+      "get_protocol",
+      "get_gate",
+      "get_anti_pattern"
+    ]
+  }
+}
