@@ -146,6 +146,16 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent code
 
 Replace `codex` with another supported agent when needed. The current CLI discovers the repository's portable `god-prompt` skill directly and installs `SKILL.md` plus its referenced protocol files; the MCP server remains separately available through `npx -y god-prompt-mcp`.
 
+### Amp
+
+Amp can load GodPrompt as an Agent Skill and expose the MCP tools only when that skill is relevant. Install the portable skill with:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent amp --copy -y
+```
+
+The skill includes Amp's sibling `mcp.json` configuration, pinned to the current GodPrompt MCP package. Amp keeps those seven MCP tool definitions hidden until the skill loads, avoiding a permanently expanded tool context while preserving the full progressive-disclosure surface. Node.js 22+ is required for the MCP server.
+
 ### Factory Droid
 
 Factory Droid can use GodPrompt as both an Agent Skill and a local MCP server. Install the complete portable skill with the current Skills CLI target for Droid:

@@ -80,6 +80,9 @@ const agentSkill = await readFile(
   new URL("../skills/god-prompt/SKILL.md", import.meta.url),
   "utf8"
 );
+const agentSkillMcp = JSON.parse(
+  await readFile(new URL("../skills/god-prompt/mcp.json", import.meta.url), "utf8")
+);
 const agentSkillProtocols = await readFile(
   new URL("../skills/god-prompt/references/01-PROTOCOLS.md", import.meta.url),
   "utf8"
@@ -176,6 +179,22 @@ test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", (
   assert.match(agentSkillProtocols, /# .*Protocol/i);
   assert.match(agentSkillGates, /# .*Gate/i);
   assert.match(agentSkillAntiPatterns, /# .*Anti-Pattern/i);
+});
+
+test("keeps the Amp skill-scoped MCP surface pinned and bounded", () => {
+  assert.deepEqual(agentSkillMcp["god-prompt-mcp"], {
+    command: "npx",
+    args: ["-y", `god-prompt-mcp@${packageJson.version}`],
+    includeTools: [
+      "get_version",
+      "classify_task",
+      "get_core_rules",
+      "get_phase",
+      "get_protocol",
+      "get_gate",
+      "get_anti_pattern",
+    ],
+  });
 });
 
 test("keeps the GitHub Copilot marketplace aligned with the portable plugin", () => {
