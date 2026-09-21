@@ -2,5 +2,17 @@
   "name": "god-prompt",
   "version": "1.0.20",
   "description": "A scoped production-engineering workflow for implementing, debugging, reviewing, refactoring, and release-preparing software with explicit scope and verification evidence.",
+  "interface": {
+    "displayName": "GodPrompt",
+    "shortDescription": "Production engineering",
+    "longDescription": "A scoped software-engineering workflow for implementation, debugging, review, refactoring, and release preparation with explicit scope and verification evidence.",
+    "developerName": "Tomi Šeregi",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Implement with explicit scope and verification",
+      "Debug systematically from evidence",
+      "Review code and agent work before completion"
+    ]
+  },
   "skills": "./skills/"
 }

@@ -29,7 +29,7 @@ test("keeps the OpenAI review package portable and skill-only", () => {
   assert.equal(plugin.version, packageJson.version);
   assert.equal(plugin.license, "MIT");
   assert.equal(plugin.repository, "https://github.com/AKzar1el/god-prompt-mcp");
-  assert.equal(plugin.extensions, undefined);
+  assert.equal(plugin.extensions["com.openai"].interface.displayName, "GodPrompt");
   assert.match(skill, /^---\r?\nname: god-prompt\r?\n/m);
   assert.match(mcpbIgnore, /^distribution\/$/m);
 });
@@ -40,6 +40,23 @@ test("keeps the scoped package compatible with OpenAI Agents API plugin loading"
   assert.equal(codexPlugin.description, plugin.description);
   assert.equal(codexPlugin.skills, "./skills/");
   assert.equal(codexPlugin.mcpServers, undefined);
+});
+
+test("keeps current OpenAI public listing metadata submission-ready", () => {
+  const portableInterface = plugin.extensions["com.openai"].interface;
+
+  assert.deepEqual(codexPlugin.interface, portableInterface);
+  assert.ok(portableInterface.displayName.length <= 30);
+  assert.ok(portableInterface.shortDescription.length <= 30);
+  assert.ok(portableInterface.longDescription.length <= 4000);
+  assert.ok(portableInterface.developerName.length <= 80);
+  assert.equal(portableInterface.category, "Developer Tools");
+  assert.ok(portableInterface.capabilities.length <= 20);
+
+  for (const capability of portableInterface.capabilities) {
+    assert.ok(capability.length > 0 && capability.length <= 120);
+    assert.doesNotMatch(capability, /[\r\n]/);
+  }
 });
 
 test("uses a scoped trigger instead of the universal internal trigger contract", () => {
