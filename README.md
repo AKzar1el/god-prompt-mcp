@@ -116,6 +116,16 @@ gemini mcp add god-prompt npx -- -y god-prompt-mcp
 
 Run `gemini extensions list` to verify the extension or `gemini mcp list` to verify the direct MCP registration. Node.js 22+ is required for the MCP server; GodPrompt itself needs no API key.
 
+### Google Antigravity CLI
+
+Antigravity CLI supports Agent Plugins that bundle Agent Skills and MCP servers. Install the existing GodPrompt plugin directly from GitHub:
+
+```bash
+agy plugin install https://github.com/AKzar1el/god-prompt-mcp
+```
+
+Run `agy plugin list` to verify the installation. The repository's Agent Plugins 1.0 package supplies both `skills/god-prompt` and the pinned local stdio MCP server, so no separate skill or MCP registration is needed. Node.js 22+ is required for the MCP server.
+
 ### GitHub CLI Agent Skills (preview)
 
 GitHub CLI 2.100+ can install the same portable Agent Skill directly into supported coding agents without cloning the repository:
