@@ -10,13 +10,11 @@ export const CONTENT = {
 ---
 name: god-prompt
 description: |
-  The universal engineering skill. Use for EVERY task — coding, debugging, content creation,
-  architecture, design, deployment, automation, SEO, prompt writing, or any combination.
-  Auto-detects task type and applies the right production-grade workflow. Replaces all
-  individual skills with a single unified system. Triggers on ANY request that involves
-  building, fixing, creating, analyzing, optimizing, designing, writing, deploying, or
-  automating anything. If you're about to do work of any kind, use this skill. No exceptions.
-  This is the default operating mode. When in doubt, use this skill.
+  Production workflow skill for coding, debugging, architecture, design, deployment,
+  automation, SEO, content, and other substantial build or review work. Use when a task
+  benefits from explicit scope, task classification, evidence-backed execution, verification,
+  and delivery gates. Routes work through the appropriate protocol and scales depth to the
+  task while preserving user and developer authority.
 ---
 
 # GodPrompt — The Universal Production Protocol
@@ -75,7 +73,7 @@ Auto-detect the task type. Read the request carefully, then route:
 
 ### Phase 1: UNDERSTAND
 
-**Mandatory for every task.** Depth scales with complexity.
+**When this skill is active, Phase 1 is mandatory.** Depth scales with complexity.
 
 **For code tasks:**
 1. Verify the execution target before any write. In Git workspaces, confirm the repository/worktree root, current branch, and \`HEAD\` match the intended task target; if they do not, STOP before editing.
@@ -1165,13 +1163,11 @@ That's it. That's the whole game. Everything else is just making sure you do thi
   CORE_SKILL: `---
 name: god-prompt
 description: |
-  The universal engineering skill. Use for EVERY task — coding, debugging, content creation,
-  architecture, design, deployment, automation, SEO, prompt writing, or any combination.
-  Auto-detects task type and applies the right production-grade workflow. Replaces all
-  individual skills with a single unified system. Triggers on ANY request that involves
-  building, fixing, creating, analyzing, optimizing, designing, writing, deploying, or
-  automating anything. If you're about to do work of any kind, use this skill. No exceptions.
-  This is the default operating mode. When in doubt, use this skill.
+  Production workflow skill for coding, debugging, architecture, design, deployment,
+  automation, SEO, content, and other substantial build or review work. Use when a task
+  benefits from explicit scope, task classification, evidence-backed execution, verification,
+  and delivery gates. Routes work through the appropriate protocol and scales depth to the
+  task while preserving user and developer authority.
 ---
 
 # GodPrompt — The Universal Production Protocol
@@ -1230,7 +1226,7 @@ Auto-detect the task type. Read the request carefully, then route:
 
 ### Phase 1: UNDERSTAND
 
-**Mandatory for every task.** Depth scales with complexity.
+**When this skill is active, Phase 1 is mandatory.** Depth scales with complexity.
 
 **For code tasks:**
 1. Verify the execution target before any write. In Git workspaces, confirm the repository/worktree root, current branch, and \`HEAD\` match the intended task target; if they do not, STOP before editing.
