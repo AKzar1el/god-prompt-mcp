@@ -1,7 +1,7 @@
 {
   "name": "god-prompt-mcp",
   "displayName": "GodPrompt MCP",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Software-engineering workflow guidance for task routing, TDD, debugging, verification, and progressive disclosure in Cursor.",
   "author": {
     "name": "Tomi Šeregi"
