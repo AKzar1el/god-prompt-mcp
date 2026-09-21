@@ -171,6 +171,14 @@ test("keeps the Factory Droid README package pin aligned with the public npm pac
   );
 });
 
+test("keeps the Goose session package pin aligned with the public npm package", () => {
+  assert.ok(
+    readme.includes(
+      `goose session --with-extension "npx -y god-prompt-mcp@${packageJson.version}"`
+    )
+  );
+});
+
 test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", () => {
   assert.match(agentSkill, /^---\r?\nname: god-prompt\r?\n/m);
   assert.match(agentSkill, /references\/01-PROTOCOLS\.md/);

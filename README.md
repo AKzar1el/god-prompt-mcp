@@ -182,6 +182,22 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent warp
 
 Warp discovers project skills from `.agents/skills/` and `.warp/skills/`. For MCP tools, add a CLI-based MCP server in Warp with command `npx` and arguments `-y`, `god-prompt-mcp`; Warp's Oz CLI can also receive MCP configuration through `oz agent run --mcp`. The skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
+### Goose
+
+Goose can use GodPrompt as both an Agent Skill and a local MCP extension. Install the complete portable skill into Goose with:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent goose --copy -y
+```
+
+Goose discovers the copied skill under `.goose/skills/god-prompt/`. To expose GodPrompt's callable tools for a session, start Goose with the published MCP package as an external stdio extension:
+
+```bash
+goose session --with-extension "npx -y god-prompt-mcp@1.0.20"
+```
+
+Goose currently treats Agent Skills and MCP extensions as separate native surfaces, so this path does not depend on Agent Plugins support. The skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+
 ### Zed
 
 Zed can use GodPrompt as both a native Agent Skill and a local MCP context server. Install the complete portable skill, including its referenced protocol files, with:
