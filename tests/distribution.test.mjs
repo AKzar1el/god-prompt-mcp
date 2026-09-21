@@ -42,6 +42,7 @@ const registryPublishWorkflow = await readFile(
   new URL("../.github/workflows/publish-registry.yml", import.meta.url),
   "utf8"
 );
+const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 const wranglerConfig = JSON.parse(
   await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8")
 );
@@ -157,6 +158,14 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
     args: ["-y", pinnedPackage],
   });
   assert.equal(cursorPlugin.mcpServers, "cursor-mcp.json");
+});
+
+test("keeps the Factory Droid README package pin aligned with the public npm package", () => {
+  assert.ok(
+    readme.includes(
+      `droid mcp add god-prompt "npx -y god-prompt-mcp@${packageJson.version}"`
+    )
+  );
 });
 
 test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", () => {
