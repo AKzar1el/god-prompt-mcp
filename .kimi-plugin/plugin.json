@@ -1,0 +1,23 @@
+{
+  "name": "god-prompt-mcp",
+  "version": "1.0.20",
+  "description": "GodPrompt engineering workflows for task routing, TDD, debugging, verification, and progressive disclosure through MCP.",
+  "homepage": "https://tomiseregi.si/projects/god-prompt",
+  "license": "MIT",
+  "skills": "./skills/",
+  "mcpServers": {
+    "god-prompt-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "god-prompt-mcp@1.0.20"
+      ]
+    }
+  },
+  "interface": {
+    "displayName": "GodPrompt MCP",
+    "shortDescription": "Production engineering workflow plus seven progressive-disclosure MCP tools",
+    "developerName": "Tomi Seregi",
+    "websiteURL": "https://tomiseregi.si/projects/god-prompt"
+  }
+}

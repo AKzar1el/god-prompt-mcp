@@ -272,6 +272,17 @@ This installs GodPrompt under `.qwen/skills/god-prompt/`, where Qwen Code can di
 
 Restart Qwen Code after changing MCP configuration, then open `/mcp` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
+### Kimi Code
+
+Kimi Code CLI can install GodPrompt as one native custom plugin containing the existing Agent Skill and local MCP server. Install the current repository branch explicitly:
+
+```text
+/plugins install https://github.com/AKzar1el/god-prompt-mcp/tree/main
+/reload
+```
+
+The Kimi manifest points at `skills/`, so the `god-prompt` skill remains available through Kimi's normal relevance-based skill loading instead of being forced into every session. The same manifest exposes `god-prompt-mcp@1.0.20` as a local stdio MCP server, preserving the seven progressive-disclosure tools. The explicit `tree/main` URL matters because Kimi's bare GitHub-repository install form prefers the latest GitHub release; using `main` makes the current plugin manifest available without forcing a documentation-only npm/MCP Registry release. Node.js 22+ is required for the MCP server.
+
 ### JetBrains AI Assistant
 
 JetBrains AI Assistant 2026.2 can use GodPrompt through both supported agent surfaces:

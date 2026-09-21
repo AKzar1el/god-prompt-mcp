@@ -76,6 +76,9 @@ const claudeMcp = JSON.parse(
 const geminiExtension = JSON.parse(
   await readFile(new URL("../gemini-extension.json", import.meta.url), "utf8")
 );
+const kimiPlugin = JSON.parse(
+  await readFile(new URL("../.kimi-plugin/plugin.json", import.meta.url), "utf8")
+);
 const agentSkill = await readFile(
   new URL("../skills/god-prompt/SKILL.md", import.meta.url),
   "utf8"
@@ -148,6 +151,7 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
   assert.equal(cursorPlugin.version, packageJson.version);
   assert.equal(claudePlugin.version, packageJson.version);
   assert.equal(geminiExtension.version, packageJson.version);
+  assert.equal(kimiPlugin.version, packageJson.version);
   assert.equal(mcpbManifest.version, packageJson.version);
   assert.equal(serverJson.version, packageJson.version);
   assert.deepEqual(agentMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
@@ -157,6 +161,11 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
     args: ["-y", pinnedPackage],
   });
   assert.deepEqual(cursorMcp.mcpServers?.["god-prompt-mcp"], {
+    command: "npx",
+    args: ["-y", pinnedPackage],
+  });
+  assert.equal(kimiPlugin.skills, "./skills/");
+  assert.deepEqual(kimiPlugin.mcpServers?.["god-prompt-mcp"], {
     command: "npx",
     args: ["-y", pinnedPackage],
   });
@@ -176,6 +185,17 @@ test("keeps the Goose session package pin aligned with the public npm package", 
     readme.includes(
       `goose session --with-extension "npx -y god-prompt-mcp@${packageJson.version}"`
     )
+  );
+});
+
+test("keeps the Kimi main-branch plugin onboarding aligned with the public npm package", () => {
+  assert.ok(
+    readme.includes(
+      "/plugins install https://github.com/AKzar1el/god-prompt-mcp/tree/main"
+    )
+  );
+  assert.ok(
+    readme.includes(`god-prompt-mcp@${packageJson.version}`)
   );
 });
 
