@@ -210,6 +210,29 @@ OpenCode 1.x used the same server entry directly under `mcp`; the v2 schema show
 
 The Agent Skill provides the reusable workflow; MCP adds the seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
+### Qwen Code
+
+Qwen Code can use GodPrompt through both of its native extension surfaces: Agent Skills and local MCP servers. Install the complete portable skill with the current Skills CLI target for Qwen Code:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent qwen-code --copy -y
+```
+
+This installs GodPrompt under `.qwen/skills/god-prompt/`, where Qwen Code can discover and load the skill when the task matches its description. To add the callable GodPrompt tools as a project-local stdio MCP server, add this to `.qwen/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "god-prompt": {
+      "command": "npx",
+      "args": ["-y", "god-prompt-mcp"]
+    }
+  }
+}
+```
+
+Restart Qwen Code after changing MCP configuration, then open `/mcp` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+
 ### JetBrains AI Assistant
 
 JetBrains AI Assistant 2026.2 can use GodPrompt through both supported agent surfaces:
