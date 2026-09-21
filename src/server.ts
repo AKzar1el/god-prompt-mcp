@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.15",
+  version: "1.0.16",
 } as const;
 
 // Version 1.0.0 was generated before the source layout moved from core/* to
@@ -243,8 +243,8 @@ export function registerGodPromptTools(server: McpServer): void {
   server.registerTool(
     "get_version",
     {
-      title: "Get GodPrompt version",
-      description: "Returns the current GodPrompt version and a summary of what's included.",
+      title: "Get GodPrompt versions",
+      description: "Returns GodPrompt content and MCP server versions with a summary of what's included.",
       annotations: READ_ONLY_ANNOTATIONS,
     },
     async () => ({
@@ -254,6 +254,7 @@ export function registerGodPromptTools(server: McpServer): void {
           text: JSON.stringify(
             {
               version: VERSION,
+              server_version: SERVER_INFO.version,
               name: "GodPrompt",
               description:
                 "Provides GodPrompt's task-routing, test-driven execution guidance, and verification gates.",

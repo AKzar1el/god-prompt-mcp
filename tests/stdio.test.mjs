@@ -161,6 +161,9 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     arguments: {},
   });
   const version = JSON.parse(toolText(versionResult));
+  assert.equal(version.server_version, packageJson.version);
+  assert.equal(typeof version.version, "string");
+  assert.ok(version.version.length > 0);
   assert.ok(version.files["SKILL.md"]);
   assert.ok(version.files["references/01-PROTOCOLS.md"]);
   assert.ok(version.files["references/02-GATES.md"]);
