@@ -147,7 +147,7 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent droi
 Droid discovers compatible project skills under `.agents/skills/`. To add the callable GodPrompt tools as a local stdio MCP server, use Droid's native MCP command with the published version pinned:
 
 ```bash
-droid mcp add god-prompt "npx -y god-prompt-mcp@1.0.15"
+droid mcp add god-prompt "npx -y god-prompt-mcp@1.0.16"
 ```
 
 Open `/mcp` in Droid to verify the server and available tools. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
