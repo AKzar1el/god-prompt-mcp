@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.17",
+  version: "1.0.18",
 } as const;
 
 // Version 1.0.0 was generated before the source layout moved from core/* to
@@ -72,46 +72,171 @@ const TASK_TYPES = {
 
 type TaskType = keyof typeof TASK_TYPES;
 
+type RouteType = TaskType | "UNCLASSIFIED";
+
+const ACTION_SIGNALS = new Set([
+  "add",
+  "analyze",
+  "architect",
+  "assess",
+  "automate",
+  "brainstorm",
+  "build",
+  "check",
+  "clean",
+  "create",
+  "deploy",
+  "design",
+  "evaluate",
+  "fix",
+  "implement",
+  "improve",
+  "inspect",
+  "launch",
+  "make",
+  "merge",
+  "new",
+  "optimize",
+  "plan",
+  "publish",
+  "push",
+  "refactor",
+  "release",
+  "reorganize",
+  "review",
+  "ship",
+  "simplify",
+  "think",
+  "write",
+]);
+
+type MatchedSignal = {
+  signal: string;
+  strength: number;
+  index: number;
+};
+
+type Candidate = {
+  type: TaskType;
+  matches: MatchedSignal[];
+  strongestSignal: number;
+  evidenceScore: number;
+  firstMatchIndex: number;
+};
+
 function hasTrigger(text: string, trigger: string): boolean {
   const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`(^|[^a-z0-9])${escaped}($|[^a-z0-9])`).test(text);
 }
 
-function classifyTask(description: string): {
-  type: TaskType;
-  confidence: number;
-  protocol: string;
-  taskDescription: string;
-} {
-  const lower = description.toLowerCase();
-  const scores: Partial<Record<TaskType, number>> = {};
+function triggerIndex(text: string, trigger: string): number {
+  const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = new RegExp(`(^|[^a-z0-9])${escaped}($|[^a-z0-9])`).exec(text);
+  return match ? match.index + match[1].length : -1;
+}
 
-  for (const [type, info] of Object.entries(TASK_TYPES)) {
-    const matches = info.triggers.filter((trigger) => hasTrigger(lower, trigger));
-    if (matches.length > 0) {
-      scores[type as TaskType] = matches.length;
-    }
+function signalStrength(trigger: string): number {
+  if (trigger.includes(" ")) return 3;
+  if (ACTION_SIGNALS.has(trigger)) return 1;
+  return 2;
+}
+
+function compareCandidates(a: Candidate, b: Candidate): number {
+  return (
+    b.strongestSignal - a.strongestSignal ||
+    b.evidenceScore - a.evidenceScore ||
+    b.matches.length - a.matches.length ||
+    a.firstMatchIndex - b.firstMatchIndex ||
+    a.type.localeCompare(b.type)
+  );
+}
+
+function hasSameRoutingRank(a: Candidate, b: Candidate): boolean {
+  return (
+    a.strongestSignal === b.strongestSignal &&
+    a.evidenceScore === b.evidenceScore &&
+    a.matches.length === b.matches.length
+  );
+}
+
+function routingConfidence(best: Candidate, runnerUp?: Candidate): number {
+  const baseByStrength: Record<number, number> = {
+    1: 0.78,
+    2: 0.86,
+    3: 0.93,
+  };
+  let confidence =
+    baseByStrength[best.strongestSignal] + Math.min((best.matches.length - 1) * 0.02, 0.04);
+
+  if (!runnerUp) return Math.min(confidence, 0.97);
+  if (hasSameRoutingRank(best, runnerUp)) return 0.42;
+
+  if (best.strongestSignal === runnerUp.strongestSignal) {
+    const competition = runnerUp.evidenceScore / best.evidenceScore;
+    confidence -= 0.24 * competition;
+  } else {
+    confidence -= best.strongestSignal - runnerUp.strongestSignal === 1 ? 0.08 : 0.04;
   }
 
-  const entries = Object.entries(scores) as [TaskType, number][];
-  if (entries.length === 0) {
+  return Math.max(0.5, Math.min(confidence, 0.97));
+}
+
+function classifyTask(description: string): {
+  type: RouteType;
+  confidence: number;
+  protocol: string | null;
+  taskDescription: string;
+  matchedSignals: string[];
+  alternativeTaskTypes: TaskType[];
+  ambiguous: boolean;
+} {
+  const normalized = description.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
+  const candidates: Candidate[] = [];
+
+  for (const [type, info] of Object.entries(TASK_TYPES)) {
+    const matches = info.triggers
+      .filter((trigger) => hasTrigger(normalized, trigger))
+      .map((trigger) => ({
+        signal: trigger,
+        strength: signalStrength(trigger),
+        index: triggerIndex(normalized, trigger),
+      }));
+    if (matches.length === 0) continue;
+
+    candidates.push({
+      type: type as TaskType,
+      matches,
+      strongestSignal: Math.max(...matches.map((match) => match.strength)),
+      evidenceScore: matches.reduce((sum, match) => sum + match.strength, 0),
+      firstMatchIndex: Math.min(...matches.map((match) => match.index)),
+    });
+  }
+
+  if (candidates.length === 0) {
     return {
-      type: "BUILD",
-      confidence: 0.3,
-      protocol: TASK_TYPES.BUILD.protocol,
-      taskDescription: TASK_TYPES.BUILD.description,
+      type: "UNCLASSIFIED",
+      confidence: 0,
+      protocol: null,
+      taskDescription: "No reliable task route identified",
+      matchedSignals: [],
+      alternativeTaskTypes: [],
+      ambiguous: false,
     };
   }
 
-  entries.sort((a, b) => b[1] - a[1]);
-  const [bestType, bestScore] = entries[0];
-  const totalTriggers = TASK_TYPES[bestType].triggers.length;
+  candidates.sort(compareCandidates);
+  const best = candidates[0];
+  const runnerUp = candidates[1];
+  const ambiguous = Boolean(runnerUp && hasSameRoutingRank(best, runnerUp));
 
   return {
-    type: bestType,
-    confidence: Math.min(bestScore / Math.max(totalTriggers * 0.4, 1), 1),
-    protocol: TASK_TYPES[bestType].protocol,
-    taskDescription: TASK_TYPES[bestType].description,
+    type: best.type,
+    confidence: routingConfidence(best, runnerUp),
+    protocol: TASK_TYPES[best.type].protocol,
+    taskDescription: TASK_TYPES[best.type].description,
+    matchedSignals: best.matches.map((match) => match.signal),
+    alternativeTaskTypes: candidates.slice(1).map((candidate) => candidate.type),
+    ambiguous,
   };
 }
 
@@ -205,11 +330,11 @@ export function registerGodPromptTools(server: McpServer): void {
     "classify_task",
     {
       title: "Classify software-development task",
-      description: "Classify a task description into one of GodPrompt's 9 task types (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN) and return the matching protocol name. Useful for routing tasks through the right workflow.",
+      description: "Classify a task description into one of GodPrompt's 9 task types (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN), or UNCLASSIFIED when no reliable route is detected. Confidence is deterministic routing confidence, not a statistical probability.",
       inputSchema: {
       description: z
         .string()
-        .max(1000, "Task description must be under 1000 characters")
+        .max(1000, "Task description must be at most 1000 characters")
         .trim()
         .min(3, "Task description must contain at least 3 characters of meaningful text")
         .regex(/[\p{L}\p{N}]/u, "Task description must include a letter or number")
@@ -226,8 +351,15 @@ export function registerGodPromptTools(server: McpServer): void {
         confidence: Math.round(result.confidence * 100) + "%",
         protocol: result.protocol,
         description: result.taskDescription,
+        matched_signals: result.matchedSignals,
+        alternative_task_types: result.alternativeTaskTypes,
+        ambiguous: result.ambiguous,
         recommendation:
-          result.confidence < 0.5
+          result.type === "UNCLASSIFIED"
+            ? "No reliable route detected — provide an English task description with a clearer software-development action or specify the task type directly."
+            : result.ambiguous
+              ? "Ambiguous mixed intent — consider splitting the task or specifying the primary task type directly."
+              : result.confidence < 0.5
             ? "Low confidence — consider providing more context or specifying the task type directly."
             : `Classified as ${result.type}. Use get_protocols to load the detailed execution guide.`,
       };

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { createInterface } from "node:readline";
 
@@ -50,18 +50,16 @@ function toolText(result) {
   return item.text;
 }
 
-test("builds a stdio MCP server exposing current GodPrompt content", async (t) => {
-  const build = spawnSync("npm", ["run", "build"], {
-    encoding: "utf8",
-    shell: process.platform === "win32",
+async function classify(child, pending, id, description) {
+  const result = await request(child, pending, id, "tools/call", {
+    name: "classify_task",
+    arguments: { description },
   });
+  assert.notEqual(result.isError, true, toolText(result));
+  return JSON.parse(toolText(result));
+}
 
-  assert.equal(
-    build.status,
-    0,
-    `npm run build failed\nstdout:\n${build.stdout}\nstderr:\n${build.stderr}`
-  );
-
+test("builds a stdio MCP server exposing current GodPrompt content", async (t) => {
   const child = spawn(process.execPath, ["dist/stdio.js"], {
     stdio: ["pipe", "pipe", "pipe"],
   });
@@ -156,25 +154,132 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   const planResult = JSON.parse(toolText(planClassification));
   assert.equal(planResult.task_type, "PLAN");
 
-  const whitespaceOnlyClassification = await request(child, pending, 41, "tools/call", {
-    name: "classify_task",
-    arguments: { description: "   " },
-  });
-  assert.equal(whitespaceOnlyClassification.isError, true);
-  assert.match(toolText(whitespaceOnlyClassification), /meaningful text/i);
+  const clearCases = [
+    ["build a REST API for user auth", "BUILD"],
+    ["fix the login bug", "DEBUG"],
+    ["refactor payment processing without behavior changes", "REFACTOR"],
+    ["documentation for the authentication API", "CONTENT"],
+    ["design the settings screen", "DESIGN"],
+    ["deploy payment service to production", "SHIP"],
+    ["audit database indexes", "ANALYZE"],
+    ["automate nightly backups", "AUTOMATE"],
+    ["plan the database migration", "PLAN"],
+  ];
+  for (const [description, expected] of clearCases) {
+    const result = await classify(
+      child,
+      pending,
+      `clear-${expected}`,
+      description
+    );
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+    assert.ok(parseInt(result.confidence, 10) >= 70, description);
+    assert.ok(result.matched_signals.length > 0, description);
+  }
 
-  const punctuationOnlyClassification = await request(child, pending, 42, "tools/call", {
-    name: "classify_task",
-    arguments: { description: "!!!" },
-  });
-  assert.equal(punctuationOnlyClassification.isError, true);
-  assert.match(toolText(punctuationOnlyClassification), /letter or number/i);
+  const specificityCases = [
+    ["create documentation for the API", "CONTENT"],
+    ["make docs for the login flow", "CONTENT"],
+    ["design system for our app", "PLAN"],
+  ];
+  for (const [description, expected] of specificityCases) {
+    const result = await classify(
+      child,
+      pending,
+      `specific-${expected}-${description.length}`,
+      description
+    );
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
 
-  const unicodeClassification = await request(child, pending, 43, "tools/call", {
-    name: "classify_task",
-    arguments: { description: "修复登录错误" },
-  });
-  assert.notEqual(unicodeClassification.isError, true);
+  const ambiguityCases = [
+    ["build and fix authentication", ["BUILD", "DEBUG"]],
+    ["review and refactor checkout", ["ANALYZE", "REFACTOR"]],
+  ];
+  for (const [description, expectedTypes] of ambiguityCases) {
+    const result = await classify(
+      child,
+      pending,
+      `ambiguous-${description.length}`,
+      description
+    );
+    assert.equal(result.ambiguous, true, description);
+    assert.ok(expectedTypes.includes(result.task_type), description);
+    assert.ok(
+      expectedTypes.some((type) => result.alternative_task_types.includes(type)),
+      description
+    );
+    assert.ok(parseInt(result.confidence, 10) < 50, description);
+  }
+
+  const invalidCases = [
+    [{ description: "   " }, /at least 3 characters/i],
+    [{ description: "!!!" }, /letter or number/i],
+    [{ description: "ab" }, /at least 3 characters/i],
+    [{ description: "a".repeat(1001) }, /at most 1000 characters/i],
+    [{}, /description/i],
+    [{ description: 42 }, /string/i],
+  ];
+  for (let index = 0; index < invalidCases.length; index++) {
+    const [arguments_, pattern] = invalidCases[index];
+    const result = await request(child, pending, `invalid-${index}`, "tools/call", {
+      name: "classify_task",
+      arguments: arguments_,
+    });
+    assert.equal(result.isError, true);
+    assert.match(toolText(result), pattern);
+  }
+
+  const exactLimit = await classify(
+    child,
+    pending,
+    "exact-limit",
+    "a".repeat(1000)
+  );
+  assert.equal(exactLimit.task_type, "UNCLASSIFIED");
+  assert.equal(exactLimit.confidence, "0%");
+
+  const unicodeNoMatch = await classify(
+    child,
+    pending,
+    "unicode-no-match",
+    "修复登录错误并验证回归测试"
+  );
+  assert.equal(unicodeNoMatch.task_type, "UNCLASSIFIED");
+  assert.equal(unicodeNoMatch.confidence, "0%");
+  assert.deepEqual(unicodeNoMatch.matched_signals, []);
+
+  for (const [index, description] of [
+    "debugger tooling",
+    "shipment tracker",
+    "featureless module",
+  ].entries()) {
+    const result = await classify(
+      child,
+      pending,
+      `boundary-${index}`,
+      description
+    );
+    assert.equal(result.task_type, "UNCLASSIFIED", description);
+  }
+
+  const deterministicResults = [];
+  for (let index = 0; index < 20; index++) {
+    deterministicResults.push(
+      await classify(
+        child,
+        pending,
+        `determinism-${index}`,
+        "create documentation for the API"
+      )
+    );
+  }
+  assert.equal(
+    new Set(deterministicResults.map((result) => JSON.stringify(result))).size,
+    1
+  );
 
   const versionResult = await request(child, pending, 5, "tools/call", {
     name: "get_version",
@@ -223,17 +328,6 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
 });
 
 test("serves the MCP 2026-07-28 era over stdio", async (t) => {
-  const build = spawnSync("npm", ["run", "build"], {
-    encoding: "utf8",
-    shell: process.platform === "win32",
-  });
-
-  assert.equal(
-    build.status,
-    0,
-    `npm run build failed\nstdout:\n${build.stdout}\nstderr:\n${build.stderr}`
-  );
-
   const child = spawn(process.execPath, ["dist/stdio.js"], {
     stdio: ["pipe", "pipe", "pipe"],
   });

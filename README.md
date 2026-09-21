@@ -19,7 +19,7 @@ GitHub Sponsors is the frozen payment rail, and the current `AKzar1el` Sponsors 
 | `get_protocols` | `references/01-PROTOCOLS.md` — deep execution guides (~13KB) |
 | `get_gates` | `references/02-GATES.md` — verification checklists (~9KB) |
 | `get_anti_patterns` | `references/03-ANTI-PATTERNS.md` — red flags & recovery (~9KB) |
-| `classify_task` | Classify a task into one of 9 GodPrompt task types |
+| `classify_task` | Deterministically route a task to one of 9 GodPrompt task types, or `UNCLASSIFIED` when no reliable signal exists |
 | `get_version` | Version info and server metadata |
 
 ## Progressive Disclosure
@@ -147,7 +147,7 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent droi
 Droid discovers compatible project skills under `.agents/skills/`. To add the callable GodPrompt tools as a local stdio MCP server, use Droid's native MCP command with the published version pinned:
 
 ```bash
-droid mcp add god-prompt "npx -y god-prompt-mcp@1.0.17"
+droid mcp add god-prompt "npx -y god-prompt-mcp@1.0.18"
 ```
 
 Open `/mcp` in Droid to verify the server and available tools. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
