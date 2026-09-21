@@ -156,6 +156,26 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   const planResult = JSON.parse(toolText(planClassification));
   assert.equal(planResult.task_type, "PLAN");
 
+  const whitespaceOnlyClassification = await request(child, pending, 41, "tools/call", {
+    name: "classify_task",
+    arguments: { description: "   " },
+  });
+  assert.equal(whitespaceOnlyClassification.isError, true);
+  assert.match(toolText(whitespaceOnlyClassification), /meaningful text/i);
+
+  const punctuationOnlyClassification = await request(child, pending, 42, "tools/call", {
+    name: "classify_task",
+    arguments: { description: "!!!" },
+  });
+  assert.equal(punctuationOnlyClassification.isError, true);
+  assert.match(toolText(punctuationOnlyClassification), /letter or number/i);
+
+  const unicodeClassification = await request(child, pending, 43, "tools/call", {
+    name: "classify_task",
+    arguments: { description: "修复登录错误" },
+  });
+  assert.notEqual(unicodeClassification.isError, true);
+
   const versionResult = await request(child, pending, 5, "tools/call", {
     name: "get_version",
     arguments: {},

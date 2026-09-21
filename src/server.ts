@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.16",
+  version: "1.0.17",
 } as const;
 
 // Version 1.0.0 was generated before the source layout moved from core/* to
@@ -209,8 +209,10 @@ export function registerGodPromptTools(server: McpServer): void {
       inputSchema: {
       description: z
         .string()
-        .min(3, "Task description must be at least 3 characters")
         .max(1000, "Task description must be under 1000 characters")
+        .trim()
+        .min(3, "Task description must contain at least 3 characters of meaningful text")
+        .regex(/[\p{L}\p{N}]/u, "Task description must include a letter or number")
         .describe(
           "The task description to classify, e.g. 'fix the login bug' or 'build a REST API for user auth'"
         ),
