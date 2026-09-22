@@ -325,6 +325,45 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(workerInitializeText, /Start with get_core_skill/i);
   assert.match(workerInitializeText, /All GodPrompt tools are read-only/i);
 
+  const workerModernDiscover = new Request("https://example.test/mcp", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+      "mcp-method": "server/discover",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "worker-modern-discover",
+      method: "server/discover",
+      params: {
+        _meta: {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientInfo": {
+            name: "god-prompt-modern-worker-test",
+            version: "1.0.0",
+          },
+          "io.modelcontextprotocol/clientCapabilities": {},
+        },
+      },
+    }),
+  });
+  const workerModernResponse = await worker.fetch(workerModernDiscover, {}, {});
+  assert.equal(workerModernResponse.status, 200);
+  const workerModern = await workerModernResponse.json();
+  assert.deepEqual(workerModern.result?.supportedVersions, ["2026-07-28"]);
+  assert.equal(
+    workerModern.result?._meta?.["io.modelcontextprotocol/serverInfo"]?.name,
+    "god-prompt-mcp"
+  );
+  assert.equal(
+    workerModern.result?._meta?.["io.modelcontextprotocol/serverInfo"]?.version,
+    packageJson.version
+  );
+  assert.match(workerModern.result?.instructions, /Start with get_core_skill/i);
+  assert.match(workerModern.result?.instructions, /classify_task/i);
+  assert.match(workerModern.result?.instructions, /All GodPrompt tools are read-only/i);
+
   const wrongPathResponse = await worker.fetch(
     new Request("https://example.test/not-mcp", { method: "GET" }),
     {},

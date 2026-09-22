@@ -48,7 +48,7 @@ Use the public Streamable HTTP endpoint directly in MCP clients that support rem
 https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp
 ```
 
-The hosted endpoint exposes the same seven read-only GodPrompt tools as the local server and requires no API key or local Node.js runtime. It is also published as a remote option in the Official MCP Registry alongside the installable stdio packages.
+The hosted endpoint exposes the same seven read-only GodPrompt tools as the local server and requires no API key or local Node.js runtime. It accepts both the deployed `initialize` flow and the current MCP 2026-07-28 `server/discover` flow so clients can connect while the ecosystem transitions between protocol eras. It is also published as a remote option in the Official MCP Registry alongside the installable stdio packages.
 
 ### npm / npx (recommended)
 
