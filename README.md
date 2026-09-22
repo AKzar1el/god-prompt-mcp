@@ -289,6 +289,29 @@ openclaw mcp probe god-prompt
 
 `mcp probe` opens a live MCP connection and reports the discovered capabilities, making it a direct verification step after registration. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
+### Qoder
+
+Qoder can use GodPrompt as both a native project Skill and a project-level local MCP server. Install the portable skill with Qoder's supported Skills CLI target:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent qoder --copy -y
+```
+
+The Qoder target installs the skill under `.qoder/skills/god-prompt/`, where Qoder can load it automatically when the task matches the skill description. To expose GodPrompt's callable tools to the project as well, add `.mcp.json` at the project root:
+
+```json
+{
+  "mcpServers": {
+    "god-prompt": {
+      "command": "npx",
+      "args": ["-y", "god-prompt-mcp@1.0.20"]
+    }
+  }
+}
+```
+
+Qoder requires approval before using project-level MCP servers by default. After adding or changing the server, start a new session or run `/mcp reload`, then use `/mcp` to verify the connection. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+
 ### Qwen Code
 
 Qwen Code can use GodPrompt through both of its native extension surfaces: Agent Skills and local MCP servers. Install the complete portable skill with the current Skills CLI target for Qwen Code:
