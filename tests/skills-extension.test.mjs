@@ -58,7 +58,11 @@ test("serves the canonical GodPrompt skill through SEP-2640", async (t) => {
     if (message.id === undefined || !pending.has(message.id)) return;
     const waiter = pending.get(message.id);
     pending.delete(message.id);
-    if (message.error) waiter.reject(new Error(JSON.stringify(message.error)));
+    if (message.error) {
+      const error = new Error(message.error.message);
+      error.code = message.error.code;
+      waiter.reject(error);
+    }
     else waiter.resolve(message.result);
   });
   child.on("exit", (code) => {
@@ -125,7 +129,11 @@ test("serves the canonical GodPrompt skill through SEP-2640", async (t) => {
       uri: "skill://not-god-prompt/SKILL.md",
       _meta: REQUEST_META,
     }),
-    /Unknown GodPrompt skill URI/
+    (error) => {
+      assert.equal(error.code, -32602);
+      assert.match(error.message, /Unknown GodPrompt skill URI/);
+      return true;
+    }
   );
 });
 
@@ -170,4 +178,15 @@ test("serves SEP-2640 through the hosted Worker transport", async () => {
   );
   assert.match(read.result?.contents?.[0]?.text ?? "", /# GodPrompt/i);
   assert.match(read.result?.contents?.[0]?.text ?? "", /^license: MIT$/m);
+
+  const invalidSkill = await post(
+    "skills/get",
+    {
+      uri: "skill://not-god-prompt/SKILL.md",
+      _meta: REQUEST_META,
+    },
+    "worker-invalid-skill"
+  );
+  assert.equal(invalidSkill.error?.code, -32602);
+  assert.match(invalidSkill.error?.message ?? "", /Unknown GodPrompt skill URI/);
 });

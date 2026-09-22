@@ -1,4 +1,8 @@
-import { McpServer } from "@modelcontextprotocol/server";
+import {
+  McpServer,
+  ProtocolError,
+  ProtocolErrorCode,
+} from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { CONTENT } from "./content.js";
 import { CORE_SKILL } from "./skill-content.js";
@@ -151,7 +155,10 @@ export function registerGodPromptSkillExtension(server: McpServer): void {
     { params: getSkillParams },
     async ({ uri }) => {
       if (uri !== SKILL_URI) {
-        throw new Error(`Unknown GodPrompt skill URI: ${uri}`);
+        throw new ProtocolError(
+          ProtocolErrorCode.InvalidParams,
+          `Unknown GodPrompt skill URI: ${uri}`
+        );
       }
       return {
         resultType: "complete",
