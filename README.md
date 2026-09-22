@@ -50,6 +50,16 @@ https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp
 
 The hosted endpoint exposes the same seven read-only GodPrompt tools as the local server and requires no API key or local Node.js runtime. It accepts both the deployed `initialize` flow and the current MCP 2026-07-28 `server/discover` flow so clients can connect while the ecosystem transitions between protocol eras. It is also published as a remote option in the Official MCP Registry alongside the installable stdio packages.
 
+### ChatGPT (hosted remote)
+
+On ChatGPT web, supported Business and Enterprise/Edu workspaces can connect the hosted endpoint as a custom MCP app in Developer Mode:
+
+1. Enable Developer Mode, then open **Settings > Apps > Create** (workspace controls may require an admin or authorized developer).
+2. Use `https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp` as the MCP endpoint and select no authentication.
+3. Choose **Scan Tools**, confirm the seven read-only GodPrompt tools, then create and enable the app for the intended workspace users.
+
+ChatGPT connects to remote MCP servers rather than local stdio servers. See OpenAI's [Developer mode and MCP apps in ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt) documentation for current availability and workspace controls.
+
 ### npm / npx (recommended)
 
 ```bash
