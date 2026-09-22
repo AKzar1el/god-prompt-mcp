@@ -121,6 +121,11 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.match(stdioSource, /^#!\/usr\/bin\/env node\r?\n/);
 });
 
+test("keeps the packaged README aligned with relevance-scoped core-skill loading", () => {
+  assert.match(readme, /`get_core_skill` \| `SKILL\.md` — core protocol \(load when relevant, ~10KB\)/);
+  assert.doesNotMatch(readme, /`get_core_skill` \| `SKILL\.md` — always-on protocol/i);
+});
+
 test("uses the split MCP SDK v2 without the Workers-only Agents SDK", () => {
   assert.equal(packageJson.dependencies?.["@modelcontextprotocol/sdk"], undefined);
   assert.equal(packageJson.dependencies?.["@modelcontextprotocol/server"], "2.0.0");
