@@ -4,7 +4,7 @@ import { CONTENT, VERSION } from "./content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.21",
+  version: "1.0.22",
 } as const;
 
 export const SERVER_INSTRUCTIONS =
