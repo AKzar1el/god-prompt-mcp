@@ -50,6 +50,12 @@ https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp
 
 The hosted endpoint exposes the same seven read-only GodPrompt tools as the local server and requires no API key or local Node.js runtime. It accepts both the deployed `initialize` flow and the current MCP 2026-07-28 `server/discover` flow so clients can connect while the ecosystem transitions between protocol eras. It is also published as a remote option in the Official MCP Registry alongside the installable stdio packages.
 
+### Agent Skills over MCP (SEP-2640)
+
+On MCP 2026-07-28, both the hosted and stdio servers advertise the Final `io.modelcontextprotocol/skills` extension from SEP-2640. Supporting clients can discover the same relevance-scoped `god-prompt` Agent Skill with `skills/list` / `skills/get`, then fetch `SKILL.md` and its three reference files through `resources/read`. The skill manifest includes SHA-256 digests and exact byte sizes so clients can verify what they import. Clients that do not implement this extension continue to use the seven existing GodPrompt tools normally.
+
+This transports GodPrompt's existing skill package; it does not force the skill into every request or change the host's own approval, verification, or activation policy. See the [MCP Skills extension specification](https://modelcontextprotocol.io/extensions/skills/overview).
+
 ### ChatGPT (hosted remote)
 
 On ChatGPT web, supported Business and Enterprise/Edu workspaces can connect the hosted endpoint as a custom MCP app in Developer Mode:
