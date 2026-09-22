@@ -181,6 +181,19 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
   assert.equal(cursorPlugin.mcpServers, "cursor-mcp.json");
 });
 
+test("advertises the hosted Worker alongside local Official Registry packages", () => {
+  assert.deepEqual(serverJson.remotes, [
+    {
+      type: "streamable-http",
+      url: "https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp",
+    },
+  ]);
+  assert.deepEqual(
+    serverJson.packages.map((entry) => entry.transport?.type),
+    ["stdio", "stdio"]
+  );
+});
+
 test("keeps the Factory Droid README package pin aligned with the public npm package", () => {
   assert.ok(
     readme.includes(
