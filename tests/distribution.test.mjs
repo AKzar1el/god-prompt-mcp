@@ -110,6 +110,8 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.deepEqual(packageJson.files, [
     "dist/stdio.js",
     "dist/server.js",
+    "dist/skill-content.js",
+    "dist/skills.js",
     "dist/content.js",
     "README.md",
     "LICENSE",

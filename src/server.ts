@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { CONTENT, VERSION } from "./content.js";
+import { CORE_SKILL } from "./skill-content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
@@ -9,14 +10,6 @@ export const SERVER_INFO = {
 
 export const SERVER_INSTRUCTIONS =
   "Start with get_core_skill for the lean GodPrompt protocol. Use classify_task to route a concrete task, then load get_protocols, get_gates, or get_anti_patterns only when that focused reference is needed. Use get_god_prompt only when the full single-file payload is preferable. All GodPrompt tools are read-only.";
-
-// Version 1.0.0 was generated before the source layout moved from core/* to
-// SKILL.md + references/*. Normalize only those legacy links at the serving
-// boundary; regenerated content from the repaired generator makes this a no-op.
-const CORE_SKILL = CONTENT.CORE_SKILL
-  .replaceAll("core/01-PROTOCOLS.md", "references/01-PROTOCOLS.md")
-  .replaceAll("core/02-GATES.md", "references/02-GATES.md")
-  .replaceAll("core/03-ANTI-PATTERNS.md", "references/03-ANTI-PATTERNS.md");
 
 const READ_ONLY_ANNOTATIONS = {
   readOnlyHint: true,
