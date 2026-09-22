@@ -471,11 +471,11 @@ Example client configuration:
 
 ## Privacy Policy
 
-GodPrompt MCP is a local stdio server. Its content tools return static GodPrompt material bundled with the installed extension, and `classify_task` evaluates the supplied task description in the local Node.js process.
+GodPrompt MCP can run either as a local stdio server or through the public Streamable HTTP Worker. Its content tools return static GodPrompt material bundled with the server, and `classify_task` is deterministic; neither mode calls a model or third-party content API.
 
-- **Data collection and use:** the server has no telemetry or analytics and does not collect account data. Tool input is used only to produce the requested local response.
-- **Storage and retention:** the server has no server-side persistence and does not retain tool inputs after a request completes.
-- **Third-party sharing:** the server does not transmit tool inputs or bundled GodPrompt content to an external API or third party. The MCP host or AI client may process conversation and tool data under its own policies independently of this server.
+- **Data collection and use:** GodPrompt application code has no telemetry or analytics and does not request account data. Local stdio tool input stays in the local Node.js process. Hosted remote tool input is sent over HTTPS to the Cloudflare-hosted Worker so it can produce the MCP response.
+- **Storage and retention:** the MCP request handlers are stateless and have no application database or request-retention path; they do not intentionally persist tool inputs after a request completes. Hosting/provider infrastructure may process connection or request metadata under its own policies.
+- **Third-party sharing:** local stdio does not transmit tool inputs or bundled GodPrompt content to an external API. The hosted remote necessarily passes the request through Cloudflare infrastructure, but GodPrompt application code does not forward tool inputs to another API or service. The MCP host or AI client may process conversation and tool data under its own policies independently of this server.
 - **Contact and policy:** see [tomiseregi.si/privacy](https://tomiseregi.si/privacy) for the current privacy policy and contact information. For support or bug reports, use [GitHub Issues](https://github.com/AKzar1el/god-prompt-mcp/issues).
 
 ## Development
