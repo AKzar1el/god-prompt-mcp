@@ -40,6 +40,16 @@ The MCP server does not run the benchmark or claim model-level superiority itsel
 
 ## Connect
 
+### Hosted remote (no Node.js required)
+
+Use the public Streamable HTTP endpoint directly in MCP clients that support remote servers:
+
+```text
+https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp
+```
+
+The hosted endpoint exposes the same seven read-only GodPrompt tools as the local server and requires no API key or local Node.js runtime. It is also published as a remote option in the Official MCP Registry alongside the installable stdio packages.
+
 ### npm / npx (recommended)
 
 ```bash
