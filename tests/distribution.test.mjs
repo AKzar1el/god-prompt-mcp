@@ -188,6 +188,20 @@ test("keeps the Goose session package pin aligned with the public npm package", 
   );
 });
 
+test("keeps the OpenClaw MCP onboarding aligned with the public npm package", () => {
+  assert.ok(
+    readme.includes(
+      `openclaw mcp add god-prompt --command npx --arg -y --arg god-prompt-mcp@${packageJson.version}`
+    )
+  );
+  assert.ok(readme.includes("openclaw mcp probe god-prompt"));
+  assert.ok(
+    readme.includes(
+      "npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent openclaw --copy -y"
+    )
+  );
+});
+
 test("keeps the Kimi main-branch plugin onboarding aligned with the public npm package", () => {
   assert.ok(
     readme.includes(

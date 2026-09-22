@@ -249,6 +249,23 @@ OpenCode 1.x used the same server entry directly under `mcp`; the v2 schema show
 
 The Agent Skill provides the reusable workflow; MCP adds the seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
+### OpenClaw
+
+OpenClaw can use GodPrompt as both a project Agent Skill and a locally registered MCP server. Install the complete portable skill with the current Skills CLI target for OpenClaw:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent openclaw --copy -y
+```
+
+The copied skill lands under `.agents/skills/god-prompt/`, one of OpenClaw's documented project skill roots. To expose GodPrompt's callable tools to OpenClaw-managed agent runtimes as well, register the published stdio server:
+
+```bash
+openclaw mcp add god-prompt --command npx --arg -y --arg god-prompt-mcp@1.0.20
+openclaw mcp probe god-prompt
+```
+
+`mcp probe` opens a live MCP connection and reports the discovered capabilities, making it a direct verification step after registration. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+
 ### Qwen Code
 
 Qwen Code can use GodPrompt through both of its native extension surfaces: Agent Skills and local MCP servers. Install the complete portable skill with the current Skills CLI target for Qwen Code:
