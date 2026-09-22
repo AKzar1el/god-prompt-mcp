@@ -1,7 +1,7 @@
 {
   "name": "god-prompt-mcp",
   "description": "GodPrompt engineering workflows for task routing, TDD, debugging, verification, and progressive disclosure through MCP.",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "author": {
     "name": "Tomi Šeregi"
   },
