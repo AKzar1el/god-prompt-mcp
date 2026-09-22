@@ -249,6 +249,29 @@ OpenCode 1.x used the same server entry directly under `mcp`; the v2 schema show
 
 The Agent Skill provides the reusable workflow; MCP adds the seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
 
+### TraeCode
+
+TraeCode can use GodPrompt as both a native project skill and a project-level local MCP server. Install the complete portable skill with the current Skills CLI target for Trae:
+
+```bash
+npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent trae --copy -y
+```
+
+The Trae target installs the skill under `.trae/skills/god-prompt/`, where TraeCode can load it when the task matches its description. To expose GodPrompt's callable tools for the project as well, add `.trae/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "god-prompt": {
+      "command": "npx",
+      "args": ["-y", "god-prompt-mcp@1.0.20"]
+    }
+  }
+}
+```
+
+TraeCode also supports the portable `.agents/skills/` convention when **Enable .agents Skills Directory** is turned on in its import settings. Treat project MCP configuration as executable workspace configuration and enable it only in repositories you trust. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+
 ### OpenClaw
 
 OpenClaw can use GodPrompt as both a project Agent Skill and a locally registered MCP server. Install the complete portable skill with the current Skills CLI target for OpenClaw:

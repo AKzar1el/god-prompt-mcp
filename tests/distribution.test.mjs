@@ -202,6 +202,18 @@ test("keeps the OpenClaw MCP onboarding aligned with the public npm package", ()
   );
 });
 
+test("keeps TraeCode skill and MCP onboarding aligned with the public npm package", () => {
+  const traeSection = readme.match(/### TraeCode\n([\s\S]*?)\n### OpenClaw/)?.[1] ?? "";
+
+  assert.ok(
+    traeSection.includes(
+      "npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent trae --copy -y"
+    )
+  );
+  assert.ok(traeSection.includes('add `.trae/mcp.json`'));
+  assert.ok(traeSection.includes(`"args": ["-y", "god-prompt-mcp@${packageJson.version}"]`));
+});
+
 test("keeps the Kimi main-branch plugin onboarding aligned with the public npm package", () => {
   assert.ok(
     readme.includes(
