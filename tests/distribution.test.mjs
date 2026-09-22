@@ -126,6 +126,18 @@ test("keeps the packaged README aligned with relevance-scoped core-skill loading
   assert.doesNotMatch(readme, /`get_core_skill` \| `SKILL\.md` — always-on protocol/i);
 });
 
+test("keeps privacy copy aligned with local and hosted transports", () => {
+  assert.match(
+    readme,
+    /can run either as a local stdio server or through the public Streamable HTTP Worker/
+  );
+  assert.match(
+    readme,
+    /Hosted remote tool input is sent over HTTPS to the Cloudflare-hosted Worker/
+  );
+  assert.doesNotMatch(readme, /GodPrompt MCP is a local stdio server\./);
+});
+
 test("uses the split MCP SDK v2 without the Workers-only Agents SDK", () => {
   assert.equal(packageJson.dependencies?.["@modelcontextprotocol/sdk"], undefined);
   assert.equal(packageJson.dependencies?.["@modelcontextprotocol/server"], "2.0.0");
