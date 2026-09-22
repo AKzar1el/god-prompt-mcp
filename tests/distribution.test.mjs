@@ -202,6 +202,19 @@ test("keeps the OpenClaw MCP onboarding aligned with the public npm package", ()
   );
 });
 
+test("keeps Qoder skill and project MCP onboarding aligned with the public npm package", () => {
+  const qoderSection = readme.match(/### Qoder\n([\s\S]*?)\n### Qwen Code/)?.[1] ?? "";
+
+  assert.ok(
+    qoderSection.includes(
+      "npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent qoder --copy -y"
+    )
+  );
+  assert.ok(qoderSection.includes("add `.mcp.json` at the project root"));
+  assert.ok(qoderSection.includes(`"args": ["-y", "god-prompt-mcp@${packageJson.version}"]`));
+  assert.ok(qoderSection.includes("requires approval before using project-level MCP servers by default"));
+});
+
 test("keeps TraeCode skill and MCP onboarding aligned with the public npm package", () => {
   const traeSection = readme.match(/### TraeCode\n([\s\S]*?)\n### OpenClaw/)?.[1] ?? "";
 
