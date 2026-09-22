@@ -125,7 +125,8 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
 
 test("keeps package and Registry discovery metadata aligned with the shipped Agent Skill", () => {
   assert.match(packageJson.description, /MCP server \+ portable Agent Skill/i);
-  assert.match(serverJson.description, /MCP server \+ portable Agent Skill/i);
+  assert.match(serverJson.description, /MCP \+ Agent Skill/i);
+  assert.ok(serverJson.description.length <= 100);
 
   for (const keyword of [
     "mcp-server",

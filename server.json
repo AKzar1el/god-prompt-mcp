@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.AKzar1el/god-prompt-mcp",
   "title": "GodPrompt MCP Server",
-  "description": "GodPrompt MCP server + portable Agent Skill for coding agents — TDD, debugging, verification gates, task routing, and progressive disclosure.",
+  "description": "GodPrompt MCP + Agent Skill for coding agents with TDD, debugging, verification, and task routing.",
   "version": "1.0.23",
   "repository": {
     "url": "https://github.com/AKzar1el/god-prompt-mcp",
