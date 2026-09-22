@@ -1,4 +1,5 @@
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
+import { createArdManifestResponse } from "./discovery.js";
 import { registerGodPromptTools, SERVER_INFO } from "./server.js";
 
 function createServer(): McpServer {
@@ -11,7 +12,16 @@ const mcpHandler = createMcpHandler(createServer);
 
 export default {
   fetch(request: Request) {
-    if (new URL(request.url).pathname !== "/mcp") {
+    const pathname = new URL(request.url).pathname;
+
+    if (
+      request.method === "GET" &&
+      (pathname === "/.well-known/ard.json" || pathname === "/.well-known/ai-catalog.json")
+    ) {
+      return createArdManifestResponse();
+    }
+
+    if (pathname !== "/mcp") {
       return new Response("Not Found", { status: 404 });
     }
     return mcpHandler.fetch(request);
