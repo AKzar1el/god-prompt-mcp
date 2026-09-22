@@ -123,6 +123,26 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.match(stdioSource, /^#!\/usr\/bin\/env node\r?\n/);
 });
 
+test("keeps package and Registry discovery metadata aligned with the shipped Agent Skill", () => {
+  assert.match(packageJson.description, /MCP server \+ portable Agent Skill/i);
+  assert.match(serverJson.description, /MCP server \+ portable Agent Skill/i);
+
+  for (const keyword of [
+    "mcp-server",
+    "agent-skills",
+    "coding-agents",
+    "claude-code",
+    "codex",
+    "cursor",
+  ]) {
+    assert.ok(packageJson.keywords.includes(keyword), `missing npm keyword: ${keyword}`);
+    assert.ok(
+      serverJson._meta["io.modelcontextprotocol.registry/publisher-provided"].tags.includes(keyword),
+      `missing Registry tag: ${keyword}`
+    );
+  }
+});
+
 test("keeps the packaged README aligned with relevance-scoped core-skill loading", () => {
   assert.match(readme, /`get_core_skill` \| `SKILL\.md` — core protocol \(load when relevant, ~10KB\)/);
   assert.doesNotMatch(readme, /`get_core_skill` \| `SKILL\.md` — always-on protocol/i);
