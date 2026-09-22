@@ -15,7 +15,7 @@ GitHub Sponsors is the frozen payment rail, and the current `AKzar1el` Sponsors 
 | Tool | Description |
 |------|-------------|
 | `get_god_prompt` | Full GodPrompt.md single-file payload (~40KB) |
-| `get_core_skill` | `SKILL.md` — always-on protocol (~10KB) |
+| `get_core_skill` | `SKILL.md` — core protocol (load when relevant, ~10KB) |
 | `get_protocols` | `references/01-PROTOCOLS.md` — deep execution guides (~13KB) |
 | `get_gates` | `references/02-GATES.md` — verification checklists (~9KB) |
 | `get_anti_patterns` | `references/03-ANTI-PATTERNS.md` — red flags & recovery (~9KB) |
