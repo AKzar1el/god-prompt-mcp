@@ -39,7 +39,7 @@ jobs:
         run: |
           node - <<'NODE'
           const pkg = require('./package.json');
-          const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/content.js', 'README.md', 'LICENSE'];
+          const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js', 'README.md', 'LICENSE'];
           if (pkg.name !== 'god-prompt-mcp') throw new Error('package name drift');
           const serverSource = require('fs').readFileSync('src/server.ts', 'utf8');
           const match = serverSource.match(/version:\s*"([^"]+)"/);
@@ -67,7 +67,7 @@ jobs:
           node - <<'NODE'
           const pack = require(process.env.RUNNER_TEMP + '/npm-pack.json')[0];
           const names = new Set(pack.files.map((f) => f.path));
-          const required = ['package.json', 'README.md', 'LICENSE', 'dist/stdio.js', 'dist/server.js', 'dist/content.js'];
+          const required = ['package.json', 'README.md', 'LICENSE', 'dist/stdio.js', 'dist/server.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js'];
           for (const file of required) {
             if (!names.has(file)) throw new Error(`missing packaged file: ${file}`);
           }
