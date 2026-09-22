@@ -290,6 +290,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.equal(typeof version.version, "string");
   assert.ok(version.version.length > 0);
   assert.ok(version.files["SKILL.md"]);
+  assert.match(version.files["SKILL.md"], /load when relevant/i);
+  assert.doesNotMatch(version.files["SKILL.md"], /always-on/i);
   assert.ok(version.files["references/01-PROTOCOLS.md"]);
   assert.ok(version.files["references/02-GATES.md"]);
   assert.ok(version.files["references/03-ANTI-PATTERNS.md"]);

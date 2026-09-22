@@ -395,7 +395,7 @@ export function registerGodPromptTools(server: McpServer): void {
               repo: "https://github.com/AKzar1el/god-prompt",
               files: {
                 "GodPrompt.md": `${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB — full single-file payload`,
-                "SKILL.md": `${Math.round(CORE_SKILL.length / 1024)}KB — core protocol (always-on)`,
+                "SKILL.md": `${Math.round(CORE_SKILL.length / 1024)}KB — core protocol (load when relevant)`,
                 "references/01-PROTOCOLS.md": `${Math.round(CONTENT.PROTOCOLS.length / 1024)}KB — deep execution guides`,
                 "references/02-GATES.md": `${Math.round(CONTENT.GATES.length / 1024)}KB — verification checklists`,
                 "references/03-ANTI-PATTERNS.md": `${Math.round(CONTENT.ANTI_PATTERNS.length / 1024)}KB — red flags & recovery`,
