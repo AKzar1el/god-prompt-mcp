@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { inflateSync } from "node:zlib";
 
 const packageJson = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8")
@@ -67,6 +68,9 @@ const cursorPlugin = JSON.parse(
 );
 const cursorMcp = JSON.parse(
   await readFile(new URL("../cursor-mcp.json", import.meta.url), "utf8")
+);
+const logoPng = await readFile(
+  new URL("../assets/logo-400.png", import.meta.url)
 );
 const claudePlugin = JSON.parse(
   await readFile(new URL("../.claude-plugin/plugin.json", import.meta.url), "utf8")
@@ -214,6 +218,61 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
     args: ["-y", pinnedPackage],
   });
   assert.equal(cursorPlugin.mcpServers, "cursor-mcp.json");
+});
+
+test("ships a decodable 400x400 PNG for MCPB and Cursor distribution", () => {
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  assert.deepEqual(logoPng.subarray(0, signature.length), signature);
+
+  let offset = signature.length;
+  let width = 0;
+  let height = 0;
+  let bitDepth = 0;
+  let colorType = -1;
+  let interlace = -1;
+  let sawIend = false;
+  const idatChunks = [];
+
+  while (offset + 12 <= logoPng.length) {
+    const length = logoPng.readUInt32BE(offset);
+    const type = logoPng.toString("ascii", offset + 4, offset + 8);
+    const dataStart = offset + 8;
+    const dataEnd = dataStart + length;
+    const chunkEnd = dataEnd + 4;
+    assert.ok(chunkEnd <= logoPng.length, `${type} chunk extends past EOF`);
+
+    if (type === "IHDR") {
+      width = logoPng.readUInt32BE(dataStart);
+      height = logoPng.readUInt32BE(dataStart + 4);
+      bitDepth = logoPng[dataStart + 8];
+      colorType = logoPng[dataStart + 9];
+      interlace = logoPng[dataStart + 12];
+    } else if (type === "IDAT") {
+      idatChunks.push(logoPng.subarray(dataStart, dataEnd));
+    } else if (type === "IEND") {
+      assert.equal(length, 0);
+      sawIend = true;
+      offset = chunkEnd;
+      break;
+    }
+
+    offset = chunkEnd;
+  }
+
+  assert.equal(width, 400);
+  assert.equal(height, 400);
+  assert.equal(bitDepth, 8);
+  assert.ok(colorType === 2 || colorType === 6, `unexpected color type: ${colorType}`);
+  assert.equal(interlace, 0);
+  assert.ok(idatChunks.length > 0);
+  assert.equal(sawIend, true);
+  assert.equal(offset, logoPng.length);
+
+  const channels = colorType === 2 ? 3 : 4;
+  const decoded = inflateSync(Buffer.concat(idatChunks));
+  assert.equal(decoded.length, height * (1 + width * channels));
+  assert.equal(mcpbManifest.icon, "assets/logo-400.png");
+  assert.equal(cursorPlugin.logo, "assets/logo-400.png");
 });
 
 test("advertises the hosted Worker alongside local Official Registry packages", () => {
