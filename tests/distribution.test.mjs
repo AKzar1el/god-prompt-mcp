@@ -15,6 +15,10 @@ const stdioSource = await readFile(
   new URL("../src/stdio.ts", import.meta.url),
   "utf8"
 );
+const serverSource = await readFile(
+  new URL("../src/server.ts", import.meta.url),
+  "utf8"
+);
 const workerSource = await readFile(
   new URL("../src/index.ts", import.meta.url),
   "utf8"
@@ -257,20 +261,20 @@ test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", (
   assert.match(agentSkillAntiPatterns, /# .*Anti-Pattern/i);
 });
 
-test("keeps the Amp skill-scoped MCP surface pinned and bounded", () => {
-  assert.deepEqual(agentSkillMcp["god-prompt-mcp"], {
-    command: "npx",
-    args: ["-y", `god-prompt-mcp@${packageJson.version}`],
-    includeTools: [
-      "get_version",
-      "classify_task",
-      "get_core_rules",
-      "get_phase",
-      "get_protocol",
-      "get_gate",
-      "get_anti_pattern",
-    ],
-  });
+test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
+  const registeredToolNames = [
+    ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
+  ].map((match) => match[1]);
+
+  assert.equal(agentSkillMcp["god-prompt-mcp"].command, "npx");
+  assert.deepEqual(agentSkillMcp["god-prompt-mcp"].args, [
+    "-y",
+    `god-prompt-mcp@${packageJson.version}`,
+  ]);
+  assert.deepEqual(
+    agentSkillMcp["god-prompt-mcp"].includeTools,
+    registeredToolNames
+  );
 });
 
 test("keeps the GitHub Copilot marketplace aligned with the portable plugin", () => {

@@ -6,13 +6,13 @@
       "god-prompt-mcp@1.0.20"
     ],
     "includeTools": [
-      "get_version",
+      "get_god_prompt",
+      "get_core_skill",
+      "get_protocols",
+      "get_gates",
+      "get_anti_patterns",
       "classify_task",
-      "get_core_rules",
-      "get_phase",
-      "get_protocol",
-      "get_gate",
-      "get_anti_pattern"
+      "get_version"
     ]
   }
 }
