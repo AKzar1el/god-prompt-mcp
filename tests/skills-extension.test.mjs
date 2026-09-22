@@ -92,6 +92,7 @@ test("serves the canonical GodPrompt skill through SEP-2640", async (t) => {
   assert.equal(skill.uri, "skill://god-prompt/SKILL.md");
   assert.equal(skill.frontmatter.name, "god-prompt");
   assert.match(skill.frontmatter.description, /Production workflow skill/i);
+  assert.equal(skill.frontmatter.license, "MIT");
   assert.equal(skill.resources.length, 4);
 
   const fetched = await request(child, pending, 3, "skills/get", {
@@ -157,6 +158,7 @@ test("serves SEP-2640 through the hosted Worker transport", async () => {
   const listed = await post("skills/list", { _meta: REQUEST_META }, "worker-skills");
   assert.equal(listed.result?.skills?.length, 1);
   assert.equal(listed.result?.skills?.[0]?.uri, "skill://god-prompt/SKILL.md");
+  assert.equal(listed.result?.skills?.[0]?.frontmatter?.license, "MIT");
 
   const read = await post(
     "resources/read",
@@ -167,4 +169,5 @@ test("serves SEP-2640 through the hosted Worker transport", async () => {
     "worker-skill-read"
   );
   assert.match(read.result?.contents?.[0]?.text ?? "", /# GodPrompt/i);
+  assert.match(read.result?.contents?.[0]?.text ?? "", /^license: MIT$/m);
 });
