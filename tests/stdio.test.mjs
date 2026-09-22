@@ -111,6 +111,9 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
 
   assert.equal(initialized.serverInfo.name, "god-prompt-mcp");
   assert.equal(initialized.serverInfo.version, packageJson.version);
+  assert.match(initialized.instructions, /Start with get_core_skill/i);
+  assert.match(initialized.instructions, /classify_task/i);
+  assert.match(initialized.instructions, /All GodPrompt tools are read-only/i);
 
   child.stdin.write(
     `${JSON.stringify({
@@ -317,7 +320,10 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   });
   const workerResponse = await worker.fetch(workerInitialize, {}, {});
   assert.equal(workerResponse.status, 200);
-  assert.match(await workerResponse.text(), /god-prompt-mcp/);
+  const workerInitializeText = await workerResponse.text();
+  assert.match(workerInitializeText, /god-prompt-mcp/);
+  assert.match(workerInitializeText, /Start with get_core_skill/i);
+  assert.match(workerInitializeText, /All GodPrompt tools are read-only/i);
 
   const wrongPathResponse = await worker.fetch(
     new Request("https://example.test/not-mcp", { method: "GET" }),
@@ -398,6 +404,9 @@ test("serves the MCP 2026-07-28 era over stdio", async (t) => {
     discovered._meta?.["io.modelcontextprotocol/serverInfo"]?.version,
     packageJson.version
   );
+  assert.match(discovered.instructions, /Start with get_core_skill/i);
+  assert.match(discovered.instructions, /classify_task/i);
+  assert.match(discovered.instructions, /All GodPrompt tools are read-only/i);
 
   const listed = await request(child, pending, "modern-tools", "tools/list", {
     _meta: requestMeta,

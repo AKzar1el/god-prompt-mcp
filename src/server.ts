@@ -7,6 +7,9 @@ export const SERVER_INFO = {
   version: "1.0.21",
 } as const;
 
+export const SERVER_INSTRUCTIONS =
+  "Start with get_core_skill for the lean GodPrompt protocol. Use classify_task to route a concrete task, then load get_protocols, get_gates, or get_anti_patterns only when that focused reference is needed. Use get_god_prompt only when the full single-file payload is preferable. All GodPrompt tools are read-only.";
+
 // Version 1.0.0 was generated before the source layout moved from core/* to
 // SKILL.md + references/*. Normalize only those legacy links at the serving
 // boundary; regenerated content from the repaired generator makes this a no-op.

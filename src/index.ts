@@ -1,9 +1,13 @@
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import { createArdManifestResponse } from "./discovery.js";
-import { registerGodPromptTools, SERVER_INFO } from "./server.js";
+import {
+  registerGodPromptTools,
+  SERVER_INFO,
+  SERVER_INSTRUCTIONS,
+} from "./server.js";
 
 function createServer(): McpServer {
-  const server = new McpServer(SERVER_INFO);
+  const server = new McpServer(SERVER_INFO, { instructions: SERVER_INSTRUCTIONS });
   registerGodPromptTools(server);
   return server;
 }
