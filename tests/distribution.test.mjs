@@ -199,6 +199,15 @@ test("keeps the Kimi main-branch plugin onboarding aligned with the public npm p
   );
 });
 
+test("keeps Junie onboarding on the existing Claude-compatible marketplace", () => {
+  assert.ok(
+    readme.includes("/extensions marketplace add AKzar1el/god-prompt-mcp")
+  );
+  assert.ok(readme.includes("/extensions install god-prompt-mcp"));
+  assert.equal(claudeMarketplace.name, "god-prompt");
+  assert.equal(claudeMarketplace.plugins?.[0]?.name, "god-prompt-mcp");
+});
+
 test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", () => {
   assert.match(agentSkill, /^---\r?\nname: god-prompt\r?\n/m);
   assert.match(agentSkill, /references\/01-PROTOCOLS\.md/);

@@ -292,6 +292,17 @@ JetBrains AI Assistant 2026.2 can use GodPrompt through both supported agent sur
 
 The Agent Skill supplies the reusable workflow; the MCP server supplies GodPrompt's callable tools. Node.js 22+ is required for the MCP server.
 
+### JetBrains Junie CLI
+
+Junie CLI can install GodPrompt as one extension by reusing this repository's existing Claude-compatible marketplace manifest. In Junie, register the repository and install the listed extension:
+
+```text
+/extensions marketplace add AKzar1el/god-prompt-mcp
+/extensions install god-prompt-mcp
+```
+
+Junie supports `.claude-plugin/marketplace.json` as a marketplace format, so no Junie-specific duplicate manifest is required. The installed extension reuses GodPrompt's existing portable Agent Skill and MCP configuration; Junie can also discover the same skill from `.agents/skills/` and supports local `npx` MCP servers. Node.js 22+ is required for the MCP server. Junie CLI is not installed in this repository's qualification environment, so these commands are documented from JetBrains' current extension contract rather than claimed as a local end-to-end runtime smoke.
+
 ### Devin Desktop / Windsurf
 
 Devin Desktop (formerly Windsurf) and Devin CLI can load GodPrompt's existing Agent Plugins 1.0 package directly from GitHub. After signing in to Devin, install the plugin with:
