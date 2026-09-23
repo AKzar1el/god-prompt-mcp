@@ -56,7 +56,11 @@ On MCP 2026-07-28, both the hosted and stdio servers advertise the Final `io.mod
 
 This transports GodPrompt's existing skill package; it does not force the skill into every request or change the host's own approval, verification, or activation policy. See the [MCP Skills extension specification](https://modelcontextprotocol.io/extensions/skills/overview).
 
-### ChatGPT (hosted remote)
+### ChatGPT Plugin Directory (skill-only)
+
+For the lowest-friction ChatGPT path, install [GodPrompt from the first-party Plugin Directory](https://chatgpt.com/plugins/plugins_6ab2f1cc5d0081919d729fd1c2884f86). That published plugin carries the scoped `god-prompt` Agent Skill; use the custom MCP app setup below when you specifically want the seven callable GodPrompt tools.
+
+### ChatGPT (hosted remote MCP)
 
 On ChatGPT web, supported Business and Enterprise/Edu workspaces can connect the hosted endpoint as a custom MCP app in Developer Mode:
 
