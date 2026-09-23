@@ -139,7 +139,10 @@ export function registerGodPromptSkillExtension(server: McpServer): void {
     { params: listSkillsParams },
     async ({ cursor }) => {
       if (cursor !== undefined) {
-        throw new Error("GodPrompt serves one skills/list page and does not issue cursors");
+        throw new ProtocolError(
+          ProtocolErrorCode.InvalidParams,
+          "GodPrompt serves one skills/list page and does not issue cursors"
+        );
       }
       return {
         resultType: "complete",
