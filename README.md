@@ -120,6 +120,23 @@ If you only want the seven callable MCP tools, use the native MCP install button
 
 The plugin and MCP-only paths both launch the published local stdio server through `npx`. Node.js 22+ is required; no API key is needed.
 
+### Amazon Q Developer
+
+Amazon Q Developer supports both local process MCP servers and remote HTTP MCP servers. For the no-Node path, add GodPrompt to the `mcpServers` object in the Q CLI or Q Developer IDE agent configuration:
+
+```json
+{
+  "mcpServers": {
+    "god-prompt": {
+      "type": "http",
+      "url": "https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp"
+    }
+  }
+}
+```
+
+The hosted endpoint is open and requires no API key. If you prefer local stdio, use the same Amazon Q MCP configuration shape with `"command": "npx"` and `"args": ["-y", "god-prompt-mcp"]`; that path requires Node.js 22+. See Amazon Q Developer's [MCP guide](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html) and [agent configuration format](https://github.com/aws/amazon-q-developer-cli/blob/main/docs/agent-format.md) for the current CLI/IDE configuration locations and scope rules.
+
 ### OpenAI Codex
 
 GodPrompt can be used in Codex as either a portable Agent Skill or a native local MCP server.
