@@ -422,18 +422,16 @@ The repository includes a native Cursor plugin manifest plus a portable Agent Pl
 
 ### GitHub Copilot
 
-GitHub Copilot CLI supports the portable Agent Plugins 1.0 package at the repository root. Install it directly from GitHub with `copilot plugin install AKzar1el/god-prompt-mcp`.
-
-The plugin includes both the GodPrompt MCP server and a standards-compatible `god-prompt` Agent Skill under `skills/god-prompt/`. Copilot can load the skill automatically when relevant or invoke it explicitly as `/god-prompt`, while MCP remains available for progressive-disclosure tool access.
-
-For team or cloud-agent distribution, the same repository is also a Copilot plugin marketplace:
+GitHub Copilot CLI supports the portable Agent Plugins 1.0 package at the repository root. Install it through the repository marketplace:
 
 ```bash
 copilot plugin marketplace add AKzar1el/god-prompt-mcp
 copilot plugin install god-prompt-mcp@god-prompt
 ```
 
-This keeps the marketplace entry, portable plugin, skill, and MCP server in one versioned repository instead of maintaining a second Copilot-specific package.
+The plugin includes both the GodPrompt MCP server and a standards-compatible `god-prompt` Agent Skill under `skills/god-prompt/`. Copilot can load the skill automatically when relevant or invoke it explicitly as `/god-prompt`, while MCP remains available for progressive-disclosure tool access.
+
+This keeps the marketplace entry, portable plugin, skill, and MCP server in one versioned repository and works for individual, team, and cloud-agent distribution. Direct repository installs (`copilot plugin install AKzar1el/god-prompt-mcp`) still work in current Copilot CLI releases, but the CLI marks them deprecated in favor of `plugin@marketplace` installs.
 
 ### GitLab Duo CLI
 
