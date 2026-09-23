@@ -326,7 +326,7 @@ export function registerGodPromptTools(server: McpServer): void {
     "classify_task",
     {
       title: "Classify software-development task",
-      description: "Classify a task description into one of GodPrompt's 9 task types (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN), or UNCLASSIFIED when no reliable route is detected. Confidence is deterministic routing confidence, not a statistical probability.",
+      description: "Classify one concrete software-development task into one of GodPrompt's 9 task types (BUILD, DEBUG, REFACTOR, CONTENT, DESIGN, SHIP, ANALYZE, AUTOMATE, PLAN), or UNCLASSIFIED when no reliable route is detected. Returns JSON with task_type, deterministic confidence, protocol, matched_signals, alternative_task_types, ambiguous, and recommendation; use it for routing before loading detailed workflow text.",
       inputSchema: {
       description: z
         .string()
@@ -374,7 +374,7 @@ export function registerGodPromptTools(server: McpServer): void {
     "get_version",
     {
       title: "Get GodPrompt versions",
-      description: "Returns GodPrompt content and MCP server versions with a summary of what's included.",
+      description: "Returns JSON with the GodPrompt content version, MCP server version, repository, bundled file sizes and purposes, and task-type/protocol catalog. Use it to verify which GodPrompt content/server version a client is connected to; use the content retrieval tools when you need the actual workflow text.",
       annotations: READ_ONLY_ANNOTATIONS,
     },
     async () => ({

@@ -138,6 +138,18 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(coreTool.description, /start of a task|context reset/i);
   assert.doesNotMatch(coreTool.description, /loaded on every message/i);
 
+  const classifyTool = listed.tools.find((tool) => tool.name === "classify_task");
+  assert.ok(classifyTool, "classify_task must be listed");
+  assert.match(classifyTool.description, /returns JSON/i);
+  assert.match(classifyTool.description, /matched_signals/i);
+  assert.match(classifyTool.description, /routing/i);
+
+  const versionTool = listed.tools.find((tool) => tool.name === "get_version");
+  assert.ok(versionTool, "get_version must be listed");
+  assert.match(versionTool.description, /returns JSON/i);
+  assert.match(versionTool.description, /verify which GodPrompt content\/server version/i);
+  assert.match(versionTool.description, /content retrieval tools/i);
+
   const core = await request(child, pending, 3, "tools/call", {
     name: "get_core_skill",
     arguments: {},
