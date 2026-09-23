@@ -135,6 +135,18 @@ test("serves the canonical GodPrompt skill through SEP-2640", async (t) => {
       return true;
     }
   );
+
+  await assert.rejects(
+    request(child, pending, 21, "skills/list", {
+      cursor: "bogus",
+      _meta: REQUEST_META,
+    }),
+    (error) => {
+      assert.equal(error.code, -32602);
+      assert.match(error.message, /does not issue cursors/);
+      return true;
+    }
+  );
 });
 
 test("serves SEP-2640 through the hosted Worker transport", async () => {
@@ -189,4 +201,15 @@ test("serves SEP-2640 through the hosted Worker transport", async () => {
   );
   assert.equal(invalidSkill.error?.code, -32602);
   assert.match(invalidSkill.error?.message ?? "", /Unknown GodPrompt skill URI/);
+
+  const invalidCursor = await post(
+    "skills/list",
+    {
+      cursor: "bogus",
+      _meta: REQUEST_META,
+    },
+    "worker-invalid-cursor"
+  );
+  assert.equal(invalidCursor.error?.code, -32602);
+  assert.match(invalidCursor.error?.message ?? "", /does not issue cursors/);
 });
