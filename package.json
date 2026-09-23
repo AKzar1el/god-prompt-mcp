@@ -68,7 +68,7 @@
     "generate-content": "node scripts/generate-content.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "2.0.0",
+    "@modelcontextprotocol/server": "2.1.0",
     "zod": "^4.2.0"
   },
   "devDependencies": {

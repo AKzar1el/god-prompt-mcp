@@ -343,6 +343,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
       "content-type": "application/json",
       accept: "application/json, text/event-stream",
       "mcp-method": "server/discover",
+      "mcp-protocol-version": "2026-07-28",
     },
     body: JSON.stringify({
       jsonrpc: "2.0",
