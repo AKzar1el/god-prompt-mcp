@@ -2,6 +2,8 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server for [GodPrompt](https://github.com/AKzar1el/god-prompt) — AI software-development workflow guidance with task routing, TDD, debugging protocols, verification gates, and progressive disclosure.
 
+[![MCPVault: verified](https://mcpvault.io/badge/god-prompt-mcp.svg)](https://mcpvault.io/servers/god-prompt-mcp/health?utm_source=external_badge&utm_medium=referral&utm_campaign=mcp_health_report)
+
 ## Agent Harness Review — US$49
 
 Under the active `GP-RS1` standing mission, GodPrompt offers one bounded paid service for developers and small teams whose coding agents lose context, overstep scope, skip verification, or repeat mistakes. The mission has no automatic terminal date; it continues until Tomi explicitly pauses or stops it, or replaces it with a project-specific goal or kill criterion.
