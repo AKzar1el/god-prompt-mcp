@@ -184,6 +184,16 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent code
 
 Replace `codex` with another supported agent when needed. The current CLI discovers the repository's portable `god-prompt` skill directly and installs `SKILL.md` plus its referenced protocol files; the MCP server remains separately available through `npx -y god-prompt-mcp`.
 
+### AllAgents
+
+For a project that uses several coding agents, AllAgents can consume this repository once and synchronize GodPrompt to the selected clients. This verified example installs the portable skill for Claude Code, Codex, and Cursor while reusing the repository's bundled MCP configuration:
+
+```bash
+npx -y allagents@latest skill add AKzar1el/god-prompt-mcp --skill god-prompt --scope project --client claude,codex,cursor --yes
+```
+
+AllAgents resolves the repository as the source of truth, copies the `god-prompt` skill into each selected client, and materializes the existing local MCP server configuration with the package version already pinned by this repository. Use a different supported client set when your workspace requires it; no separate GodPrompt wrapper or package is needed.
+
 ### Cline
 
 Cline SDK / Hub 0.0.83+ can load GodPrompt's existing Agent Plugins 1.0 package directly. Cline discovers user-installed plugin packages under `~/.agents/plugins/*`, validates the root `plugin.json`, exposes valid `skills/` entries, and starts valid servers from the root `mcp.json` without writing them into `cline_mcp_settings.json`.
