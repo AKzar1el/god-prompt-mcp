@@ -164,6 +164,7 @@ test("serves SEP-2640 through the hosted Worker transport", async () => {
           "content-type": "application/json",
           accept: "application/json, text/event-stream",
           "mcp-method": method,
+          "mcp-protocol-version": "2026-07-28",
           ...methodHeaders,
         },
         body: JSON.stringify({ jsonrpc: "2.0", id, method, params }),

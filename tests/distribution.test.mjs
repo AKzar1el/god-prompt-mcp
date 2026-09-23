@@ -167,7 +167,7 @@ test("keeps privacy copy aligned with local and hosted transports", () => {
 
 test("uses the split MCP SDK v2 without the Workers-only Agents SDK", () => {
   assert.equal(packageJson.dependencies?.["@modelcontextprotocol/sdk"], undefined);
-  assert.equal(packageJson.dependencies?.["@modelcontextprotocol/server"], "2.0.0");
+  assert.equal(packageJson.dependencies?.["@modelcontextprotocol/server"], "2.1.0");
   assert.equal(packageJson.dependencies?.agents, undefined);
   assert.equal(packageJson.devDependencies?.agents, undefined);
 });
