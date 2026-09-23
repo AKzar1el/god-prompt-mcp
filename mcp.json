@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
-    "god-prompt-mcp": {
+    "god_prompt_mcp": {
       "type": "stdio",
       "command": "npx",
       "args": [

@@ -202,7 +202,8 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
   assert.equal(kimiPlugin.version, packageJson.version);
   assert.equal(mcpbManifest.version, packageJson.version);
   assert.equal(serverJson.version, packageJson.version);
-  assert.deepEqual(agentMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
+  assert.deepEqual(Object.keys(agentMcp.mcpServers ?? {}), ["god_prompt_mcp"]);
+  assert.deepEqual(agentMcp.mcpServers?.god_prompt_mcp, expectedServer);
   assert.deepEqual(claudeMcp.mcpServers?.["god-prompt-mcp"], expectedServer);
   assert.deepEqual(geminiExtension.mcpServers?.["god-prompt-mcp"], {
     command: "npx",
