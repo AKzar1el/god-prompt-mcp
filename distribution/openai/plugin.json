@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "god-prompt",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "A scoped production-engineering workflow for implementing, debugging, reviewing, refactoring, and release-preparing software with explicit scope and verification evidence.",
   "author": {
     "name": "Tomi Šeregi"
