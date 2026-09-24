@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "GodPrompt engineering workflows for task routing, TDD, debugging, verification, and progressive disclosure through MCP.",
   "homepage": "https://tomiseregi.si/projects/god-prompt",
   "license": "MIT",
@@ -10,7 +10,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "god-prompt-mcp@1.0.30"
+        "god-prompt-mcp@1.0.31"
       ]
     }
   },
