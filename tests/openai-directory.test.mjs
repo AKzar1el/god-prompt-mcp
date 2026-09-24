@@ -84,6 +84,12 @@ test("verifies scoped OpenAI runtime delivery integrity", () => {
   assert.match(skill, /stop for reconciliation before consequential work/i);
 });
 
+test("binds scoped OpenAI approvals to material call arguments", () => {
+  assert.match(skill, /approval evidence includes the material call arguments and effect scope/i);
+  assert.match(skill, /exposes\s+only the tool name or omits parameters/i);
+  assert.match(skill, /parameter-complete approval/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);
