@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "mcpName": "io.github.AKzar1el/god-prompt-mcp",
   "description": "GodPrompt MCP server + portable Agent Skill for coding agents — TDD, debugging, verification gates, task routing, and progressive disclosure.",
   "private": false,
