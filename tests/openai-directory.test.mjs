@@ -90,6 +90,13 @@ test("binds scoped OpenAI approvals to material call arguments", () => {
   assert.match(skill, /parameter-complete approval/i);
 });
 
+test("requires scoped OpenAI tool-plane convergence after provider transitions", () => {
+  assert.match(skill, /configuration success or a connected status/i);
+  assert.match(skill, /model-visible\/executable inventory has converged/i);
+  assert.match(skill, /stale, incomplete, or cannot be reconciled/i);
+  assert.match(skill, /fail closed until readiness is restored/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);
