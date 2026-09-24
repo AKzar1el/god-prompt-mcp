@@ -104,6 +104,13 @@ test("reconciles scoped OpenAI ambiguous consequential effects before retry", ()
   assert.match(skill, /Retry\/backoff is only for known-no-effect or\s+replay-safe operations/i);
 });
 
+test("requires scoped OpenAI execution quiescence before conflicting takeover", () => {
+  assert.match(skill, /not proof that an owned process, tool call, child session, or writer has stopped/i);
+  assert.match(skill, /conflicting restart\/duplicate execution, destructive cleanup/i);
+  assert.match(skill, /real process\/session\/lease state/i);
+  assert.match(skill, /stop rather than killing uncertain work/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);

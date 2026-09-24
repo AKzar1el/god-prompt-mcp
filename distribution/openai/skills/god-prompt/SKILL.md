@@ -52,6 +52,12 @@ higher-priority instructions always control scope and authority.
   or authoritative zero-effect state is reconciled, or verified idempotency, transaction, or
   receipt semantics make replay safe. Retry/backoff is only for known-no-effect or
   replay-safe operations.
+- A timeout, cancellation, interrupt, wrapper return, stale UI/lock state, or parent-session
+  teardown is not proof that an owned process, tool call, child session, or writer has stopped.
+  Before conflicting restart/duplicate execution, destructive cleanup, or declaring an owner
+  stale, verify attributable liveness/ownership from the real process/session/lease state. If
+  that state cannot be reconciled, stop rather than killing uncertain work or creating a
+  conflicting second owner.
 - If a missing fact prevents a safe or correct result, ask for it. Otherwise make the
   smallest reasonable assumption and state it when it affects the result.
 
