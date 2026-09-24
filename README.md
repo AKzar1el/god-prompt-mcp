@@ -166,10 +166,10 @@ gemini extensions install https://github.com/AKzar1el/god-prompt-mcp
 Or register only the published local stdio server with Gemini CLI's native MCP command:
 
 ```bash
-gemini mcp add god-prompt npx -- -y god-prompt-mcp
+gemini mcp add --scope user god-prompt npx -- -y god-prompt-mcp
 ```
 
-Run `gemini extensions list` to verify the extension or `gemini mcp list` to verify the direct MCP registration. Node.js 22+ is required for the MCP server; GodPrompt itself needs no API key.
+The explicit user scope keeps this direct registration out of the project's `.gemini/settings.json`. Run `gemini extensions list` to verify the extension or `gemini mcp list` to verify the direct MCP registration. Node.js 22+ is required for the MCP server; GodPrompt itself needs no API key.
 
 ### Google Antigravity CLI
 
