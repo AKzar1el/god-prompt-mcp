@@ -384,6 +384,13 @@ test("ships a portable GodPrompt Agent Skill alongside the MCP configuration", (
   assert.match(agentSkillAntiPatterns, /# .*Anti-Pattern/i);
 });
 
+test("keeps portable skill authority source-qualified", () => {
+  assert.match(agentSkill, /exact instruction\/skill source/i);
+  assert.match(agentSkill, /Never transfer trust or an allow decision by name alone/i);
+  assert.match(agentSkill, /shadows\/collides with a trusted instruction or skill identifier/i);
+  assert.match(agentSkill, /re-resolve both content and provenance/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
