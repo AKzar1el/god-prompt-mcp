@@ -46,6 +46,12 @@ higher-priority instructions always control scope and authority.
   sees the intended capability set. Before consequential work continues, verify the live
   model-visible/executable inventory has converged to the intended post-transition state; if
   it is stale, incomplete, or cannot be reconciled, fail closed until readiness is restored.
+- For consequential tool or network calls, a timeout, disconnect, lost acknowledgement, or
+  session-recovery failure is not proof that the external effect failed. If the call may have
+  applied, treat the outcome as unresolved and do not replay it until the real postcondition
+  or authoritative zero-effect state is reconciled, or verified idempotency, transaction, or
+  receipt semantics make replay safe. Retry/backoff is only for known-no-effect or
+  replay-safe operations.
 - If a missing fact prevents a safe or correct result, ask for it. Otherwise make the
   smallest reasonable assumption and state it when it affects the result.
 

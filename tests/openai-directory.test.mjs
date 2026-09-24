@@ -97,6 +97,13 @@ test("requires scoped OpenAI tool-plane convergence after provider transitions",
   assert.match(skill, /fail closed until readiness is restored/i);
 });
 
+test("reconciles scoped OpenAI ambiguous consequential effects before retry", () => {
+  assert.match(skill, /not proof that the external effect failed/i);
+  assert.match(skill, /real postcondition\s+or authoritative zero-effect state/i);
+  assert.match(skill, /idempotency, transaction, or\s+receipt semantics make replay safe/i);
+  assert.match(skill, /Retry\/backoff is only for known-no-effect or\s+replay-safe operations/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);
