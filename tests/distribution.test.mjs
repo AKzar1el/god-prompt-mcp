@@ -397,6 +397,12 @@ test("binds portable-skill context recovery to execution provenance", () => {
   assert.match(agentSkill, /provenance is unknown or mismatched/i);
   assert.match(agentSkill, /do not treat it as this execution's history/i);
 });
+test("verifies portable-skill runtime delivery integrity", () => {
+  assert.match(agentSkill, /Runtime-delivery integrity guard/i);
+  assert.match(agentSkill, /effective runtime-delivered\/materialized content and source/i);
+  assert.match(agentSkill, /not proof of delivered bytes/i);
+  assert.match(agentSkill, /reload\/reinstall from a verified source/i);
+});
 
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
