@@ -220,6 +220,17 @@ test("keeps agent-platform plugin manifests aligned with the public npm package"
   assert.equal(cursorPlugin.mcpServers, "cursor-mcp.json");
 });
 
+test("keeps direct Gemini MCP onboarding out of project settings", () => {
+  assert.match(
+    readme,
+    /gemini mcp add --scope user god-prompt npx -- -y god-prompt-mcp/
+  );
+  assert.doesNotMatch(
+    readme,
+    /gemini mcp add god-prompt npx -- -y god-prompt-mcp/
+  );
+});
+
 test("ships a decodable 400x400 PNG for MCPB and Cursor distribution", () => {
   const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   assert.deepEqual(logoPng.subarray(0, signature.length), signature);
