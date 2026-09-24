@@ -1,6 +1,6 @@
 {
   "name": "god-prompt",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "description": "A scoped production-engineering workflow for implementing, debugging, reviewing, refactoring, and release-preparing software with explicit scope and verification evidence.",
   "interface": {
     "displayName": "GodPrompt",

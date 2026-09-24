@@ -1,11 +1,11 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "description": "GodPrompt engineering workflows for task routing, TDD, debugging, verification, and progressive disclosure.",
   "mcpServers": {
     "god-prompt-mcp": {
       "command": "npx",
-      "args": ["-y", "god-prompt-mcp@1.0.27"]
+      "args": ["-y", "god-prompt-mcp@1.0.28"]
     }
   }
 }
