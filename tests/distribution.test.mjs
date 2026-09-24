@@ -426,6 +426,13 @@ test("requires portable-skill tool-plane convergence after provider transitions"
   assert.match(agentSkill, /stale, incomplete, or cannot be reconciled/i);
 });
 
+test("reconciles ambiguous consequential effects before retry", () => {
+  assert.match(agentSkill, /Effect-aware retry guard/i);
+  assert.match(agentSkill, /not proof that the external effect failed/i);
+  assert.match(agentSkill, /real postcondition or authoritative zero-effect state/i);
+  assert.match(agentSkill, /Retry\/backoff is only for known-no-effect or replay-safe operations/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
