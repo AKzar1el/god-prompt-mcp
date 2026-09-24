@@ -70,7 +70,10 @@ test("uses a scoped trigger instead of the universal internal trigger contract",
 
 test("rebinds repository-local authority after checkout or worktree transitions", () => {
   assert.match(skill, /resolve them from the\s+active checkout\/worktree revision/i);
-  assert.match(skill, /After changing checkouts or worktrees, re-resolve/i);
+  assert.match(skill, /bind trust to the exact source, not only the skill\s+or instruction name/i);
+  assert.match(skill, /lower-trust source shadows the same identifier/i);
+  assert.match(skill, /explicit source precedence or stop for reconciliation/i);
+  assert.match(skill, /re-resolve both content and source provenance/i);
   assert.match(skill, /authority source and execution root cannot\s+be reconciled/i);
 });
 
