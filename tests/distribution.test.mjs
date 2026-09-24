@@ -231,6 +231,15 @@ test("keeps direct Gemini MCP onboarding out of project settings", () => {
   );
 });
 
+test("keeps OpenCode v2 onboarding on the native MCP registration path", () => {
+  assert.match(
+    readme,
+    /opencode mcp add god-prompt -- npx -y god-prompt-mcp/
+  );
+  assert.match(readme, /opencode mcp list/);
+  assert.match(readme, /"mcp": \{\s*"servers": \{/);
+});
+
 test("ships a decodable 400x400 PNG for MCPB and Cursor distribution", () => {
   const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   assert.deepEqual(logoPng.subarray(0, signature.length), signature);

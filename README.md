@@ -294,7 +294,14 @@ OpenCode v2 natively discovers Agent Skills from `.agents/skills/` and supports 
 npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent opencode --copy -y
 ```
 
-To expose GodPrompt's MCP tools as well, add a local server to `opencode.json` or `opencode.jsonc`:
+To expose GodPrompt's MCP tools as well, register the published local server with OpenCode's native v2 command, then verify the connection:
+
+```bash
+opencode mcp add god-prompt -- npx -y god-prompt-mcp
+opencode mcp list
+```
+
+The add command writes the project MCP configuration for you. If you prefer to configure it by hand, use `opencode.json` or `opencode.jsonc`:
 
 ```json
 {
