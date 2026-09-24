@@ -55,15 +55,28 @@ jobs:
           IMAGE="${{ steps.meta.outputs.image }}"
           VERSION="${{ steps.meta.outputs.version }}"
           SHORT_SHA="${{ steps.meta.outputs.short_sha }}"
-          docker build \
-            --pull \
-            --file Dockerfile.mcp-registry \
-            --label "org.opencontainers.image.source=https://github.com/AKzar1el/god-prompt-mcp" \
-            --label "org.opencontainers.image.version=${VERSION}" \
-            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
-            --tag "${IMAGE}:sha-${SHORT_SHA}" \
-            --tag "${IMAGE}:latest" \
-            .
+          for attempt in 1 2 3; do
+            if docker build \
+              --pull \
+              --file Dockerfile.mcp-registry \
+              --label "org.opencontainers.image.source=https://github.com/AKzar1el/god-prompt-mcp" \
+              --label "org.opencontainers.image.version=${VERSION}" \
+              --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+              --tag "${IMAGE}:sha-${SHORT_SHA}" \
+              --tag "${IMAGE}:latest" \
+              .; then
+              break
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "Docker build failed after ${attempt} attempts." >&2
+              exit 1
+            fi
+
+            delay=$((attempt * 10))
+            echo "::warning::Docker build attempt ${attempt} failed; retrying in ${delay}s."
+            sleep "$delay"
+          done
 
       - name: Smoke test stdio MCP image
         shell: bash
