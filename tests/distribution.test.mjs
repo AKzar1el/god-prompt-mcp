@@ -404,6 +404,12 @@ test("verifies portable-skill runtime delivery integrity", () => {
   assert.match(agentSkill, /reload\/reinstall from a verified source/i);
 });
 
+test("binds portable-skill approvals to material call arguments", () => {
+  assert.match(agentSkill, /Approval-evidence binding/i);
+  assert.match(agentSkill, /exact material call parameters/i);
+  assert.match(agentSkill, /exposes only the tool name or omits material parameters/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
