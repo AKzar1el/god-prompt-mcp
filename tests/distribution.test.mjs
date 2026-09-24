@@ -391,6 +391,13 @@ test("keeps portable skill authority source-qualified", () => {
   assert.match(agentSkill, /re-resolve both content and provenance/i);
 });
 
+test("binds portable-skill context recovery to execution provenance", () => {
+  assert.match(agentSkill, /recovery transcript, log, scratch path, or artifact/i);
+  assert.match(agentSkill, /active task\/session\/agent/i);
+  assert.match(agentSkill, /provenance is unknown or mismatched/i);
+  assert.match(agentSkill, /do not treat it as this execution's history/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
