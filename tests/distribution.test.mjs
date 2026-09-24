@@ -410,6 +410,13 @@ test("binds portable-skill approvals to material call arguments", () => {
   assert.match(agentSkill, /exposes only the tool name or omits material parameters/i);
 });
 
+test("requires portable-skill tool-plane convergence after provider transitions", () => {
+  assert.match(agentSkill, /Tool-plane transition readiness/i);
+  assert.match(agentSkill, /configuration success or a connected status/i);
+  assert.match(agentSkill, /live model-visible\/executable inventory has converged/i);
+  assert.match(agentSkill, /stale, incomplete, or cannot be reconciled/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
