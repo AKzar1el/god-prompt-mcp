@@ -433,6 +433,13 @@ test("reconciles ambiguous consequential effects before retry", () => {
   assert.match(agentSkill, /Retry\/backoff is only for known-no-effect or replay-safe operations/i);
 });
 
+test("requires portable-skill execution quiescence before conflicting takeover", () => {
+  assert.match(agentSkill, /Execution-quiescence guard/i);
+  assert.match(agentSkill, /not proof that an owned process, tool call, child session, or writer has actually stopped/i);
+  assert.match(agentSkill, /conflicting restart\/duplicate execution, destructive cleanup, or declaring an owner stale/i);
+  assert.match(agentSkill, /verify current attributable liveness\/ownership from the real process\/session\/lease state/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
