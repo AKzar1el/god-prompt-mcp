@@ -26,6 +26,12 @@ higher-priority instructions always control scope and authority.
   changing checkouts or worktrees, re-resolve both content and source provenance before
   further writes; if the authority source and execution root cannot be reconciled, stop
   for handoff or a new task instead of continuing under stale rules.
+- When consequential work relies on a newly installed or updated host-managed instruction,
+  skill, or plugin, verify the effective runtime-delivered content and source against the
+  intended payload using content evidence when the host exposes it. UI/version state,
+  installer success, cache refresh, or a matching name is not proof of delivered bytes. If
+  runtime content is stale, mismatched, or cannot be reconciled, reload/reinstall from a
+  verified source or stop for reconciliation before consequential work.
 - Inspect relevant code and configuration before proposing a mutation.
 - Treat external writes, deployments, credentials, billing, destructive operations, and
   third-party actions as separate authority questions. Do not infer permission merely from

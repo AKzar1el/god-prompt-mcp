@@ -77,6 +77,13 @@ test("rebinds repository-local authority after checkout or worktree transitions"
   assert.match(skill, /authority source and execution root cannot\s+be reconciled/i);
 });
 
+test("verifies scoped OpenAI runtime delivery integrity", () => {
+  assert.match(skill, /effective runtime-delivered content and source/i);
+  assert.match(skill, /not proof of delivered bytes/i);
+  assert.match(skill, /reload\/reinstall from a\s+verified source/i);
+  assert.match(skill, /stop for reconciliation before consequential work/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);
