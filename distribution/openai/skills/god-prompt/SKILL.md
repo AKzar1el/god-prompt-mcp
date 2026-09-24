@@ -19,6 +19,10 @@ higher-priority instructions always control scope and authority.
 
 - Identify the concrete engineering outcome, repository or artifact in scope, and any
   constraints already supplied by the user or repository instructions.
+- When repository-local instructions or skills govern execution, resolve them from the
+  active checkout/worktree revision. After changing checkouts or worktrees, re-resolve
+  those sources before further writes; if the authority source and execution root cannot
+  be reconciled, stop for handoff or a new task instead of continuing under stale rules.
 - Inspect relevant code and configuration before proposing a mutation.
 - Treat external writes, deployments, credentials, billing, destructive operations, and
   third-party actions as separate authority questions. Do not infer permission merely from

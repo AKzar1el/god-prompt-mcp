@@ -68,6 +68,12 @@ test("uses a scoped trigger instead of the universal internal trigger contract",
   assert.match(skill, /do not modify files unless the user also asked/i);
 });
 
+test("rebinds repository-local authority after checkout or worktree transitions", () => {
+  assert.match(skill, /resolve them from the\s+active checkout\/worktree revision/i);
+  assert.match(skill, /After changing checkouts or worktrees, re-resolve/i);
+  assert.match(skill, /authority source and execution root cannot\s+be reconciled/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);
