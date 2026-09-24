@@ -36,6 +36,11 @@ higher-priority instructions always control scope and authority.
 - Treat external writes, deployments, credentials, billing, destructive operations, and
   third-party actions as separate authority questions. Do not infer permission merely from
   permission to edit code.
+- Before a consequential tool call that relies on approval or permission state, verify that
+  the approval evidence includes the material call arguments and effect scope. If it exposes
+  only the tool name or omits parameters that determine the destination, resource, account,
+  or effect, do not treat it as specific authorization; fail closed or obtain a
+  parameter-complete approval.
 - If a missing fact prevents a safe or correct result, ask for it. Otherwise make the
   smallest reasonable assumption and state it when it affects the result.
 
