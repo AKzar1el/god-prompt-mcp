@@ -466,6 +466,22 @@ test("binds lifecycle-hook changes to host-side effects in the portable skill", 
   assert.match(agentSkill, /explicit scope-bound authority/i);
 });
 
+test("binds live effective execution policy to the actual receiving session", async () => {
+  assert.match(agentSkill, /Live execution-policy integrity guard/i);
+  assert.match(agentSkill, /effective permission\/approval mode/i);
+  assert.match(agentSkill, /receiving session\/thread actually governing the current call/i);
+  assert.match(agentSkill, /Do not silently transfer or broaden/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Live execution-policy integrity guard/g)].length, 2);
+  const scoped = await readFile(
+    new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url),
+    "utf8"
+  );
+  assert.match(scoped, /actual receiving session's live/i);
+  assert.match(scoped, /delegated handoffs or cross-thread messages/i);
+  assert.match(scoped, /stop and\s+reconcile them before proceeding/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),

@@ -70,6 +70,12 @@ higher-priority instructions always control scope and authority.
   sees the intended capability set. Before consequential work continues, verify the live
   model-visible/executable inventory has converged to the intended post-transition state; if
   it is stale, incomplete, or cannot be reconciled, fail closed until readiness is restored.
+- Before each consequential action, verify the actual receiving session's live
+  permission/approval mode, effective tool-policy coverage, and execution identity.
+  Recheck after user turns, resumed sessions, delegated handoffs or cross-thread messages;
+  displayed settings, prior approval or sender model/effort do not authorize the receiver.
+  If effective controls differ from user-approved scope or cannot be inspected, stop and
+  reconcile them before proceeding.
 - For consequential tool or network calls, a timeout, disconnect, lost acknowledgement, or
   session-recovery failure is not proof that the external effect failed. If the call may have
   applied, treat the outcome as unresolved and do not replay it until the real postcondition
