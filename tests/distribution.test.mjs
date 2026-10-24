@@ -440,6 +440,17 @@ test("requires portable-skill execution quiescence before conflicting takeover",
   assert.match(agentSkill, /verify current attributable liveness\/ownership from the real process\/session\/lease state/i);
 });
 
+test("respects user-reserved actions and actual destructive targets in the portable skill", () => {
+  assert.match(agentSkill, /User-action reservation guard/i);
+  assert.match(agentSkill, /do not race, duplicate/i);
+  assert.match(agentSkill, /re-read the affected state/i);
+  assert.match(agentSkill, /Effective destructive-target guard/i);
+  assert.match(agentSkill, /actual execution root\/worktree and effective targets/i);
+  assert.match(agentSkill, /after relevant argument, variable, glob, and shell\/path expansion/i);
+  assert.match(agentSkill, /intended approval\/policy guard covers that exact tool and execution path/i);
+  assert.match(agentSkill, /destructive cleanup foreground and observable/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),
