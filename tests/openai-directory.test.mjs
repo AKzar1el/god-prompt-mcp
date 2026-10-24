@@ -128,6 +128,14 @@ test("preserves pre-existing recovery artifacts during scoped OpenAI rollback", 
   assert.match(skill, /stop for reconciliation/i);
 });
 
+test("requires explicit hook effect provenance in the scoped OpenAI skill", () => {
+  assert.match(skill, /lifecycle or event hooks/i);
+  assert.match(skill, /effective hook commands, arguments, execution identity/i);
+  assert.match(skill, /outside the\s+model-visible tool\/approval plane/i);
+  assert.match(skill, /explicit scope-bound authority/i);
+  assert.match(skill, /stop before activation/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);
