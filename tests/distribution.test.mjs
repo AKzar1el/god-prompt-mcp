@@ -167,7 +167,8 @@ test("keeps privacy copy aligned with local and hosted transports", () => {
 
 test("uses the split MCP SDK v2 without the Workers-only Agents SDK", () => {
   assert.equal(packageJson.dependencies?.["@modelcontextprotocol/sdk"], undefined);
-  assert.equal(packageJson.dependencies?.["@modelcontextprotocol/server"], "2.1.0");
+  assert.equal(packageJson.dependencies?.["@modelcontextprotocol/server"], "2.3.0");
+  assert.equal(packageJson.dependencies?.zod, "^4.6.7");
   assert.equal(packageJson.dependencies?.agents, undefined);
   assert.equal(packageJson.devDependencies?.agents, undefined);
 });
@@ -438,6 +439,17 @@ test("requires portable-skill execution quiescence before conflicting takeover",
   assert.match(agentSkill, /not proof that an owned process, tool call, child session, or writer has actually stopped/i);
   assert.match(agentSkill, /conflicting restart\/duplicate execution, destructive cleanup, or declaring an owner stale/i);
   assert.match(agentSkill, /verify current attributable liveness\/ownership from the real process\/session\/lease state/i);
+});
+
+test("respects user-reserved actions and actual destructive targets in the portable skill", () => {
+  assert.match(agentSkill, /User-action reservation guard/i);
+  assert.match(agentSkill, /do not race, duplicate/i);
+  assert.match(agentSkill, /re-read the affected state/i);
+  assert.match(agentSkill, /Effective destructive-target guard/i);
+  assert.match(agentSkill, /actual execution root\/worktree and effective targets/i);
+  assert.match(agentSkill, /after relevant argument, variable, glob, and shell\/path expansion/i);
+  assert.match(agentSkill, /intended approval\/policy guard covers that exact tool and execution path/i);
+  assert.match(agentSkill, /destructive cleanup foreground and observable/i);
 });
 
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
