@@ -214,3 +214,25 @@ test("serves SEP-2640 through the hosted Worker transport", async () => {
   assert.equal(invalidCursor.error?.code, -32602);
   assert.match(invalidCursor.error?.message ?? "", /does not issue cursors/);
 });
+
+test("rejects oversized hosted MCP request bodies before tool dispatch", async () => {
+  const { default: worker } = await import(`../dist/index.js?size=${Date.now()}`);
+  const response = await worker.fetch(
+    new Request("https://example.test/mcp", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-method": "tools/list",
+        "mcp-protocol-version": "2026-07-28",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "oversized-request",
+        method: "tools/list",
+        params: { padding: "x".repeat(1024 * 1024) },
+      }),
+    })
+  );
+  assert.equal(response.status, 413);
+});
