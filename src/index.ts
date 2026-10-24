@@ -8,13 +8,18 @@ import {
 import { registerGodPromptSkillExtension } from "./skills.js";
 
 function createServer(): McpServer {
-  const server = new McpServer(SERVER_INFO, { instructions: SERVER_INSTRUCTIONS });
+  const server = new McpServer(SERVER_INFO, {
+    instructions: SERVER_INSTRUCTIONS,
+    maxToolInputElements: 2048,
+  });
   registerGodPromptTools(server);
   registerGodPromptSkillExtension(server);
   return server;
 }
 
-const mcpHandler = createMcpHandler(createServer);
+const mcpHandler = createMcpHandler(createServer, {
+  maxRequestBodySize: 1024 * 1024,
+});
 
 export default {
   fetch(request: Request) {

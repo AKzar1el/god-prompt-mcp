@@ -559,7 +559,9 @@ test("serves MCP statelessly while preserving the historical Durable Object name
       class_name: "GodPromptMCP",
     },
   ]);
-  assert.match(workerSource, /createMcpHandler\(createServer\)/);
+  assert.match(workerSource, /createMcpHandler\(createServer,\s*\{/);
+  assert.match(workerSource, /maxRequestBodySize:\s*1024\s*\*\s*1024/);
+  assert.match(workerSource, /maxToolInputElements:\s*2048/);
   assert.match(workerSource, /export class GodPromptMCP/);
   assert.doesNotMatch(workerSource, /McpAgent|\.serve\(/);
 });
