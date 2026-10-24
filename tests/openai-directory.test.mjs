@@ -121,6 +121,13 @@ test("respects user manual actions and resolved destructive targets in scoped Op
   assert.match(skill, /destructive cleanup foreground and observable/i);
 });
 
+test("preserves pre-existing recovery artifacts during scoped OpenAI rollback", () => {
+  assert.match(skill, /reverse only the minimum attributable current/i);
+  assert.match(skill, /pre-existing backups, snapshots, object version history/i);
+  assert.match(skill, /separate explicit target-specific authorization/i);
+  assert.match(skill, /stop for reconciliation/i);
+});
+
 test("contains the minimum five positive and three negative directory review cases", () => {
   assert.equal(reviewTests.positive.length, 5);
   assert.equal(reviewTests.negative.length, 3);

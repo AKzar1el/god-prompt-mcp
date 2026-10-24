@@ -452,6 +452,13 @@ test("respects user-reserved actions and actual destructive targets in the porta
   assert.match(agentSkill, /destructive cleanup foreground and observable/i);
 });
 
+test("preserves independent rollback recovery artifacts in the portable skill", () => {
+  assert.match(agentSkill, /Rollback-recovery preservation guard/i);
+  assert.match(agentSkill, /reverse only the minimum necessary scope/i);
+  assert.match(agentSkill, /pre-existing backups, snapshots, object version history/i);
+  assert.match(agentSkill, /separate, explicit target-specific authorization/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),

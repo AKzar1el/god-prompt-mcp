@@ -52,6 +52,12 @@ higher-priority instructions always control scope and authority.
   working directory. If target expansion or guard coverage is uncertain, stop. Keep
   destructive cleanup foreground and observable; never detach destructive deletion or
   terminate an executor while its ownership remains uncertain.
+- When rolling back or undoing a change, reverse only the minimum attributable current
+  effects. Preserve pre-existing backups, snapshots, object version history, restore
+  points, and audit/recovery evidence even when associated with the affected resource.
+  Require separate explicit target-specific authorization before modifying or destroying
+  those recovery artifacts; if current effects cannot be separated from historical
+  recovery state, stop for reconciliation.
 - After adding, removing, reconnecting, reconfiguring, or reloading a tool or MCP provider,
   do not treat configuration success or a connected status as proof that the next execution
   sees the intended capability set. Before consequential work continues, verify the live
