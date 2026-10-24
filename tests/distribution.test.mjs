@@ -459,6 +459,13 @@ test("preserves independent rollback recovery artifacts in the portable skill", 
   assert.match(agentSkill, /separate, explicit target-specific authorization/i);
 });
 
+test("binds lifecycle-hook changes to host-side effects in the portable skill", () => {
+  assert.match(agentSkill, /Lifecycle-hook update provenance guard/i);
+  assert.match(agentSkill, /effective hooks and host-side commands, arguments, execution identity/i);
+  assert.match(agentSkill, /outside the model-visible tool\/approval plane/i);
+  assert.match(agentSkill, /explicit scope-bound authority/i);
+});
+
 test("keeps the Amp skill-scoped MCP surface pinned and aligned with the registered server tools", () => {
   const registeredToolNames = [
     ...serverSource.matchAll(/server\.registerTool\(\s*"([^"]+)"/g),

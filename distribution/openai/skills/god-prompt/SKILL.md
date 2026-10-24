@@ -58,6 +58,13 @@ higher-priority instructions always control scope and authority.
   Require separate explicit target-specific authorization before modifying or destroying
   those recovery artifacts; if current effects cannot be separated from historical
   recovery state, stop for reconciliation.
+- Before installing, updating, or reconfiguring a plugin, skill, extension, or host
+  integration that registers lifecycle or event hooks, verify the authoritative source
+  and compare the effective hook commands, arguments, execution identity, and affected
+  resources before and after. New or changed host-side hooks can execute outside the
+  model-visible tool/approval plane: an unchanged tool list is not authorization.
+  Require explicit scope-bound authority for each material new effect; if hook commands,
+  source provenance, or guard coverage cannot be verified, stop before activation.
 - After adding, removing, reconnecting, reconfiguring, or reloading a tool or MCP provider,
   do not treat configuration success or a connected status as proof that the next execution
   sees the intended capability set. Before consequential work continues, verify the live
