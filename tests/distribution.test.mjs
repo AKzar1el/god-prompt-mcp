@@ -666,3 +666,17 @@ test("bounds inspection and delegation overhead across generated MCP and skills"
   assert.match(scoped, /distinct bounded objectives and ownership/i);
   assert.match(scoped, /Never skip required safety, compliance, or/i);
 });
+
+test("requires actual delegated child MCP capability readiness across distributions", async () => {
+  assert.match(agentSkill, /Delegated child capability readiness/i);
+  assert.match(agentSkill, /actual child\/session/i);
+  assert.match(agentSkill, /harmless read-only probe when practical/i);
+  assert.match(agentSkill, /never fabricate a tool result/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Delegated child capability readiness/g)].length, 2);
+  assert.match(generated, /parent's working tools, inherited configuration/i);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /exact child\/session/i);
+  assert.match(scoped, /harmless read-only probe/i);
+  assert.match(scoped, /never fabricate results, borrow parent/i);
+});
