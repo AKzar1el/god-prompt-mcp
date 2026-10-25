@@ -625,3 +625,15 @@ test("requires user review checkpoints across generated MCP and Agent Skills", a
   assert.match(scoped, /review checkpoint before a send/i);
   assert.match(scoped, /expressly\s+authorizes the specific action/i);
 });
+test("fences delegated control-plane mutation across generated and scoped skills", async () => {
+  assert.match(agentSkill, /Delegated control-plane target guard/i);
+  assert.match(agentSkill, /rejected self-target action is not permission/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Delegated control-plane target guard/g)].length, 2);
+  const scoped = await readFile(
+    new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url),
+    "utf8"
+  );
+  assert.match(scoped, /delegated child must not archive/i);
+  assert.match(scoped, /never redirect a rejected self-target action/i);
+});
