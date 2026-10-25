@@ -89,6 +89,13 @@ higher-priority instructions always control scope and authority.
   When a required tool is unavailable or unverifiable, stop that delegation and
   replan within existing permission scope; never fabricate results, borrow parent
   or peer privileges, or widen permissions. Recheck after child/model/tool changes.
+- Before using a delegated result to justify a consequential action or completion,
+  correlate a trusted dispatch/task receipt to the actual child/session origin when
+  host identifiers are available; verify the expected result contract and independently
+  inspect task-scoped artifacts or postconditions. Plausible text, a successful tool
+  envelope, or a nearby timestamp alone cannot establish attribution. If identifiers
+  are absent, demand independent task-specific evidence and reconcile the real child.
+  STOP dependent actions; neither claim completion nor replay ambiguous work.
 - Before each consequential action, verify the actual receiving session's live
   permission/approval mode, effective tool-policy coverage, and execution identity.
   Recheck after user turns, resumed sessions, delegated handoffs or cross-thread messages;
