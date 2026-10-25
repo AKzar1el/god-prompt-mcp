@@ -96,6 +96,13 @@ higher-priority instructions always control scope and authority.
   envelope, or a nearby timestamp alone cannot establish attribution. If identifiers
   are absent, demand independent task-specific evidence and reconcile the real child.
   STOP dependent actions; neither claim completion nor replay ambiguous work.
+- If a host advertises a completed background child transcript/output file, confirm
+  the actual task-bound artifact is readable and contains the promised nonempty
+  material, not a zero-byte placeholder or another child session transcript.
+  Cross-check the child/session identity and independent task evidence; if the
+  advertised path is empty, trust only an independently verified alternate child
+  artifact, otherwise STOP before downstream handoff, completion claims or retry.
+  Never fabricate results or delete independent recovery artifacts.
 - Before each consequential action, verify the actual receiving session's live
   permission/approval mode, effective tool-policy coverage, and execution identity.
   Recheck after user turns, resumed sessions, delegated handoffs or cross-thread messages;

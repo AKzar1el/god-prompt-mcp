@@ -695,3 +695,18 @@ test("matches delegated result origin to dispatch across distributed skills", as
   assert.match(scoped, /independently[\r\n ]+inspect task-scoped artifacts or postconditions/i);
   assert.match(scoped, /neither claim completion nor replay ambiguous work/i);
 });
+
+test("verifies materialized delegated transcript artifacts across distributions", async () => {
+  assert.match(agentSkill, /Delegated artifact materialization integrity/i);
+  assert.match(agentSkill, /empty placeholder, missing target, or unrelated transcript/i);
+  assert.match(agentSkill, /independently verified alternate child artifact/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Delegated artifact materialization integrity/g)].length, 2);
+  assert.match(generated, /verify the actual task-bound file is accessible/i);
+  assert.match(generated, /STOP for reconciliation/i);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /zero-byte placeholder/i);
+  assert.match(scoped, /another child session transcript/i);
+  assert.match(scoped, /independently verified alternate child/i);
+  assert.match(scoped, /STOP before downstream handoff/i);
+});
