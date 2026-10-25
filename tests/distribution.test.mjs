@@ -680,3 +680,18 @@ test("requires actual delegated child MCP capability readiness across distributi
   assert.match(scoped, /harmless read-only probe/i);
   assert.match(scoped, /never fabricate results, borrow parent/i);
 });
+
+test("matches delegated result origin to dispatch across distributed skills", async () => {
+  assert.match(agentSkill, /Delegated result-to-dispatch provenance/i);
+  assert.match(agentSkill, /trusted dispatch\/task receipt/i);
+  assert.match(agentSkill, /independent task-scoped artifacts or postconditions/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Delegated result-to-dispatch provenance/g)].length, 2);
+  assert.match(generated, /actual child\/session origin/i);
+  assert.match(generated, /neither claim completion nor replay ambiguous work/i);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /trusted dispatch\/task receipt/i);
+  assert.match(scoped, /actual child\/session origin/i);
+  assert.match(scoped, /independently[\r\n ]+inspect task-scoped artifacts or postconditions/i);
+  assert.match(scoped, /neither claim completion nor replay ambiguous work/i);
+});
