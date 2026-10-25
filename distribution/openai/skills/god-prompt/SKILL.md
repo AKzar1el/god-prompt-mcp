@@ -76,6 +76,14 @@ higher-priority instructions always control scope and authority.
   displayed settings, prior approval or sender model/effort do not authorize the receiver.
   If effective controls differ from user-approved scope or cannot be inspected, stop and
   reconcile them before proceeding.
+- For a release or deployment, bind build inputs to a verified declared source
+  revision; explicitly reconcile dirty, untracked, or generated material. Match the
+  built artifact digest to the package, image, or bundle actually published or
+  receiving traffic, then retrieve/install/safely canary each claimed platform
+  through its real consumer path. A green CI job or deployment badge alone does not
+  prove source-to-artifact identity or platform availability. If any material
+  provenance or claimed-platform artifact is uncertain, stop traffic movement and
+  report the exact unverified state instead of claiming a successful release.
 - For consequential tool or network calls, a timeout, disconnect, lost acknowledgement, or
   session-recovery failure is not proof that the external effect failed. If the call may have
   applied, treat the outcome as unresolved and do not replay it until the real postcondition
