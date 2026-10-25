@@ -637,3 +637,19 @@ test("fences delegated control-plane mutation across generated and scoped skills
   assert.match(scoped, /delegated child must not archive/i);
   assert.match(scoped, /never redirect a rejected self-target action/i);
 });
+
+test("keeps mixed notification user origin separate across distribution surfaces", async () => {
+  assert.match(agentSkill, /Mixed notification\/user-turn provenance guard/i);
+  assert.match(agentSkill, /Do not classify the entire message as automated/i);
+  assert.match(agentSkill, /trusted channel\/event-origin evidence/i);
+  assert.match(agentSkill, /ask the user to resend it in a distinct turn/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Mixed notification\/user-turn provenance guard/g)].length, 2);
+  const scoped = await readFile(
+    new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url),
+    "utf8"
+  );
+  assert.match(scoped, /Do not discard a verified human request/i);
+  assert.match(scoped, /trusted event\/channel-origin evidence/i);
+  assert.match(scoped, /STOP consequential effects/i);
+});
