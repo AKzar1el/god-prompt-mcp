@@ -3,7 +3,7 @@
   "name": "io.github.AKzar1el/god-prompt-mcp",
   "title": "GodPrompt MCP Server",
   "description": "GodPrompt MCP + Agent Skill for coding agents with TDD, debugging, verification, and task routing.",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "repository": {
     "url": "https://github.com/AKzar1el/god-prompt-mcp",
     "source": "github",
@@ -19,8 +19,8 @@
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.35/god-prompt-mcp-1.0.35.mcpb",
-      "fileSha256": "c5c7a2dfb2a0ae1123b36deebf33860f23295cb7ad7bbf319537e75f2789b772",
+      "identifier": "https://github.com/AKzar1el/god-prompt-mcp/releases/download/v1.0.36/god-prompt-mcp-1.0.36.mcpb",
+      "fileSha256": "4db676c3f01e31eb27a004a9dc75c9db18b8a800a03dc62180e1c502a5d80e74",
       "transport": {
         "type": "stdio"
       }
@@ -28,7 +28,7 @@
     {
       "registryType": "npm",
       "identifier": "god-prompt-mcp",
-      "version": "1.0.35",
+      "version": "1.0.36",
       "transport": {
         "type": "stdio"
       }
