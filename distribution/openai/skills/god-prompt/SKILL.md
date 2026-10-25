@@ -80,6 +80,11 @@ higher-priority instructions always control scope and authority.
   displayed settings, prior approval or sender model/effort do not authorize the receiver.
   If effective controls differ from user-approved scope or cannot be inspected, stop and
   reconcile them before proceeding.
+- A delegated child must not archive, terminate, suspend, revoke, or administer its
+  parent/coordinator, ancestor, or peer sessions just because a control-plane API lists
+  them. Require exact user/parent delegation for the action and target, verify the
+  session identity, and never redirect a rejected self-target action to another
+  session; stop when authority or target is uncertain.
 - For a release or deployment, bind build inputs to a verified declared source
   revision; explicitly reconcile dirty, untracked, or generated material. Match the
   built artifact digest to the package, image, or bundle actually published or
