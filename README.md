@@ -495,6 +495,10 @@ The repository includes a Claude Code marketplace catalog alongside the existing
 
 The plugin bundles the portable `god-prompt` Agent Skill and the pinned local MCP server. The same package remains structurally ready for Anthropic's reviewed community directory without maintaining a separate implementation.
 
+**Claude Code custom-gateway troubleshooting:** In Claude Code 2.1.304+ with a third-party Anthropic-compatible gateway configured through `ANTHROPIC_BASE_URL`, an [upstream tool-discovery regression](https://github.com/anthropics/claude-code/issues/104309) can leave subagents without `Read` or headless `claude -p` without `Agent`/`Bash`. This is a Claude Code host issue, not a GodPrompt MCP server failure. Confirm the tools actually exposed in the affected session before applying a workaround.
+
+Affected users report that merging `"ENABLE_TOOL_SEARCH": "false"` into the `env` section of their existing Claude Code settings restores core tools. This disables deferred tool discovery and can increase context-token usage; remove the workaround after an upstream fix. No change is needed for installations that already expose the expected tools.
+
 ### Claude Desktop extension
 
 GitHub releases include a `.mcpb` bundle for one-click local installation in MCPB-compatible clients such as Claude Desktop. The bundle runs the same local stdio server and does not require an API key or account.
