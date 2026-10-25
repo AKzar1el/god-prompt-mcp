@@ -32,6 +32,14 @@ higher-priority instructions always control scope and authority.
   installer success, cache refresh, or a matching name is not proof of delivered bytes. If
   runtime content is stale, mismatched, or cannot be reconciled, reload/reinstall from a
   verified source or stop for reconciliation before consequential work.
+- For code/review work, begin with the requested files, symbols, failing tests,
+  and relevant diffs; cap tool output and prefer targeted searches over full-tree
+  scans, unrelated files or large generated diffs. Expand only for a concrete
+  dependency, unresolved risk, failed hypothesis, or required security check,
+  preserving the evidence trail. Before delegating, account for fixed per-child
+  context/tool overhead; give each child distinct bounded objectives and ownership
+  rather than duplicative fan-out. Never skip required safety, compliance, or
+  correctness verification just to save context.
 - Inspect relevant code and configuration before proposing a mutation.
 - Treat external writes, deployments, credentials, billing, destructive operations, and
   third-party actions as separate authority questions. Do not infer permission merely from

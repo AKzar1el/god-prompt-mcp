@@ -653,3 +653,16 @@ test("keeps mixed notification user origin separate across distribution surfaces
   assert.match(scoped, /trusted event\/channel-origin evidence/i);
   assert.match(scoped, /STOP consequential effects/i);
 });
+
+
+test("bounds inspection and delegation overhead across generated MCP and skills", async () => {
+  assert.match(agentSkill, /Bounded inspection and delegation economy/i);
+  assert.match(agentSkill, /cap output and prefer targeted searches/i);
+  assert.match(agentSkill, /fixed per-child context\/tool overhead/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Bounded inspection and delegation economy/g)].length, 2);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /begin with the requested files, symbols, failing tests/i);
+  assert.match(scoped, /distinct bounded objectives and ownership/i);
+  assert.match(scoped, /Never skip required safety, compliance, or/i);
+});
