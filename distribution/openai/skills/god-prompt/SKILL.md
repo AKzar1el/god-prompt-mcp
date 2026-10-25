@@ -82,6 +82,13 @@ higher-priority instructions always control scope and authority.
   sees the intended capability set. Before consequential work continues, verify the live
   model-visible/executable inventory has converged to the intended post-transition state; if
   it is stale, incomplete, or cannot be reconciled, fail closed until readiness is restored.
+- Before assigning consequential tool- or MCP-dependent work to a delegated child,
+  verify in that exact child/session that required capabilities are live, visible,
+  and callable, preferably with a harmless read-only probe. A parent's working tools,
+  inherited configuration, or successful child spawn do not prove child readiness.
+  When a required tool is unavailable or unverifiable, stop that delegation and
+  replan within existing permission scope; never fabricate results, borrow parent
+  or peer privileges, or widen permissions. Recheck after child/model/tool changes.
 - Before each consequential action, verify the actual receiving session's live
   permission/approval mode, effective tool-policy coverage, and execution identity.
   Recheck after user turns, resumed sessions, delegated handoffs or cross-thread messages;
