@@ -595,3 +595,20 @@ test("serves MCP statelessly while preserving the historical Durable Object name
   assert.match(workerSource, /export class GodPromptMCP/);
   assert.doesNotMatch(workerSource, /McpAgent|\.serve\(/);
 });
+
+
+test("binds release provenance and installability across all skill surfaces", async () => {
+  assert.match(agentSkill, /Release source-to-artifact provenance guard/i);
+  assert.match(agentSkill, /Reconcile dirty, untracked, or generated inputs explicitly/i);
+  assert.match(agentSkill, /artifact actually published or receiving traffic/i);
+  assert.match(agentSkill, /STOP consequential rollout/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Release source-to-artifact provenance guard/g)].length, 2);
+  const scoped = await readFile(
+    new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url),
+    "utf8"
+  );
+  assert.match(scoped, /For a release or deployment, bind build inputs/i);
+  assert.match(scoped, /retrieve\/install\/safely canary each claimed platform/i);
+  assert.match(scoped, /report the exact unverified state instead of claiming a successful release/i);
+});
