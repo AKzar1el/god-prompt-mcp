@@ -612,3 +612,16 @@ test("binds release provenance and installability across all skill surfaces", as
   assert.match(scoped, /retrieve\/install\/safely canary each claimed platform/i);
   assert.match(scoped, /report the exact unverified state instead of claiming a successful release/i);
 });
+
+test("requires user review checkpoints across generated MCP and Agent Skills", async () => {
+  assert.match(agentSkill, /User review\/checkpoint guard/i);
+  assert.match(agentSkill, /hard precondition/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/User review\/checkpoint guard/g)].length, 2);
+  const scoped = await readFile(
+    new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url),
+    "utf8"
+  );
+  assert.match(scoped, /review checkpoint before a send/i);
+  assert.match(scoped, /expressly\s+authorizes the specific action/i);
+});
