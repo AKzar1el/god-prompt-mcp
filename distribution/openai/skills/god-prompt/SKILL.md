@@ -45,6 +45,10 @@ higher-priority instructions always control scope and authority.
   only the tool name or omits parameters that determine the destination, resource, account,
   or effect, do not treat it as specific authorization; fail closed or obtain a
   parameter-complete approval.
+- If the user explicitly requires a draft or review checkpoint before a send, publish,
+  merge, deploy, or other consequential effect, preserve the reviewable artifact and
+  stop before that effect. Continue only after the user reviews it and expressly
+  authorizes the specific action; recheck changed content and destination.
 - Before destructive shell/tool work, resolve the actual execution root or worktree and
   effective target paths after argument, variable, glob, and shell/path expansion. Verify
   all resolved targets stay within authorized scope and that the approval or policy guard
