@@ -80,6 +80,17 @@ npx -y god-prompt-mcp
 
 The public npm package runs the local stdio server directly. It requires Node.js 22+ and no API key or account.
 
+**Windows custom stdio clients:** If a client reports `spawn npx ENOENT` or `spawn npx.cmd EINVAL`, it may be trying to execute npm's Windows batch shim without a compatible launcher. Prefer the [hosted endpoint](#hosted-remote-no-nodejs-required), or, for an affected client that accepts a custom stdio command, use:
+
+```json
+{
+  "command": "C:\\Windows\\System32\\cmd.exe",
+  "args": ["/d", "/s", "/c", "npx -y god-prompt-mcp"]
+}
+```
+
+This is a client-launcher workaround, not a GodPrompt MCP server change. Keep existing working cross-platform `npx` configurations unchanged.
+
 ### Glama
 
 GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-prompt-mcp). Use the server page to inspect the tools and connect it to a supported MCP client.
