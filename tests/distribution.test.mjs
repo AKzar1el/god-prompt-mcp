@@ -737,3 +737,16 @@ test("guards temporary verification workspaces against shared source aliases", a
   assert.match(scoped, /A separate-looking Temp project is not isolation/i);
   assert.match(scoped, /verify physical targets and concurrent writers, or STOP/i);
 });
+
+test("guards user-directed shipping artifact scope across MCP distributions", async () => {
+  assert.match(agentSkill, /User-directed ship-artifact scope freeze/i);
+  assert.match(agentSkill, /unless the user explicitly amends the shipping scope/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/User-directed ship-artifact scope freeze/g)].length, 2);
+  assert.match(generated, /Freeze the user-specified ready artifact/i);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /Intervening side questions, optional research/i);
+  assert.match(scoped, /restart costly delegated fact-checks/i);
+  assert.match(scoped, /unless the user explicitly amends shipping scope/i);
+  assert.match(scoped, /material correctness\/security risk, STOP/i);
+});
