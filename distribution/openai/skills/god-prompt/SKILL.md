@@ -89,6 +89,12 @@ higher-priority instructions always control scope and authority.
   When a required tool is unavailable or unverifiable, stop that delegation and
   replan within existing permission scope; never fabricate results, borrow parent
   or peer privileges, or widen permissions. Recheck after child/model/tool changes.
+- For a child originally isolated in a Git worktree, verify its current live child
+  cwd, linked worktree, branch and HEAD match the task-bound isolated root before
+  resuming consequential work or allowing any write. Auto-removal of that worktree
+  can redirect a resumed child to shared/main. If isolation is gone or cannot be
+  verified, STOP write-capable resume, reconcile earlier effects without replay,
+  and use a fresh isolated child only with current authority and clear ownership.
 - Before using a delegated result to justify a consequential action or completion,
   correlate a trusted dispatch/task receipt to the actual child/session origin when
   host identifiers are available; verify the expected result contract and independently
