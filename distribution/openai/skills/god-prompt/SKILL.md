@@ -128,6 +128,12 @@ higher-priority instructions always control scope and authority.
   displayed settings, prior approval or sender model/effort do not authorize the receiver.
   If effective controls differ from user-approved scope or cannot be inspected, stop and
   reconcile them before proceeding.
+- After resuming an agent launched with an explicitly selected model, context
+  mode, or reasoning effort, verify the actual resumed model and effort against
+  the user/task-authorized profile before quality-, cost-, or safety-critical work.
+  A retained agent name or old launch banner does not prove settings persisted;
+  if the effective profile differs or is uninspectable, stop and reconcile.
+  Never silently substitute models, raise spend, or broaden existing authority.
 - A delegated child must not archive, terminate, suspend, revoke, or administer its
   parent/coordinator, ancestor, or peer sessions just because a control-plane API lists
   them. Require exact user/parent delegation for the action and target, verify the
