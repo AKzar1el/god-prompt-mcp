@@ -57,6 +57,13 @@ higher-priority instructions always control scope and authority.
   merge, deploy, or other consequential effect, preserve the reviewable artifact and
   stop before that effect. Continue only after the user reviews it and expressly
   authorizes the specific action; recheck changed content and destination.
+- When the user requests push/ship of a specified ready artifact, freeze its
+  reviewed content and already-required verification/approval boundary.
+  Intervening side questions, optional research or another deliverable do not
+  silently revise this artifact or restart costly delegated fact-checks.
+  Keep follow-ups separate unless the user explicitly amends shipping scope;
+  if a required check reveals material correctness/security risk, STOP and
+  reconcile the affected artifact before shipping.
 - Before destructive shell/tool work, resolve the actual execution root or worktree and
   effective target paths after argument, variable, glob, and shell/path expansion. Verify
   all resolved targets stay within authorized scope and that the approval or policy guard
