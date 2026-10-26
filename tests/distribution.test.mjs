@@ -750,3 +750,16 @@ test("guards user-directed shipping artifact scope across MCP distributions", as
   assert.match(scoped, /unless the user explicitly amends shipping scope/i);
   assert.match(scoped, /material correctness\/security risk, STOP/i);
 });
+
+test("preserves resumed model and effort fidelity across MCP distributions", async () => {
+  assert.match(agentSkill, /Resumed agent execution-profile fidelity/i);
+  assert.match(agentSkill, /effective model and effort/i);
+  assert.match(agentSkill, /never silently substitute models/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Resumed agent execution-profile fidelity/g)].length, 2);
+  assert.match(generated, /retained agent name or old launch banner/i);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /actual resumed model and effort/i);
+  assert.match(scoped, /A retained agent name or old launch banner/i);
+  assert.match(scoped, /Never silently substitute models, raise spend/i);
+});
