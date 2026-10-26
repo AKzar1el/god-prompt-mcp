@@ -790,3 +790,19 @@ test("binds externalized MCP tool results to their own calls across distribution
   assert.match(scoped, /STOP downstream effects/i);
   assert.match(scoped, /never blindly replay an uncertain mutating call/i);
 });
+
+test("unattended approval handoff is mirrored across consumer surfaces", async () => {
+  const [generated, skill, scoped] = await Promise.all([
+    readFile(new URL("../src/content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+    readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+  ]);
+  const guard = "**Unattended permission-handoff guard:**";
+  assert.equal(generated.split(guard).length - 1, 2);
+  assert.equal(skill.split(guard).length - 1, 1);
+  for (const text of [generated, skill, scoped]) {
+    assert.match(text, /NEEDS_HUMAN_APPROVAL/);
+    assert.match(text, /host.{0,80}scheduler slot/i);
+    assert.match(text, /Never auto-approve/i);
+  }
+});
