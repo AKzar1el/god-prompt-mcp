@@ -710,3 +710,17 @@ test("verifies materialized delegated transcript artifacts across distributions"
   assert.match(scoped, /independently verified alternate child/i);
   assert.match(scoped, /STOP before downstream handoff/i);
 });
+
+
+test("guards resumed worktree-isolated children across distributions", async () => {
+  assert.match(agentSkill, /Delegated worktree isolation continuity/i);
+  assert.match(agentSkill, /still-existing linked worktree, branch/);
+  assert.match(agentSkill, /STOP write-capable resume/);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Delegated worktree isolation continuity/g)].length, 2);
+  assert.match(generated, /shared\/main checkout/);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /linked worktree, branch and HEAD/);
+  assert.match(scoped, /redirect a resumed child to shared\/main/);
+  assert.match(scoped, /STOP write-capable resume/);
+});
