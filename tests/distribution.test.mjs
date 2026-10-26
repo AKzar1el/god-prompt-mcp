@@ -778,3 +778,15 @@ test("nominal read-only probes require verified non-mutating behavior across dis
   assert.match(scoped, /scope-authorized write/i);
   assert.match(scoped, /report readiness unverified/i);
 });
+test("binds externalized MCP tool results to their own calls across distributions", async () => {
+  assert.match(agentSkill, /Direct MCP result-artifact identity guard/i);
+  assert.match(agentSkill, /same timestamp-derived path/i);
+  assert.match(agentSkill, /do not replay an uncertain mutating call/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Direct MCP result-artifact identity guard/g)].length, 2);
+  assert.match(generated, /call-distinct artifacts/i);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /another call's result/i);
+  assert.match(scoped, /STOP downstream effects/i);
+  assert.match(scoped, /never blindly replay an uncertain mutating call/i);
+});
