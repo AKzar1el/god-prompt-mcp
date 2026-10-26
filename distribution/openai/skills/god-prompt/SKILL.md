@@ -53,6 +53,14 @@ higher-priority instructions always control scope and authority.
   only the tool name or omits parameters that determine the destination, resource, account,
   or effect, do not treat it as specific authorization; fail closed or obtain a
   parameter-complete approval.
+- In scheduled or unattended runs, check known permission requirements before
+  consequential tool calls. If human approval is needed, preserve the exact pending
+  action and approval need, report NEEDS_HUMAN_APPROVAL, and safely finish this
+  attempt when the host permits. Never auto-approve, bypass a permission prompt,
+  claim the effect completed, terminate unrelated work, or change a recurring
+  schedule. Agent instructions cannot release a host-held scheduler slot when
+  interception happens before an agent-controlled handoff. Interactive approval
+  remains unchanged.
 - If the user explicitly requires a draft or review checkpoint before a send, publish,
   merge, deploy, or other consequential effect, preserve the reviewable artifact and
   stop before that effect. Continue only after the user reviews it and expressly
