@@ -763,3 +763,18 @@ test("preserves resumed model and effort fidelity across MCP distributions", asy
   assert.match(scoped, /A retained agent name or old launch banner/i);
   assert.match(scoped, /Never silently substitute models, raise spend/i);
 });
+
+
+test("nominal read-only probes require verified non-mutating behavior across distributions", async () => {
+  assert.match(agentSkill, /Nominal read-only probe integrity/i);
+  assert.match(agentSkill, /A probe's name alone is not evidence/i);
+  assert.match(agentSkill, /report readiness unverified/i);
+  const generated = await readFile(new URL("../src/content.ts", import.meta.url), "utf8");
+  assert.equal([...generated.matchAll(/Nominal read-only probe integrity/g)].length, 2);
+  assert.match(generated, /lock, or backup files/i);
+  const scoped = await readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8");
+  assert.match(scoped, /a CLI command called/i);
+  assert.match(scoped, /Such a test does not verify live credentials/i);
+  assert.match(scoped, /scope-authorized write/i);
+  assert.match(scoped, /report readiness unverified/i);
+});

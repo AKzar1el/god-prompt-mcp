@@ -95,6 +95,13 @@ higher-priority instructions always control scope and authority.
   sees the intended capability set. Before consequential work continues, verify the live
   model-visible/executable inventory has converged to the intended post-transition state; if
   it is stale, incomplete, or cannot be reconciled, fail closed until readiness is restored.
+- A CLI command called `status` or `auth status` may initialize configuration,
+  lock, or backup files despite its read-only label. Before a live credential,
+  configuration, or repository probe, verify that installed command's actual
+  side effects or test its write behavior in an independent, non-aliased
+  disposable target. Such a test does not verify live credentials. Treat any
+  initialization as a scope-authorized write; otherwise use a truly non-mutating
+  alternative or report readiness unverified.
 - Before assigning consequential tool- or MCP-dependent work to a delegated child,
   verify in that exact child/session that required capabilities are live, visible,
   and callable, preferably with a harmless read-only probe. A parent's working tools,
