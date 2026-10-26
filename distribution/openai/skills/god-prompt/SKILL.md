@@ -64,6 +64,12 @@ higher-priority instructions always control scope and authority.
   working directory. If target expansion or guard coverage is uncertain, stop. Keep
   destructive cleanup foreground and observable; never detach destructive deletion or
   terminate an executor while its ownership remains uncertain.
+- Before creating or running a disposable test/preview/build workspace, check
+  whether symlinks, Windows junction/reparse points, hard links, bind mounts,
+  or similar aliases expose live source to a verifier or cleanup that may
+  write, import, or delete. A separate-looking Temp project is not isolation.
+  Prefer independent copies outside application-managed cleanup directories;
+  verify physical targets and concurrent writers, or STOP.
 - When rolling back or undoing a change, reverse only the minimum attributable current
   effects. Preserve pre-existing backups, snapshots, object version history, restore
   points, and audit/recovery evidence even when associated with the affected resource.
