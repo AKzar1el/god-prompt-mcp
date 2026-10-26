@@ -115,6 +115,14 @@ higher-priority instructions always control scope and authority.
   can redirect a resumed child to shared/main. If isolation is gone or cannot be
   verified, STOP write-capable resume, reconcile earlier effects without replay,
   and use a fresh isolated child only with current authority and clear ownership.
+- When a tool or MCP response is saved to a file, bind that materialized output to
+  the exact originating call before trusting it for consequential decisions.
+  Concurrent calls may advertise one timestamp-derived path that now contains
+  another call's result; a readable file or success envelope is not proof of
+  call identity. If saved paths collide or output origin cannot be reconciled,
+  STOP downstream effects and verify real postconditions. Only a proven
+  read-only/no-effect call may be repeated serially with fresh call-bound evidence;
+  never blindly replay an uncertain mutating call.
 - Before using a delegated result to justify a consequential action or completion,
   correlate a trusted dispatch/task receipt to the actual child/session origin when
   host identifiers are available; verify the expected result contract and independently
