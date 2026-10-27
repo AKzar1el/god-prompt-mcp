@@ -806,3 +806,22 @@ test("unattended approval handoff is mirrored across consumer surfaces", async (
     assert.match(text, /Never auto-approve/i);
   }
 });
+
+test("project configuration effective-load readiness across consumer surfaces", async () => {
+  const [generated, portable, scoped] = await Promise.all([
+    readFile(new URL("../src/content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+    readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+  ]);
+  const guard = "**Project configuration effective-load readiness:**";
+  assert.equal(generated.split(guard).length - 1, 2);
+  assert.equal(portable.split(guard).length - 1, 1);
+  for (const value of [generated, portable]) {
+    assert.match(value, /pre-warmed, relocated, or delegated session/);
+    assert.match(value, /effective instruction content\/source and live governing policy/);
+    assert.match(value, /STOP for reload\/reconciliation/);
+  }
+  assert.match(scoped, /pre-warmed, relocated, resumed, or delegated session/);
+  assert.match(scoped, /A valid config file, accepted instruction path/);
+  assert.match(scoped, /STOP for reload\/reconciliation/);
+});

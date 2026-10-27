@@ -103,6 +103,13 @@ higher-priority instructions always control scope and authority.
   sees the intended capability set. Before consequential work continues, verify the live
   model-visible/executable inventory has converged to the intended post-transition state; if
   it is stale, incomplete, or cannot be reconciled, fail closed until readiness is restored.
+- At a new, pre-warmed, relocated, resumed, or delegated session start, verify
+  the project-scoped instructions, hooks, and permission controls are actually
+  loaded into the receiving session before relying on them for consequential work.
+  A valid config file, accepted instruction path, or previous session does not
+  prove active coverage. If safety-relevant controls are missing or unobservable,
+  STOP for reload/reconciliation rather than assuming additional permission.
+  This guidance cannot repair a host initialization bug.
 - A CLI command called `status` or `auth status` may initialize configuration,
   lock, or backup files despite its read-only label. Before a live credential,
   configuration, or repository probe, verify that installed command's actual
