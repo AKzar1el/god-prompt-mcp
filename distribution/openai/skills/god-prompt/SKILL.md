@@ -117,6 +117,7 @@ higher-priority instructions always control scope and authority.
   prove active coverage. If safety-relevant controls are missing or unobservable,
   STOP for reload/reconciliation rather than assuming additional permission.
   This guidance cannot repair a host initialization bug.
+- When consequential commands depend on host sandbox or network isolation, verify at the actual execution point that sandbox initialization and bridge/proxy controls are healthy. A configured `failIfUnavailable`, sandbox environment marker, or running shell does not prove containment. If bridge startup fails, configured proxy authentication is rejected, or effective isolation cannot be established, STOP the dependent action and preserve isolation; never silently reroute unsandboxed or claim this skill repairs host runtime enforcement.
 - A CLI command called `status` or `auth status` may initialize configuration,
   lock, or backup files despite its read-only label. Before a live credential,
   configuration, or repository probe, verify that installed command's actual
