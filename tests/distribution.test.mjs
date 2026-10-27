@@ -841,3 +841,22 @@ test("provider-switch lineage guard is preserved across consumer distributions",
     assert.match(content, /host-owned session metadata/);
   }
 });
+
+test("guards effective sandbox startup across all consumer surfaces", async () => {
+  const [generated, portable, scoped] = await Promise.all([
+    readFile(new URL("../src/content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+    readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+  ]);
+  const guard = "**Effective sandbox startup boundary:**";
+  assert.equal(generated.split(guard).length - 1, 2);
+  assert.equal(portable.split(guard).length - 1, 1);
+  for (const content of [generated, portable]) {
+    assert.match(content, /sandbox initialization and required bridge\/proxy controls/);
+    assert.match(content, /failIfUnavailable/);
+    assert.match(content, /Never silently reroute unsandboxed/);
+  }
+  assert.match(scoped, /sandbox initialization and bridge\/proxy controls/);
+  assert.match(scoped, /failIfUnavailable/);
+  assert.match(scoped, /never silently reroute unsandboxed/);
+});
