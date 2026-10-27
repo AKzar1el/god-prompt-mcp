@@ -5,7 +5,7 @@ import { CORE_SKILL } from "./skill-content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.0.43",
+  version: "1.0.44",
 } as const;
 
 export const SERVER_INSTRUCTIONS =
