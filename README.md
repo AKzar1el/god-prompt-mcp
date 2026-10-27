@@ -91,6 +91,19 @@ The public npm package runs the local stdio server directly. It requires Node.js
 
 This is a client-launcher workaround, not a GodPrompt MCP server change. Keep existing working cross-platform `npx` configurations unchanged.
 
+### Docker / GHCR (local stdio; no host Node.js)
+
+For MCP clients that can launch a local process, the [public GHCR image](https://github.com/AKzar1el/god-prompt-mcp/pkgs/container/god-prompt-mcp) runs the same seven read-only tools without requiring Node.js on the host. Docker with Linux-container support is required; no API key is needed.
+
+```json
+{
+  "command": "docker",
+  "args": ["run", "--rm", "-i", "ghcr.io/akzar1el/god-prompt-mcp:1.0.44"]
+}
+```
+
+Keep `-i` so the MCP client can exchange JSON-RPC over standard input/output; do not add `-t` (a TTY changes the stdio stream). The version tag selects the verified v1.0.44 image; update it deliberately for future releases rather than silently following the moving `latest` tag. The image is Linux/amd64 and runs as non-root user `10001:10001`. If Docker is unavailable, use the [hosted remote endpoint](#hosted-remote-no-nodejs-required) instead.
+
 ### Glama
 
 GodPrompt MCP is published on [Glama](https://glama.ai/mcp/servers/AKzar1el/god-prompt-mcp). Use the server page to inspect the tools and connect it to a supported MCP client.
