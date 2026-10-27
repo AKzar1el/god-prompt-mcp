@@ -825,3 +825,19 @@ test("project configuration effective-load readiness across consumer surfaces", 
   assert.match(scoped, /A valid config file, accepted instruction path/);
   assert.match(scoped, /STOP for reload\/reconciliation/);
 });
+
+test("provider-switch lineage guard is preserved across consumer distributions", async () => {
+  const [generated, portable, scoped] = await Promise.all([
+    readFile(new URL("../src/content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+    readFile(new URL("../distribution/openai/skills/god-prompt/SKILL.md", import.meta.url), "utf8"),
+  ]);
+  const heading = "**Provider-transition message-lineage integrity:**";
+  assert.equal(generated.split(heading).length - 1, 2);
+  assert.equal(portable.split(heading).length - 1, 1);
+  for (const content of [generated, portable, scoped]) {
+    assert.match(content, /previous_message_id/);
+    assert.match(content, /transcript\/state/);
+    assert.match(content, /host-owned session metadata/);
+  }
+});

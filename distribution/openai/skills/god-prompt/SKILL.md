@@ -32,6 +32,13 @@ higher-priority instructions always control scope and authority.
   installer success, cache refresh, or a matching name is not proof of delivered bytes. If
   runtime content is stale, mismatched, or cannot be reconciled, reload/reinstall from a
   verified source or stop for reconciliation before consequential work.
+- When a resumed session switches model providers, compatible gateways, API
+  endpoints/base URLs or protocols, treat opaque message/request continuation
+  anchors (including `previous_message_id`) as issuer-scoped. Verify that
+  the receiving provider accepts the lineage; never replay a foreign anchor
+  because the transcript appears compatible. Reconstruct from verified
+  transcript/state without it, or STOP for reconciliation rather than looping
+  on an invalid anchor. Prompt guidance cannot repair host-owned session metadata.
 - For code/review work, begin with the requested files, symbols, failing tests,
   and relevant diffs; cap tool output and prefer targeted searches over full-tree
   scans, unrelated files or large generated diffs. Expand only for a concrete
