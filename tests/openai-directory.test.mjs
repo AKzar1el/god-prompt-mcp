@@ -59,6 +59,23 @@ test("keeps current OpenAI public listing metadata submission-ready", () => {
   }
 });
 
+test("preserves published OpenAI website, support, privacy, and terms links", () => {
+  const expectedLinks = {
+    websiteURL: "https://tomiseregi.si/projects/god-prompt",
+    supportURL: "https://tomiseregi.si/contact",
+    privacyPolicyURL: "https://tomiseregi.si/privacy",
+    termsOfServiceURL: "https://github.com/AKzar1el/god-prompt-mcp/blob/main/LICENSE",
+  };
+
+  assert.equal(plugin.homepage, expectedLinks.websiteURL);
+  assert.equal(plugin.author.url, "https://tomiseregi.si/");
+  for (const [key, value] of Object.entries(expectedLinks)) {
+    assert.equal(plugin.extensions["com.openai"].interface[key], value);
+    assert.equal(codexPlugin.interface[key], value);
+    assert.equal(new URL(value).protocol, "https:");
+  }
+});
+
 test("uses a scoped trigger instead of the universal internal trigger contract", () => {
   const frontmatter = skill.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
   assert.match(frontmatter, /software-engineering task/i);
