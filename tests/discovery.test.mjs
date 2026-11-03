@@ -60,3 +60,10 @@ test("keeps unrelated Worker paths closed", async () => {
   const response = await worker.fetch(new Request(`${PUBLIC_ORIGIN}/not-a-route`));
   assert.equal(response.status, 404);
 });
+
+
+test("advertises POST on rejected MCP GET requests", async () => {
+  const response = await worker.fetch(new Request(`${PUBLIC_ORIGIN}/mcp`, { method: "GET" }));
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get("allow"), "POST");
+});
