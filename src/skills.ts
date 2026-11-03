@@ -33,34 +33,54 @@ type SkillFrontmatter = {
   license?: string;
 };
 
-function parseFrontmatter(skill: string): SkillFrontmatter {
+export function parseFrontmatter(skill: string): SkillFrontmatter {
   const normalized = skill.replaceAll("\r\n", "\n");
   const match = /^---\n([\s\S]*?)\n---(?:\n|$)/.exec(normalized);
   if (!match) throw new Error("GodPrompt SKILL.md is missing YAML frontmatter");
 
   const lines = match[1].split("\n");
   const frontmatter: Partial<SkillFrontmatter> = {};
+  const scalarValue = (value: string): string => {
+    const trimmed = value.trim();
+    if (trimmed.length >= 2 && trimmed.startsWith("'") && trimmed.endsWith("'")) {
+      return trimmed.slice(1, -1).replaceAll("''", "'");
+    }
+    if (trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')) {
+      try {
+        return JSON.parse(trimmed) as string;
+      } catch {
+        throw new Error("Invalid quoted GodPrompt SKILL.md frontmatter scalar");
+      }
+    }
+    return trimmed;
+  };
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    if (!line.trim()) continue;
-
-    const scalar = /^(name|license):\s*(.+)$/.exec(line);
-    if (scalar) {
-      frontmatter[scalar[1] as "name" | "license"] = scalar[2].trim();
-      continue;
-    }
-
-    if (line === "description: |") {
+    if (!line.trim() || line.trimStart().startsWith("#") || /^\s/.test(line)) continue;
+    const field = /^([a-zA-Z][a-zA-Z0-9_-]*):(?:\s+(.*))?$/.exec(line);
+    if (!field) throw new Error(`Invalid GodPrompt SKILL.md frontmatter line: ${line}`);
+    const [, key, rawValue = ""] = field;
+    if (key === "description" && /^[|>][-+]?\s*$/.test(rawValue)) {
       const description: string[] = [];
-      while (index + 1 < lines.length && lines[index + 1].startsWith("  ")) {
+      while (index + 1 < lines.length && (lines[index + 1].startsWith(" ") || lines[index + 1] === "")) {
         index += 1;
-        description.push(lines[index].slice(2));
+        description.push(lines[index]);
       }
-      frontmatter.description = `${description.join("\n")}\n`;
+      const indentation = Math.min(...description.filter((part) => part.trim()).map((part) => part.match(/^ */)?.[0].length ?? 0));
+      const linesWithoutIndent = description.map((part) => part.slice(indentation));
+      const content = rawValue.startsWith(">")
+        ? linesWithoutIndent.join("\n").replace(/([^\n])\n(?=[^\n])/g, "$1 ")
+        : linesWithoutIndent.join("\n");
+      frontmatter.description = `${content.trimEnd()}\n`;
       continue;
     }
-
-    throw new Error(`Unsupported GodPrompt SKILL.md frontmatter line: ${line}`);
+    if (key === "name" || key === "license") {
+      frontmatter[key] = scalarValue(rawValue);
+    } else if (key === "description") {
+      frontmatter.description = scalarValue(rawValue);
+    }
+    // Additional Agent Skills fields (metadata, compatibility, allowed-tools)
+    // are valid but not part of the MCP extension's advertised frontmatter.
   }
 
   if (!frontmatter.name || !frontmatter.description) {
