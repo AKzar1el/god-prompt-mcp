@@ -1,10 +1,26 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { parseFrontmatter } from "../dist/skills.js";
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 
 const REQUEST_TIMEOUT_MS = 15000;
+
+test("parses standards-valid skill frontmatter without rejecting optional metadata", () => {
+  const inline = `---\nname: "god-prompt"\ndescription: 'Help users debug software.'\nlicense: MIT\ncompatibility: Requires Node 22\nallowed-tools: Bash Read\nmetadata:\n  author: GodPrompt\n  version: "1"\n---\n# Skill`;
+  assert.deepEqual(parseFrontmatter(inline), {
+    name: "god-prompt",
+    description: "Help users debug software.",
+    license: "MIT",
+  });
+
+  const folded = `---\nname: god-prompt\ndescription: >\n  Help debug production software\n  and verify changes.\nmetadata:\n  author: GodPrompt\n---\n`;
+  assert.equal(parseFrontmatter(folded).description, "Help debug production software and verify changes.\n");
+  const literal = `---\nname: god-prompt\ndescription: |\n  First line\n  second line\nlicense: MIT\n---\n`;
+  assert.equal(parseFrontmatter(literal).description, "First line\nsecond line\n");
+  assert.throws(() => parseFrontmatter("---\nname: god-prompt\n---\n"), /name and description/);
+});
 const REQUEST_META = {
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",
   "io.modelcontextprotocol/clientInfo": {
