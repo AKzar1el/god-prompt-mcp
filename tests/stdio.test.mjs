@@ -193,6 +193,20 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.ok(result.matched_signals.length > 0, description);
   }
 
+  const negatedShipCases = [
+    ["audit the authentication code but do not deploy it", "ANALYZE"],
+    ["fix login validation, never publish or ship it", "DEBUG"],
+    ["review the checkout checklist without push or merge", "ANALYZE"],
+    ["deploy the approved change but do not publish a release", "SHIP"],
+  ];
+  for (const [description, expected] of negatedShipCases) {
+    const result = await classify(child, pending, `negated-ship-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+    if (expected !== "SHIP") {
+      assert.ok(!result.matched_signals.includes("deploy"), description);
+    }
+  }
+
   const specificityCases = [
     ["create documentation for the API", "CONTENT"],
     ["make docs for the login flow", "CONTENT"],
