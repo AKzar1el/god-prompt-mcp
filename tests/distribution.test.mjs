@@ -35,6 +35,10 @@ const npmPublishWorkflow = await readFile(
   new URL("../.github/workflows/publish-npm.yml", import.meta.url),
   "utf8"
 );
+const registryDockerfile = await readFile(
+  new URL("../Dockerfile.mcp-registry", import.meta.url),
+  "utf8"
+);
 const ciWorkflow = await readFile(
   new URL("../.github/workflows/ci.yml", import.meta.url),
   "utf8"
@@ -559,6 +563,18 @@ test("dispatches npm publishing explicitly from the registry release workflow", 
   assert.doesNotMatch(verifyScript, /\$\{\{\s*inputs\./, "untrusted dispatch expressions must not appear in Bash script text");
   assert.match(npmPublishWorkflow, /npm view "god-prompt-mcp@\$\{VERSION\}" version/);
   assert.match(npmPublishWorkflow, /already published; skipping/);
+});
+
+test("uses the patched Node 22 LTS container base for build and runtime", () => {
+  assert.deepEqual(
+    [...registryDockerfile.matchAll(/^FROM\s+([^\s]+)\s+AS\s+(\w+)/gm)].map((match) => [match[1], match[2]]),
+    [
+      ["node:22.23.4-bookworm-slim", "build"],
+      ["node:22.23.4-bookworm-slim", "runtime"],
+    ]
+  );
+  assert.match(registryDockerfile, /^USER 10001:10001$/m);
+  assert.match(registryDockerfile, /^ENTRYPOINT \["node", "dist\/stdio\.js"\]$/m);
 });
 
 test("uses generated release notes instead of a generic compatibility template", () => {
