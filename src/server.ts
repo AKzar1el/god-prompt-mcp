@@ -131,6 +131,19 @@ function triggerIndex(text: string, trigger: string): number {
   return match ? match.index + match[1].length : -1;
 }
 
+function hasAffirmativeShipTrigger(text: string, trigger: string): boolean {
+  const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const matches = text.matchAll(new RegExp(`(^|[^a-z0-9])(${escaped})(?=$|[^a-z0-9])`, "g"));
+  for (const match of matches) {
+    const prefix = text.slice(0, match.index + match[1].length).split(/[.!?;,]/).at(-1) ?? "";
+    // A forbidden downstream action is not a requested deployment action.
+    if (!/(?:\b(?:do not|don't|never|without|avoid|must not|should not|no)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,3})$/.test(prefix)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function signalStrength(trigger: string): number {
   if (trigger.includes(" ")) return 3;
   if (ACTION_SIGNALS.has(trigger)) return 1;
@@ -191,7 +204,7 @@ function classifyTask(description: string): {
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
     const matches = info.triggers
-      .filter((trigger) => hasTrigger(normalized, trigger))
+      .filter((trigger) => type === "SHIP" ? hasAffirmativeShipTrigger(normalized, trigger) : hasTrigger(normalized, trigger))
       .map((trigger) => ({
         signal: trigger,
         strength: signalStrength(trigger),
