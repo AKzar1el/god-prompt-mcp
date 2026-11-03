@@ -64,13 +64,17 @@ For the lowest-friction ChatGPT path, install [GodPrompt from the first-party Pl
 
 ### ChatGPT (hosted remote MCP)
 
-On ChatGPT web, supported Business and Enterprise/Edu workspaces can connect the hosted endpoint as a custom MCP app in Developer Mode:
+On ChatGPT web, supported Business and Enterprise/Edu workspaces can connect GodPrompt's hosted endpoint as a custom MCP plugin. Workspace permissions apply: Business admins/owners can create connections; Enterprise/Edu admins/owners and specifically authorized developers can create connections, while only admins/owners publish them for a workspace.
 
-1. Enable Developer Mode, then open **Settings > Apps > Create** (workspace controls may require an admin or authorized developer).
-2. Use `https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp` as the MCP endpoint and select no authentication.
-3. Choose **Scan Tools**, confirm the seven read-only GodPrompt tools, then create and enable the app for the intended workspace users.
+1. Open **Plugins**, select **+**, then **Add custom MCP server**. The current Plugins flow does **not** require Developer Mode.
+2. Enter a name and `https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp` as the public HTTPS MCP endpoint. Choose **no authentication**; GodPrompt requires no API key.
+3. Review the risk warning and select **I understand and want to continue**, then **Create as a plugin**.
+4. Review the discovered seven read-only GodPrompt tools and metadata, then install the plugin if your workspace permits it.
+5. Start a new ChatGPT chat, type `@`, select the installed GodPrompt plugin, and try a read-only tool. Workspace approval may be required.
 
-ChatGPT connects to remote MCP servers rather than local stdio servers. See OpenAI's [Developer mode and MCP apps in ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt) documentation for current availability and workspace controls.
+**Legacy custom-app setup:** If your workspace still uses the older interface, open **Settings > Apps > Create** (or the workspace's app settings, if you are an admin/owner), use the same endpoint with no authentication, choose **Scan Tools**, then **Create**. This remains an alternative, not a prerequisite for the current Plugins flow.
+
+ChatGPT connects to remote MCP servers rather than directly to local stdio servers. See OpenAI's [Connecting custom MCP servers in ChatGPT](https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt) for current permissions and setup steps.
 
 ### npm / npx (recommended)
 

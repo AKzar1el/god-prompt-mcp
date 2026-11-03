@@ -4,7 +4,8 @@
   "version": "1.0.44",
   "description": "A scoped production-engineering workflow for implementing, debugging, reviewing, refactoring, and release-preparing software with explicit scope and verification evidence.",
   "author": {
-    "name": "Tomi Šeregi"
+    "name": "Tomi Šeregi",
+    "url": "https://tomiseregi.si/"
   },
   "extensions": {
     "com.openai": {
@@ -18,7 +19,11 @@
           "Implement with explicit scope and verification",
           "Debug systematically from evidence",
           "Review code and agent work before completion"
-        ]
+        ],
+        "websiteURL": "https://tomiseregi.si/projects/god-prompt",
+        "supportURL": "https://tomiseregi.si/contact",
+        "privacyPolicyURL": "https://tomiseregi.si/privacy",
+        "termsOfServiceURL": "https://github.com/AKzar1el/god-prompt-mcp/blob/main/LICENSE"
       }
     }
   },

@@ -42,6 +42,17 @@ test("keeps the scoped package compatible with OpenAI Agents API plugin loading"
   assert.equal(codexPlugin.mcpServers, undefined);
 });
 
+test("documents current ChatGPT hosted MCP setup with a legacy fallback", async () => {
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+  const section = readme.split("### ChatGPT (hosted remote MCP)")[1]?.split("\n### ")[0];
+  assert.ok(section, "ChatGPT hosted MCP setup section must exist");
+  assert.match(section, /Plugins[\s\S]*Add custom MCP server/);
+  assert.match(section, /no authentication/i);
+  assert.match(section, /Create as a plugin/);
+  assert.match(section, /Legacy custom-app setup:[\s\S]*Settings > Apps > Create/);
+  assert.doesNotMatch(section.split("**Legacy custom-app setup:**")[0], /Enable Developer Mode/i);
+});
+
 test("keeps current OpenAI public listing metadata submission-ready", () => {
   const portableInterface = plugin.extensions["com.openai"].interface;
 
@@ -56,6 +67,23 @@ test("keeps current OpenAI public listing metadata submission-ready", () => {
   for (const capability of portableInterface.capabilities) {
     assert.ok(capability.length > 0 && capability.length <= 120);
     assert.doesNotMatch(capability, /[\r\n]/);
+  }
+});
+
+test("preserves published OpenAI website, support, privacy, and terms links", () => {
+  const expectedLinks = {
+    websiteURL: "https://tomiseregi.si/projects/god-prompt",
+    supportURL: "https://tomiseregi.si/contact",
+    privacyPolicyURL: "https://tomiseregi.si/privacy",
+    termsOfServiceURL: "https://github.com/AKzar1el/god-prompt-mcp/blob/main/LICENSE",
+  };
+
+  assert.equal(plugin.homepage, expectedLinks.websiteURL);
+  assert.equal(plugin.author.url, "https://tomiseregi.si/");
+  for (const [key, value] of Object.entries(expectedLinks)) {
+    assert.equal(plugin.extensions["com.openai"].interface[key], value);
+    assert.equal(codexPlugin.interface[key], value);
+    assert.equal(new URL(value).protocol, "https:");
   }
 });
 

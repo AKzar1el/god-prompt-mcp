@@ -12,7 +12,11 @@
       "Implement with explicit scope and verification",
       "Debug systematically from evidence",
       "Review code and agent work before completion"
-    ]
+    ],
+    "websiteURL": "https://tomiseregi.si/projects/god-prompt",
+    "supportURL": "https://tomiseregi.si/contact",
+    "privacyPolicyURL": "https://tomiseregi.si/privacy",
+    "termsOfServiceURL": "https://github.com/AKzar1el/god-prompt-mcp/blob/main/LICENSE"
   },
   "skills": "./skills/"
 }
