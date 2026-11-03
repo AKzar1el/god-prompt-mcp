@@ -33,12 +33,16 @@ jobs:
 
       - name: Verify source, release, and npm versions
         shell: bash
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          test "$VERSION" = "${{ inputs.version }}"
-          test "$(git rev-parse HEAD)" = "${{ inputs.source_sha }}"
+          [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Expected a full source commit SHA" >&2; exit 1; }
+          test "$VERSION" = "$EXPECTED_VERSION"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
           TAG_SHA="$(git rev-list -n 1 "v${VERSION}")"
-          test "$TAG_SHA" = "${{ inputs.source_sha }}"
+          test "$TAG_SHA" = "$EXPECTED_SOURCE_SHA"
           NPM_VERSION="$(npm --version)"
           node - "$NPM_VERSION" <<'NODE'
           const [major, minor, patch] = process.argv[2].split('.').map(Number);

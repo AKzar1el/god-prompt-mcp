@@ -549,8 +549,14 @@ test("dispatches npm publishing explicitly from the registry release workflow", 
   assert.match(npmPublishWorkflow, /version:\s*\n\s*required:\s*true/);
   assert.match(npmPublishWorkflow, /source_sha:\s*\n\s*required:\s*true/);
   assert.match(npmPublishWorkflow, /ref:\s*\$\{\{ inputs\.source_sha \}\}/);
-  assert.match(npmPublishWorkflow, /test "\$VERSION" = "\$\{\{ inputs\.version \}\}"/);
-  assert.match(npmPublishWorkflow, /test "\$TAG_SHA" = "\$\{\{ inputs\.source_sha \}\}"/);
+  assert.match(npmPublishWorkflow, /EXPECTED_VERSION:\s*\$\{\{ inputs\.version \}\}/);
+  assert.match(npmPublishWorkflow, /EXPECTED_SOURCE_SHA:\s*\$\{\{ inputs\.source_sha \}\}/);
+  assert.match(npmPublishWorkflow, /test "\$VERSION" = "\$EXPECTED_VERSION"/);
+  assert.match(npmPublishWorkflow, /test "\$TAG_SHA" = "\$EXPECTED_SOURCE_SHA"/);
+  assert.match(npmPublishWorkflow, /test "\$\(git rev-parse HEAD\)" = "\$EXPECTED_SOURCE_SHA"/);
+  assert.match(npmPublishWorkflow, /\[\[ "\$EXPECTED_SOURCE_SHA" =~ \^\[0-9a-f\]\{40\}\$ \]\]/);
+  const verifyScript = npmPublishWorkflow.split("      - name: Verify source, release, and npm versions")[1].split("      - name: Check whether")[0].split("        run: |\n")[1];
+  assert.doesNotMatch(verifyScript, /\$\{\{\s*inputs\./, "untrusted dispatch expressions must not appear in Bash script text");
   assert.match(npmPublishWorkflow, /npm view "god-prompt-mcp@\$\{VERSION\}" version/);
   assert.match(npmPublishWorkflow, /already published; skipping/);
 });
