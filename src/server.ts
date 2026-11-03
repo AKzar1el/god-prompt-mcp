@@ -25,7 +25,7 @@ const TASK_TYPES = {
     description: "Creating new functionality",
   },
   DEBUG: {
-    triggers: ["fix", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
+    triggers: ["fix", "debug", "debugging", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
     protocol: "Root cause → 4-layer defense",
     description: "Finding and fixing defects",
   },
@@ -35,7 +35,7 @@ const TASK_TYPES = {
     description: "Improving code without changing behavior",
   },
   CONTENT: {
-    triggers: ["write", "article", "documentation", "blog", "docs", "copy", "text"],
+    triggers: ["write", "draft", "content", "article", "documentation", "blog", "docs", "copy", "text"],
     protocol: "Research → verify → SEO",
     description: "Writing or editing content",
   },
