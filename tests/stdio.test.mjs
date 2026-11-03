@@ -211,6 +211,10 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["create documentation for the API", "CONTENT"],
     ["make docs for the login flow", "CONTENT"],
     ["design system for our app", "PLAN"],
+    ["create content for the onboarding page", "CONTENT"],
+    ["draft a customer-facing explanation", "CONTENT"],
+    ["debug the authentication handler", "DEBUG"],
+    ["debugging a crash in production", "DEBUG"],
   ];
   for (const [description, expected] of specificityCases) {
     const result = await classify(
