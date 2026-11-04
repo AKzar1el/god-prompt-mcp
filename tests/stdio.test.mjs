@@ -179,6 +179,9 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["design the settings screen", "DESIGN"],
     ["deploy payment service to production", "SHIP"],
     ["audit database indexes", "ANALYZE"],
+    ["verify the endpoint response", "ANALYZE"],
+    ["validate cache headers", "ANALYZE"],
+    ["test API response behavior", "ANALYZE"],
     ["automate nightly backups", "AUTOMATE"],
     ["plan the database migration", "PLAN"],
   ];

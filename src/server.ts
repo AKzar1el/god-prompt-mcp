@@ -50,7 +50,7 @@ const TASK_TYPES = {
     description: "Deploying to production",
   },
   ANALYZE: {
-    triggers: ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate"],
+    triggers: ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"],
     protocol: "Evidence-based investigation",
     description: "Auditing and reviewing existing systems",
   },
@@ -103,8 +103,11 @@ const ACTION_SIGNALS = new Set([
   "review",
   "ship",
   "simplify",
+  "test",
   "think",
   "troubleshoot",
+  "validate",
+  "verify",
   "write",
 ]);
 
