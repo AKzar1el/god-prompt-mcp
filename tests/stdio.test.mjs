@@ -209,6 +209,17 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     }
   }
 
+  const negatedBuildCases = [
+    ["Do not implement or build anything. Review this existing module only.", "ANALYZE"],
+    ["Do not create a new feature; inspect the current behavior instead.", "ANALYZE"],
+    ["Do not build the old interface; build a new API instead.", "BUILD"],
+  ];
+  for (const [description, expected] of negatedBuildCases) {
+    const result = await classify(child, pending, `negated-build-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
   const specificityCases = [
     ["create documentation for the API", "CONTENT"],
     ["make docs for the login flow", "CONTENT"],
