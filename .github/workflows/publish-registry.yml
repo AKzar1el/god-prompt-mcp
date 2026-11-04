@@ -55,7 +55,10 @@ jobs:
 
       - name: Install mcp-publisher
         run: |
-          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ARCHIVE="${RUNNER_TEMP}/mcp-publisher_linux_amd64.tar.gz"
+          curl -fsSL --retry 3 -o "$ARCHIVE" "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.7/mcp-publisher_linux_amd64.tar.gz"
+          printf '%s  %s\n' '00b21004149a4ce66f0782508ae4a2bce67d1bea395a8da0bd8028159fb59579' "$ARCHIVE" | sha256sum -c -
+          tar -xzf "$ARCHIVE" mcp-publisher
 
       - name: Validate server.json
         run: ./mcp-publisher validate server.json
@@ -209,7 +212,10 @@ jobs:
       - name: Install mcp-publisher
         if: steps.npm-bootstrap.outputs.available == 'true'
         run: |
-          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ARCHIVE="${RUNNER_TEMP}/mcp-publisher_linux_amd64.tar.gz"
+          curl -fsSL --retry 3 -o "$ARCHIVE" "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.7/mcp-publisher_linux_amd64.tar.gz"
+          printf '%s  %s\n' '00b21004149a4ce66f0782508ae4a2bce67d1bea395a8da0bd8028159fb59579' "$ARCHIVE" | sha256sum -c -
+          tar -xzf "$ARCHIVE" mcp-publisher
 
       - name: Log in with GitHub OIDC
         if: steps.npm-bootstrap.outputs.available == 'true'

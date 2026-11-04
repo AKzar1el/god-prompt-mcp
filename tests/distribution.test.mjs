@@ -598,6 +598,22 @@ test("does not release on workflow-only main pushes", () => {
   assert.doesNotMatch(pushBlock, /publish-registry\.yml/);
 });
 
+test("verifies a pinned Registry publisher before extracting it in both jobs", () => {
+  const installSteps = registryPublishWorkflow
+    .split("      - name: Install mcp-publisher\n")
+    .slice(1);
+  assert.equal(installSteps.length, 2);
+  for (const step of installSteps) {
+    const body = step.split("\n      - name:")[0];
+    assert.match(body, /releases\/download\/v1\.8\.7\/mcp-publisher_linux_amd64\.tar\.gz/);
+    assert.match(body, /00b21004149a4ce66f0782508ae4a2bce67d1bea395a8da0bd8028159fb59579/);
+    assert.doesNotMatch(body, /releases\/latest\/download|curl[^\n]*\|\s*tar/);
+    const verifiedAt = body.indexOf("sha256sum -c -");
+    const extractedAt = body.indexOf("tar -xzf");
+    assert.ok(verifiedAt !== -1 && extractedAt > verifiedAt, "verify SHA-256 before extraction");
+  }
+});
+
 test("uses the setup-node OIDC path without the v6 dummy auth-token fallback", () => {
   assert.match(npmPublishWorkflow, /actions\/setup-node@v7/);
   assert.doesNotMatch(npmPublishWorkflow, /NODE_AUTH_TOKEN\s*:/);
