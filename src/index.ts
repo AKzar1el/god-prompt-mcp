@@ -26,10 +26,13 @@ export default {
     const pathname = new URL(request.url).pathname;
 
     if (
-      request.method === "GET" &&
+      (request.method === "GET" || request.method === "HEAD") &&
       (pathname === "/.well-known/ard.json" || pathname === "/.well-known/ai-catalog.json")
     ) {
-      return createArdManifestResponse();
+      const response = createArdManifestResponse();
+      return request.method === "HEAD"
+        ? new Response(null, { status: response.status, headers: response.headers })
+        : response;
     }
 
     if (pathname !== "/mcp") {

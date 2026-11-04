@@ -25,7 +25,7 @@ const TASK_TYPES = {
     description: "Creating new functionality",
   },
   DEBUG: {
-    triggers: ["fix", "debug", "debugging", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
+    triggers: ["fix", "debug", "debugging", "troubleshoot", "diagnose", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
     protocol: "Root cause → 4-layer defense",
     description: "Finding and fixing defects",
   },
@@ -50,7 +50,7 @@ const TASK_TYPES = {
     description: "Deploying to production",
   },
   ANALYZE: {
-    triggers: ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate"],
+    triggers: ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"],
     protocol: "Evidence-based investigation",
     description: "Auditing and reviewing existing systems",
   },
@@ -82,6 +82,7 @@ const ACTION_SIGNALS = new Set([
   "clean",
   "create",
   "deploy",
+  "diagnose",
   "design",
   "evaluate",
   "fix",
@@ -102,7 +103,11 @@ const ACTION_SIGNALS = new Set([
   "review",
   "ship",
   "simplify",
+  "test",
   "think",
+  "troubleshoot",
+  "validate",
+  "verify",
   "write",
 ]);
 
@@ -131,7 +136,7 @@ function triggerIndex(text: string, trigger: string): number {
   return match ? match.index + match[1].length : -1;
 }
 
-function hasAffirmativeShipTrigger(text: string, trigger: string): boolean {
+function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
   const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const matches = text.matchAll(new RegExp(`(^|[^a-z0-9])(${escaped})(?=$|[^a-z0-9])`, "g"));
   for (const match of matches) {
@@ -202,9 +207,28 @@ function classifyTask(description: string): {
   const normalized = description.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
   const candidates: Candidate[] = [];
 
+  const debugActions = ["fix", "debug", "debugging", "troubleshoot", "diagnose"];
+  const explicitlyNegatedDebug = debugActions.some(
+    (trigger) => hasTrigger(normalized, trigger) && !hasAffirmativeActionTrigger(normalized, trigger),
+  );
+  const affirmativeDebug = debugActions.some(
+    (trigger) => hasAffirmativeActionTrigger(normalized, trigger),
+  );
+  const inspectionRequested = ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"]
+    .some((trigger) => hasTrigger(normalized, trigger));
+  const affirmativeBuild = ["create", "implement", "add", "build", "make"]
+    .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
+
   for (const [type, info] of Object.entries(TASK_TYPES)) {
+    // An inspection request is not authorization to build/debug just because it names a feature or bug.
+    if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
+      (type === "DEBUG" && !affirmativeDebug))) continue;
+    // Mentions of bugs or errors must not override an explicit no-debug instruction.
+    if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
     const matches = info.triggers
-      .filter((trigger) => type === "SHIP" ? hasAffirmativeShipTrigger(normalized, trigger) : hasTrigger(normalized, trigger))
+      .filter((trigger) => type === "SHIP" || type === "BUILD"
+        ? hasAffirmativeActionTrigger(normalized, trigger)
+        : hasTrigger(normalized, trigger))
       .map((trigger) => ({
         signal: trigger,
         strength: signalStrength(trigger),
