@@ -233,6 +233,19 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.task_type, expected, description);
   }
 
+  const inspectionIntentCases = [
+    ["Review the feature flag permissions before making changes", "ANALYZE"],
+    ["Audit the open bug reports and summarize findings", "ANALYZE"],
+    ["Inspect the error logs for a root cause", "ANALYZE"],
+    ["Build a new feature flag system and review it", "BUILD"],
+    ["Fix the login bug and verify the result", "DEBUG"],
+  ];
+  for (const [description, expected] of inspectionIntentCases) {
+    const result = await classify(child, pending, `inspection-intent-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
   const specificityCases = [
     ["create documentation for the API", "CONTENT"],
     ["make docs for the login flow", "CONTENT"],

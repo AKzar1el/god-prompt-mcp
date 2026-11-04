@@ -214,8 +214,15 @@ function classifyTask(description: string): {
   const affirmativeDebug = debugActions.some(
     (trigger) => hasAffirmativeActionTrigger(normalized, trigger),
   );
+  const inspectionRequested = ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"]
+    .some((trigger) => hasTrigger(normalized, trigger));
+  const affirmativeBuild = ["create", "implement", "add", "build", "make"]
+    .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
+    // An inspection request is not authorization to build/debug just because it names a feature or bug.
+    if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
+      (type === "DEBUG" && !affirmativeDebug))) continue;
     // Mentions of bugs or errors must not override an explicit no-debug instruction.
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
     const matches = info.triggers
