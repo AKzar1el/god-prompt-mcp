@@ -20,6 +20,14 @@ test("parses standards-valid skill frontmatter without rejecting optional metada
   const literal = `---\nname: god-prompt\ndescription: |\n  First line\n  second line\nlicense: MIT\n---\n`;
   assert.equal(parseFrontmatter(literal).description, "First line\nsecond line\n");
   assert.throws(() => parseFrontmatter("---\nname: god-prompt\n---\n"), /name and description/);
+  for (const blockType of ["|", ">", "|-", ">-"]) {
+    const emptyBlock = `---\nname: god-prompt\ndescription: ${blockType}\n  \n---\n`;
+    assert.throws(
+      () => parseFrontmatter(emptyBlock),
+      /name and description/,
+      `Empty ${blockType} description must not produce a valid skill`,
+    );
+  }
 });
 const REQUEST_META = {
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",
