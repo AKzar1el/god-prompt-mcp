@@ -133,7 +133,7 @@ function triggerIndex(text: string, trigger: string): number {
   return match ? match.index + match[1].length : -1;
 }
 
-function hasAffirmativeShipTrigger(text: string, trigger: string): boolean {
+function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
   const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const matches = text.matchAll(new RegExp(`(^|[^a-z0-9])(${escaped})(?=$|[^a-z0-9])`, "g"));
   for (const match of matches) {
@@ -206,7 +206,9 @@ function classifyTask(description: string): {
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
     const matches = info.triggers
-      .filter((trigger) => type === "SHIP" ? hasAffirmativeShipTrigger(normalized, trigger) : hasTrigger(normalized, trigger))
+      .filter((trigger) => type === "SHIP" || type === "BUILD"
+        ? hasAffirmativeActionTrigger(normalized, trigger)
+        : hasTrigger(normalized, trigger))
       .map((trigger) => ({
         signal: trigger,
         strength: signalStrength(trigger),
