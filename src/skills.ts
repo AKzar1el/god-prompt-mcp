@@ -83,7 +83,7 @@ export function parseFrontmatter(skill: string): SkillFrontmatter {
     // are valid but not part of the MCP extension's advertised frontmatter.
   }
 
-  if (!frontmatter.name || !frontmatter.description) {
+  if (!frontmatter.name?.trim() || !frontmatter.description?.trim()) {
     throw new Error("GodPrompt SKILL.md frontmatter must include name and description");
   }
   return frontmatter as SkillFrontmatter;
