@@ -220,6 +220,16 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  const negatedDebugCases = [
+    ["Do not fix the bug. Review the existing code only.", "ANALYZE"],
+    ["Never debug the issue; inspect the current behavior instead.", "ANALYZE"],
+    ["Do not fix the old bug; fix the current crash instead.", "DEBUG"],
+  ];
+  for (const [description, expected] of negatedDebugCases) {
+    const result = await classify(child, pending, `negated-debug-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+  }
+
   const specificityCases = [
     ["create documentation for the API", "CONTENT"],
     ["make docs for the login flow", "CONTENT"],

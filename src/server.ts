@@ -204,7 +204,17 @@ function classifyTask(description: string): {
   const normalized = description.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
   const candidates: Candidate[] = [];
 
+  const debugActions = ["fix", "debug", "debugging", "troubleshoot", "diagnose"];
+  const explicitlyNegatedDebug = debugActions.some(
+    (trigger) => hasTrigger(normalized, trigger) && !hasAffirmativeActionTrigger(normalized, trigger),
+  );
+  const affirmativeDebug = debugActions.some(
+    (trigger) => hasAffirmativeActionTrigger(normalized, trigger),
+  );
+
   for (const [type, info] of Object.entries(TASK_TYPES)) {
+    // Mentions of bugs or errors must not override an explicit no-debug instruction.
+    if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
     const matches = info.triggers
       .filter((trigger) => type === "SHIP" || type === "BUILD"
         ? hasAffirmativeActionTrigger(normalized, trigger)
