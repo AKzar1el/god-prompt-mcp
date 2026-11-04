@@ -28,6 +28,17 @@ test("parses standards-valid skill frontmatter without rejecting optional metada
       `Empty ${blockType} description must not produce a valid skill`,
     );
   }
+  for (const duplicate of [
+    "name: other-name",
+    "description: Another description",
+    "license: GPL-3.0",
+  ]) {
+    const key = duplicate.split(":")[0];
+    const malformed = `---\nname: god-prompt\ndescription: Help debug safely.\nlicense: MIT\n${duplicate}\n---\n`;
+    assert.throws(() => parseFrontmatter(malformed), /duplicate/i, `Reject repeated ${key}`);
+  }
+  const duplicateAfterBlock = `---\nname: god-prompt\ndescription: |\n  First description\ndescription: Second description\n---\n`;
+  assert.throws(() => parseFrontmatter(duplicateAfterBlock), /duplicate/i);
 });
 const REQUEST_META = {
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",

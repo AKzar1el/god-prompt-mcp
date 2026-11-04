@@ -40,6 +40,7 @@ export function parseFrontmatter(skill: string): SkillFrontmatter {
 
   const lines = match[1].split("\n");
   const frontmatter: Partial<SkillFrontmatter> = {};
+  const seenFields = new Set<string>();
   const scalarValue = (value: string): string => {
     const trimmed = value.trim();
     if (trimmed.length >= 2 && trimmed.startsWith("'") && trimmed.endsWith("'")) {
@@ -60,6 +61,10 @@ export function parseFrontmatter(skill: string): SkillFrontmatter {
     const field = /^([a-zA-Z][a-zA-Z0-9_-]*):(?:\s+(.*))?$/.exec(line);
     if (!field) throw new Error(`Invalid GodPrompt SKILL.md frontmatter line: ${line}`);
     const [, key, rawValue = ""] = field;
+    if (key === "name" || key === "description" || key === "license") {
+      if (seenFields.has(key)) throw new Error(`Duplicate GodPrompt SKILL.md frontmatter field: ${key}`);
+      seenFields.add(key);
+    }
     if (key === "description" && /^[|>][-+]?\s*$/.test(rawValue)) {
       const description: string[] = [];
       while (index + 1 < lines.length && (lines[index + 1].startsWith(" ") || lines[index + 1] === "")) {
