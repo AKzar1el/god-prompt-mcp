@@ -203,6 +203,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["fix login validation, never publish or ship it", "DEBUG"],
     ["review the checkout checklist without push or merge", "ANALYZE"],
     ["deploy the approved change but do not publish a release", "SHIP"],
+    ["Don\u2019t deploy the endpoint; audit it instead", "ANALYZE"],
+    ["Don\u2019t deploy the old release; deploy the approved patch instead", "SHIP"],
   ];
   for (const [description, expected] of negatedShipCases) {
     const result = await classify(child, pending, `negated-ship-${description.length}`, description);
@@ -216,6 +218,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Do not implement or build anything. Review this existing module only.", "ANALYZE"],
     ["Do not create a new feature; inspect the current behavior instead.", "ANALYZE"],
     ["Do not build the old interface; build a new API instead.", "BUILD"],
+    ["Don\u2019t build a new feature; inspect existing logic.", "ANALYZE"],
   ];
   for (const [description, expected] of negatedBuildCases) {
     const result = await classify(child, pending, `negated-build-${description.length}`, description);
@@ -227,6 +230,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Do not fix the bug. Review the existing code only.", "ANALYZE"],
     ["Never debug the issue; inspect the current behavior instead.", "ANALYZE"],
     ["Do not fix the old bug; fix the current crash instead.", "DEBUG"],
+    ["Don\u2019t fix this issue; inspect the logs instead.", "ANALYZE"],
   ];
   for (const [description, expected] of negatedDebugCases) {
     const result = await classify(child, pending, `negated-debug-${description.length}`, description);

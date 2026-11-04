@@ -204,7 +204,9 @@ function classifyTask(description: string): {
   alternativeTaskTypes: TaskType[];
   ambiguous: boolean;
 } {
-  const normalized = description.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
+  const normalized = description.normalize("NFKC")
+    .replace(/[\u2018\u2019\u02bc]/gu, "'")
+    .trim().replace(/\s+/gu, " ").toLowerCase();
   const candidates: Candidate[] = [];
 
   const debugActions = ["fix", "debug", "debugging", "troubleshoot", "diagnose"];
