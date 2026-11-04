@@ -41,6 +41,28 @@ export function parseFrontmatter(skill: string): SkillFrontmatter {
   const lines = match[1].split("\n");
   const frontmatter: Partial<SkillFrontmatter> = {};
   const seenFields = new Set<string>();
+  const withoutInlineComment = (value: string): string => {
+    let quote: "'" | '"' | null = null;
+    let escaped = false;
+    for (let index = 0; index < value.length; index += 1) {
+      const char = value[index];
+      if (quote === '"') {
+        if (escaped) escaped = false;
+        else if (char === "\\") escaped = true;
+        else if (char === '"') quote = null;
+      } else if (quote === "'") {
+        if (char === "'") {
+          if (value[index + 1] === "'") index += 1;
+          else quote = null;
+        }
+      } else if (char === "'" || char === '"') {
+        quote = char;
+      } else if (char === "#" && (index === 0 || /\s/.test(value[index - 1]))) {
+        return value.slice(0, index).trimEnd();
+      }
+    }
+    return value.trimEnd();
+  };
   const scalarValue = (value: string): string => {
     const trimmed = value.trim();
     if (trimmed.length >= 2 && trimmed.startsWith("'") && trimmed.endsWith("'")) {
@@ -60,7 +82,8 @@ export function parseFrontmatter(skill: string): SkillFrontmatter {
     if (!line.trim() || line.trimStart().startsWith("#") || /^\s/.test(line)) continue;
     const field = /^([a-zA-Z][a-zA-Z0-9_-]*):(?:\s+(.*))?$/.exec(line);
     if (!field) throw new Error(`Invalid GodPrompt SKILL.md frontmatter line: ${line}`);
-    const [, key, rawValue = ""] = field;
+    const [, key, sourceValue = ""] = field;
+    const rawValue = withoutInlineComment(sourceValue);
     if (key === "name" || key === "description" || key === "license") {
       if (seenFields.has(key)) throw new Error(`Duplicate GodPrompt SKILL.md frontmatter field: ${key}`);
       seenFields.add(key);

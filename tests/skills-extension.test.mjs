@@ -39,6 +39,22 @@ test("parses standards-valid skill frontmatter without rejecting optional metada
   }
   const duplicateAfterBlock = `---\nname: god-prompt\ndescription: |\n  First description\ndescription: Second description\n---\n`;
   assert.throws(() => parseFrontmatter(duplicateAfterBlock), /duplicate/i);
+
+  // YAML permits comments after whitespace outside quotes, including block indicators.
+  const commented = `---\nname: god-prompt # skill identifier\ndescription: "Debug #1 safely" # explanation\nlicense: MIT # SPDX\n---\n`;
+  assert.deepEqual(parseFrontmatter(commented), {
+    name: "god-prompt",
+    description: "Debug #1 safely",
+    license: "MIT",
+  });
+  const literalComment = `---\nname: god-prompt\ndescription: | # multiline text\n  Keep this # within the description\n---\n`;
+  assert.equal(parseFrontmatter(literalComment).description, "Keep this # within the description\n");
+  const plainHashes = `---\nname: god-prompt\ndescription: Support C# and https://example.test/#fragment # trailing note\n---\n`;
+  assert.equal(parseFrontmatter(plainHashes).description, "Support C# and https://example.test/#fragment");
+  const escapedQuotes = `---\nname: god-prompt\ndescription: "Use \\"#tag\\" carefully" # human note\n---\n`;
+  assert.equal(parseFrontmatter(escapedQuotes).description, 'Use "#tag" carefully');
+  const doubledQuotes = `---\nname: god-prompt\ndescription: 'It''s #important' # human note\n---\n`;
+  assert.equal(parseFrontmatter(doubledQuotes).description, "It's #important");
 });
 const REQUEST_META = {
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",
