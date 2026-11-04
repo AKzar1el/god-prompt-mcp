@@ -25,7 +25,7 @@ const TASK_TYPES = {
     description: "Creating new functionality",
   },
   DEBUG: {
-    triggers: ["fix", "debug", "debugging", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
+    triggers: ["fix", "debug", "debugging", "troubleshoot", "diagnose", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
     protocol: "Root cause → 4-layer defense",
     description: "Finding and fixing defects",
   },
@@ -82,6 +82,7 @@ const ACTION_SIGNALS = new Set([
   "clean",
   "create",
   "deploy",
+  "diagnose",
   "design",
   "evaluate",
   "fix",
@@ -103,6 +104,7 @@ const ACTION_SIGNALS = new Set([
   "ship",
   "simplify",
   "think",
+  "troubleshoot",
   "write",
 ]);
 

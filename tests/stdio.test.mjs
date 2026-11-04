@@ -172,6 +172,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   const clearCases = [
     ["build a REST API for user auth", "BUILD"],
     ["fix the login bug", "DEBUG"],
+    ["troubleshoot intermittent login failures", "DEBUG"],
+    ["diagnose unexpected startup behavior", "DEBUG"],
     ["refactor payment processing without behavior changes", "REFACTOR"],
     ["documentation for the authentication API", "CONTENT"],
     ["design the settings screen", "DESIGN"],
