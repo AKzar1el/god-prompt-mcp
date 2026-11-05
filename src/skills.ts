@@ -99,7 +99,13 @@ export function parseFrontmatter(skill: string): SkillFrontmatter {
       const content = rawValue.startsWith(">")
         ? linesWithoutIndent.join("\n").replace(/([^\n])\n(?=[^\n])/g, "$1 ")
         : linesWithoutIndent.join("\n");
-      frontmatter.description = `${content.trimEnd()}\n`;
+      const withoutTrailingLineBreaks = content.replace(/\n+$/, "");
+      // The block delimiter consumes the last newline; YAML chomping controls whether to restore it.
+      frontmatter.description = rawValue.endsWith("-")
+        ? withoutTrailingLineBreaks
+        : rawValue.endsWith("+")
+          ? `${content}\n`
+          : `${withoutTrailingLineBreaks}\n`;
       continue;
     }
     if (key === "name" || key === "license") {

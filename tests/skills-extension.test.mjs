@@ -56,6 +56,17 @@ test("parses standards-valid skill frontmatter without rejecting optional metada
   const doubledQuotes = `---\nname: god-prompt\ndescription: 'It''s #important' # human note\n---\n`;
   assert.equal(parseFrontmatter(doubledQuotes).description, "It's #important");
 });
+
+test("preserves YAML block scalar chomping for skill descriptions", () => {
+  const description = (indicator, content) =>
+    parseFrontmatter(`---\nname: god-prompt\ndescription: ${indicator}\n${content}---\n`).description;
+
+  assert.equal(description("|-", "  First line\n  second line\n"), "First line\nsecond line");
+  assert.equal(description(">-", "  First line\n  second line\n"), "First line second line");
+  assert.equal(description("|+", "  First line\n\n\n"), "First line\n\n\n");
+  assert.equal(description(">+", "  First line\n  second line\n\n"), "First line second line\n\n");
+  assert.equal(description("|", "  Preserve trailing spaces  \n"), "Preserve trailing spaces  \n");
+});
 const REQUEST_META = {
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",
   "io.modelcontextprotocol/clientInfo": {
