@@ -225,6 +225,9 @@ function classifyTask(description: string): {
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
     if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
       (type === "DEBUG" && !affirmativeDebug))) continue;
+    // CI, cron and workflow names are audit subjects, not requests to automate them.
+    if (type === "AUTOMATE" && inspectionRequested && !affirmativeBuild &&
+      !hasAffirmativeActionTrigger(normalized, "automate")) continue;
     // Mentions of bugs or errors must not override an explicit no-debug instruction.
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
     const matches = info.triggers
