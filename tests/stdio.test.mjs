@@ -241,6 +241,10 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Review the feature flag permissions before making changes", "ANALYZE"],
     ["Audit the open bug reports and summarize findings", "ANALYZE"],
     ["Inspect the error logs for a root cause", "ANALYZE"],
+    ["Audit the CI pipeline configuration", "ANALYZE"],
+    ["Review the cron workflow setup", "ANALYZE"],
+    ["Audit and automate the CI pipeline", "AUTOMATE"],
+    ["Build a CI pipeline and verify the result", "AUTOMATE"],
     ["Build a new feature flag system and review it", "BUILD"],
     ["Fix the login bug and verify the result", "DEBUG"],
   ];
