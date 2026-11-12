@@ -227,6 +227,19 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.task_type, expected, description);
   }
 
+  const affirmativeNotOnlyCases = [
+    ["Not only deploy this release", "SHIP"],
+    ["Please not just ship it", "SHIP"],
+    ["Do not just deploy the approved release", "SHIP"],
+    ["Don't only deploy the approved release", "SHIP"],
+    ["Not only build the requested API", "BUILD"],
+    ["Not just fix the failing login", "DEBUG"],
+  ];
+  for (const [description, expected] of affirmativeNotOnlyCases) {
+    const result = await classify(child, pending, `affirmative-not-only-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+  }
+
   const negatedBuildCases = [
     ["Do not implement or build anything. Review this existing module only.", "ANALYZE"],
     ["Do not create a new feature; inspect the current behavior instead.", "ANALYZE"],
