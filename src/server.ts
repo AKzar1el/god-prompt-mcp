@@ -144,7 +144,7 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
     const prefix = (text.slice(0, match.index + match[1].length).split(/[.!?;]/).at(-1) ?? "")
       .replace(/,/g, " ");
     // "Not only/just deploy" adds requirements; it does not forbid deployment.
-    if (!/(?:\b(?:(?:(?:do|must|should)\s+not|don't|not)(?!\s+(?:only|just)\b)|never|without|avoid|no)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,5})$/.test(prefix)) {
+    if (!/(?:\b(?:(?:(?:do|must|should)\s+not|(?:must|should)n't|don't|not)(?!\s+(?:only|just)\b)|never|without|avoid|no)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,5})$/.test(prefix)) {
       return true;
     }
   }

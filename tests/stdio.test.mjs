@@ -209,6 +209,9 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Never, ever, deploy the release", "UNCLASSIFIED"],
     ["Never, ever, ship the old patch; ship the approved hotfix instead", "SHIP"],
     ["Don't deploy the old patch, but deploy the approved hotfix instead", "SHIP"],
+    ["Mustn't deploy the release", "UNCLASSIFIED"],
+    ["You shouldn't publish the release; review the diff", "ANALYZE"],
+    ["You mustn't deploy the old release; deploy the approved hotfix instead", "SHIP"],
   ];
   for (const [description, expected] of negatedShipCases) {
     const result = await classify(child, pending, `negated-ship-${description.length}`, description);
@@ -236,6 +239,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Please not just ship it", "SHIP"],
     ["Do not just deploy the approved release", "SHIP"],
     ["Don't only deploy the approved release", "SHIP"],
+    ["You shouldn't only publish the approved patch", "SHIP"],
     ["Not only build the requested API", "BUILD"],
     ["Not just fix the failing login", "DEBUG"],
   ];
@@ -249,6 +253,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Do not create a new feature; inspect the current behavior instead.", "ANALYZE"],
     ["Do not build the old interface; build a new API instead.", "BUILD"],
     ["Don\u2019t build a new feature; inspect existing logic.", "ANALYZE"],
+    ["You mustn't build a new feature; inspect existing logic.", "ANALYZE"],
   ];
   for (const [description, expected] of negatedBuildCases) {
     const result = await classify(child, pending, `negated-build-${description.length}`, description);
@@ -261,6 +266,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Never debug the issue; inspect the current behavior instead.", "ANALYZE"],
     ["Do not fix the old bug; fix the current crash instead.", "DEBUG"],
     ["Don\u2019t fix this issue; inspect the logs instead.", "ANALYZE"],
+    ["You shouldn't fix the bug; inspect the logs instead.", "ANALYZE"],
   ];
   for (const [description, expected] of negatedDebugCases) {
     const result = await classify(child, pending, `negated-debug-${description.length}`, description);
