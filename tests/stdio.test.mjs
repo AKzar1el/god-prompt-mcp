@@ -214,6 +214,19 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     }
   }
 
+  const standaloneNotCases = [
+    ["Not deploy this change", "UNCLASSIFIED"],
+    ["Not deploy or publish any release", "UNCLASSIFIED"],
+    ["Not deploy this change; review the diff instead", "ANALYZE"],
+    ["Not build anything; inspect existing behavior", "ANALYZE"],
+    ["Not fix the login bug; inspect logs first", "ANALYZE"],
+    ["Not deploy the old patch; deploy the approved hotfix instead", "SHIP"],
+  ];
+  for (const [description, expected] of standaloneNotCases) {
+    const result = await classify(child, pending, `standalone-not-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+  }
+
   const negatedBuildCases = [
     ["Do not implement or build anything. Review this existing module only.", "ANALYZE"],
     ["Do not create a new feature; inspect the current behavior instead.", "ANALYZE"],

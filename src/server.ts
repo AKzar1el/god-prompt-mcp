@@ -142,7 +142,7 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
   for (const match of matches) {
     const prefix = text.slice(0, match.index + match[1].length).split(/[.!?;,]/).at(-1) ?? "";
     // A forbidden downstream action is not a requested deployment action.
-    if (!/(?:\b(?:do not|don't|never|without|avoid|must not|should not|no)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,3})$/.test(prefix)) {
+    if (!/(?:\b(?:do not|don't|never|without|avoid|must not|should not|no|not)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,5})$/.test(prefix)) {
       return true;
     }
   }
