@@ -205,6 +205,10 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["deploy the approved change but do not publish a release", "SHIP"],
     ["Don\u2019t deploy the endpoint; audit it instead", "ANALYZE"],
     ["Don\u2019t deploy the old release; deploy the approved patch instead", "SHIP"],
+    ["Do not, under any circumstances, deploy the release; audit it first", "ANALYZE"],
+    ["Never, ever, deploy the release", "UNCLASSIFIED"],
+    ["Never, ever, ship the old patch; ship the approved hotfix instead", "SHIP"],
+    ["Don't deploy the old patch, but deploy the approved hotfix instead", "SHIP"],
   ];
   for (const [description, expected] of negatedShipCases) {
     const result = await classify(child, pending, `negated-ship-${description.length}`, description);
