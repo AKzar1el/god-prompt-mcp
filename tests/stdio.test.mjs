@@ -226,6 +226,22 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     }
   }
 
+  const deliveryInspectionCases = [
+    ["Review this deploy procedure and publish checklist", "ANALYZE", true],
+    ["Inspect push and merge permissions before integration", "ANALYZE", true],
+    ["Review the deploy workflow and release checklist", "ANALYZE", true],
+    ["Review and deploy the approved release", "SHIP", false],
+    ["Audit the publish workflow then deploy the approved build", "ANALYZE", false],
+    ["Review the release plan, then publish the approved version", "SHIP", false],
+  ];
+  for (const [description, expected, shouldSuppressShip] of deliveryInspectionCases) {
+    const result = await classify(child, pending, `delivery-inspection-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+    if (shouldSuppressShip) {
+      assert.ok(!result.alternative_task_types.includes("SHIP"), description);
+    }
+  }
+
   const standaloneNotCases = [
     ["Not deploy this change", "UNCLASSIFIED"],
     ["Not deploy or publish any release", "UNCLASSIFIED"],

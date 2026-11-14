@@ -152,6 +152,18 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
   return false;
 }
 
+function requestsShippingAfterInspection(text: string): boolean {
+  // An inspection of a "deploy workflow" or "release checklist" is not a request to ship.
+  const followup = /(?:[,;]\s*|\b(?:and|then|also|afterwards?|finally)\s+)(?:please\s+)?(?:deploy|release|push|merge|ship|publish|launch)\b/g;
+  const artifact = /^(?:workflow|procedure|checklist|permissions?|policy|rules?|scripts?|config(?:uration)?|documentation|docs|notes|plan|guide|pipeline|process|steps?|code|settings?)\b/;
+  for (const match of text.matchAll(followup)) {
+    if (!artifact.test(text.slice((match.index ?? 0) + match[0].length).trimStart())) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function signalStrength(trigger: string): number {
   if (trigger.includes(" ")) return 3;
   if (ACTION_SIGNALS.has(trigger)) return 1;
@@ -221,6 +233,8 @@ function classifyTask(description: string): {
   );
   const inspectionRequested = ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"]
     .some((trigger) => hasTrigger(normalized, trigger));
+  const inspectionFirst = /^(?:please\s+)?(?:audit|review|check|analyze|inspect|assess|evaluate|verify|validate|test)\b/.test(normalized);
+  const explicitShipAfterReview = inspectionFirst && requestsShippingAfterInspection(normalized);
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
 
@@ -228,6 +242,7 @@ function classifyTask(description: string): {
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
     if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
       (type === "DEBUG" && !affirmativeDebug))) continue;
+    if (type === "SHIP" && inspectionFirst && !explicitShipAfterReview) continue;
     // CI, cron and workflow names are audit subjects, not requests to automate them.
     if (type === "AUTOMATE" && inspectionRequested && !affirmativeBuild &&
       !hasAffirmativeActionTrigger(normalized, "automate")) continue;
