@@ -207,6 +207,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Don\u2019t deploy the old release; deploy the approved patch instead", "SHIP"],
     ["Do not, under any circumstances, deploy the release; audit it first", "ANALYZE"],
     ["Never, ever, deploy the release", "UNCLASSIFIED"],
+    ["Do not under any circumstances on any production environment ever deploy this patch", "UNCLASSIFIED"],
+    ["Do not under any circumstances in any environment deploy the old patch, instead deploy the approved hotfix", "SHIP"],
     ["Never, ever, ship the old patch; ship the approved hotfix instead", "SHIP"],
     ["Don't deploy the old patch, but deploy the approved hotfix instead", "SHIP"],
     ["Don't deploy the old patch, instead deploy the approved hotfix", "SHIP"],
