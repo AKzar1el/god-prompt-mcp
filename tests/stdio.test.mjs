@@ -209,6 +209,9 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Never, ever, deploy the release", "UNCLASSIFIED"],
     ["Never, ever, ship the old patch; ship the approved hotfix instead", "SHIP"],
     ["Don't deploy the old patch, but deploy the approved hotfix instead", "SHIP"],
+    ["Don't deploy the old patch, instead deploy the approved hotfix", "SHIP"],
+    ["Do not publish the old package, instead publish the validated release", "SHIP"],
+    ["Do not deploy anything, instead inspect the logs", "ANALYZE"],
     ["Mustn't deploy the release", "UNCLASSIFIED"],
     ["You shouldn't publish the release; review the diff", "ANALYZE"],
     ["You mustn't deploy the old release; deploy the approved hotfix instead", "SHIP"],
@@ -252,6 +255,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Do not implement or build anything. Review this existing module only.", "ANALYZE"],
     ["Do not create a new feature; inspect the current behavior instead.", "ANALYZE"],
     ["Do not build the old interface; build a new API instead.", "BUILD"],
+    ["Do not build the old endpoint, instead build the new API", "BUILD"],
+    ["Do not build anything, instead review existing behavior", "ANALYZE"],
     ["Don\u2019t build a new feature; inspect existing logic.", "ANALYZE"],
     ["You mustn't build a new feature; inspect existing logic.", "ANALYZE"],
   ];
@@ -265,6 +270,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Do not fix the bug. Review the existing code only.", "ANALYZE"],
     ["Never debug the issue; inspect the current behavior instead.", "ANALYZE"],
     ["Do not fix the old bug; fix the current crash instead.", "DEBUG"],
+    ["Don't fix the abandoned issue, instead fix the current crash", "DEBUG"],
     ["Don\u2019t fix this issue; inspect the logs instead.", "ANALYZE"],
     ["You shouldn't fix the bug; inspect the logs instead.", "ANALYZE"],
   ];
