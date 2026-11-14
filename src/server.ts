@@ -236,10 +236,13 @@ function classifyTask(description: string): {
   // Polite questions are still inspection-first, not requests to ship named artifacts.
   const inspectionFirst = /^(?:(?:please\s+)?(?:can|could|would|will)\s+you\s+(?:please\s+)?|please\s+)?(?:audit|review|check|analyze|inspect|assess|evaluate|verify|validate|test)\b/.test(normalized);
   const explicitShipAfterReview = inspectionFirst && requestsShippingAfterInspection(normalized);
+  // Asking whether shipping is advisable is not an instruction to perform it.
+  const shippingAdviceQuestion = /^(?:should\s+(?:i|we|you)\b|(?:would|is)\s+it\s+(?:be\s+)?(?:safe|wise|a good idea)\s+to\b)/.test(normalized);
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
+    if (shippingAdviceQuestion && (type === "SHIP" || type === "BUILD")) continue;
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
     if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
       (type === "DEBUG" && !affirmativeDebug))) continue;

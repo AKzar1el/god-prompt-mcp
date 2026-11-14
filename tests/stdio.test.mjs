@@ -248,6 +248,19 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     }
   }
 
+  const shippingAdviceCases = [
+    ["Should I deploy this patch to production?", "UNCLASSIFIED"],
+    ["Should we publish the current release?", "UNCLASSIFIED"],
+    ["Would it be safe to merge the approved change?", "UNCLASSIFIED"],
+    ["Is it wise to ship this build?", "UNCLASSIFIED"],
+    ["Can you deploy the approved release?", "SHIP"],
+    ["Please publish the validated package", "SHIP"],
+  ];
+  for (const [description, expected] of shippingAdviceCases) {
+    const result = await classify(child, pending, `shipping-advice-${description.length}`, description);
+    assert.equal(result.task_type, expected, description);
+  }
+
   const standaloneNotCases = [
     ["Not deploy this change", "UNCLASSIFIED"],
     ["Not deploy or publish any release", "UNCLASSIFIED"],
