@@ -12,6 +12,8 @@ GodPrompt offers a bounded Agent Harness Review for developers and small teams w
 
 To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.com/sponsors/AKzar1el/sponsorships?tier_id=657478&metadata_campaign=godprompt_rs1&metadata_offer=agent_harness_review&metadata_source=mcp). GitHub sign-in is required. After sponsoring, email `info@tomiseregi.si` with subject `[GP-RS1] Agent Harness Review` and include the GitHub username used for the sponsorship plus the review inputs. Delivery begins after the US$49 sponsorship is independently verified for this review. The free MIT GodPrompt MCP remains unchanged and free. [See a transparent sample deliverable](https://github.com/AKzar1el/god-prompt/blob/main/AGENT_HARNESS_REVIEW_SAMPLE.md) before deciding; it is illustrative, not a client result or benchmark. [Full frozen experiment terms](https://github.com/AKzar1el/god-prompt/blob/main/MONETIZATION_EXPERIMENT.md).
 
+**Before emailing, sanitize your review inputs:** remove passwords, API keys, access tokens, recovery codes, regulated or unrelated personal data, and unrelated private repository content. Do not send `.env` files, full private repositories, or unredacted logs that might expose credentials. Share only the minimum sanitized instruction excerpts and failure example needed for the review; if those are insufficient, the scope may need to be narrowed or the review declined under the linked terms.
+
 ## Tools
 
 | Tool | Description |
