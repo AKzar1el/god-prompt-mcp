@@ -230,7 +230,13 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Review this deploy procedure and publish checklist", "ANALYZE", true],
     ["Inspect push and merge permissions before integration", "ANALYZE", true],
     ["Review the deploy workflow and release checklist", "ANALYZE", true],
+    ["Can you review the deploy workflow and release checklist?", "ANALYZE", true],
+    ["Could you inspect the push permissions and merge policy?", "ANALYZE", true],
+    ["Would you please audit the deploy and publish procedures?", "ANALYZE", true],
+    ["Please can you review the release and deploy checklist?", "ANALYZE", true],
     ["Review and deploy the approved release", "SHIP", false],
+    ["Can you review and then deploy the approved release?", "SHIP", false],
+    ["Could you inspect the deploy workflow, then ship the approved build?", "SHIP", false],
     ["Audit the publish workflow then deploy the approved build", "ANALYZE", false],
     ["Review the release plan, then publish the approved version", "SHIP", false],
   ];

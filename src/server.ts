@@ -155,7 +155,7 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
 function requestsShippingAfterInspection(text: string): boolean {
   // An inspection of a "deploy workflow" or "release checklist" is not a request to ship.
   const followup = /(?:[,;]\s*|\b(?:and|then|also|afterwards?|finally)\s+)(?:please\s+)?(?:deploy|release|push|merge|ship|publish|launch)\b/g;
-  const artifact = /^(?:workflow|procedure|checklist|permissions?|policy|rules?|scripts?|config(?:uration)?|documentation|docs|notes|plan|guide|pipeline|process|steps?|code|settings?)\b/;
+  const artifact = /^(?:workflows?|procedures?|checklists?|permissions?|polic(?:y|ies)|rules?|scripts?|configs?|configurations?|documentation|docs|notes|plans?|guides?|pipelines?|process(?:es)?|steps?|code|settings?)\b/;
   for (const match of text.matchAll(followup)) {
     if (!artifact.test(text.slice((match.index ?? 0) + match[0].length).trimStart())) {
       return true;
@@ -233,7 +233,8 @@ function classifyTask(description: string): {
   );
   const inspectionRequested = ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"]
     .some((trigger) => hasTrigger(normalized, trigger));
-  const inspectionFirst = /^(?:please\s+)?(?:audit|review|check|analyze|inspect|assess|evaluate|verify|validate|test)\b/.test(normalized);
+  // Polite questions are still inspection-first, not requests to ship named artifacts.
+  const inspectionFirst = /^(?:(?:please\s+)?(?:can|could|would|will)\s+you\s+(?:please\s+)?|please\s+)?(?:audit|review|check|analyze|inspect|assess|evaluate|verify|validate|test)\b/.test(normalized);
   const explicitShipAfterReview = inspectionFirst && requestsShippingAfterInspection(normalized);
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
@@ -244,7 +245,8 @@ function classifyTask(description: string): {
       (type === "DEBUG" && !affirmativeDebug))) continue;
     if (type === "SHIP" && inspectionFirst && !explicitShipAfterReview) continue;
     // CI, cron and workflow names are audit subjects, not requests to automate them.
-    if (type === "AUTOMATE" && inspectionRequested && !affirmativeBuild &&
+    if (type === "AUTOMATE" && inspectionRequested &&
+      (!affirmativeBuild || (inspectionFirst && explicitShipAfterReview)) &&
       !hasAffirmativeActionTrigger(normalized, "automate")) continue;
     // Mentions of bugs or errors must not override an explicit no-debug instruction.
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
