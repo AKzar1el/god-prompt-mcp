@@ -157,6 +157,15 @@ test("keeps the packaged README aligned with relevance-scoped core-skill loading
   assert.doesNotMatch(readme, /`get_core_skill` \| `SKILL\.md` — always-on protocol/i);
 });
 
+test("warns paid-review buyers to sanitize intake before sending files", () => {
+  const offer = readme.split("## Agent Harness Review")[1]?.split("## Tools")[0] ?? "";
+  assert.match(offer, /Before emailing/i);
+  for (const term of ["passwords", "API keys", "tokens", "personal data", "sanitized"]) {
+    assert.match(offer, new RegExp(term, "i"), `missing buyer intake warning: ${term}`);
+  }
+  assert.match(offer, /Do not send[^.]*\.env/i);
+});
+
 test("keeps privacy copy aligned with local and hosted transports", () => {
   assert.match(
     readme,
