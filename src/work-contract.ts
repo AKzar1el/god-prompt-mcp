@@ -203,6 +203,38 @@ function normalizeAction(text: string): string {
   return text.normalize("NFKC").toLowerCase().trim().replace(/\s+/g, " ");
 }
 
+function mentionsForbiddenAction(reported: string, forbidden: string): boolean {
+  const operation = normalizeAction(reported);
+  const restriction = normalizeAction(forbidden);
+  if (operation === restriction) return true;
+  // Conservative token/phrase matching, not an NLP authorization decision:
+  // "deployed to staging" must not silently bypass "deploy". A negated
+  // mention is also flagged for explicit review rather than treated as proof.
+  const variants: Record<string, string[]> = {
+    deploy: ["deploy", "deploys", "deployed", "deploying", "deployment"],
+    merge: ["merge", "merges", "merged", "merging"],
+    publish: ["publish", "publishes", "published", "publishing"],
+    release: ["release", "releases", "released", "releasing"],
+    delete: ["delete", "deletes", "deleted", "deleting", "deletion"],
+    push: ["push", "pushes", "pushed", "pushing"],
+    spend: ["spend", "spends", "spent", "spending"],
+    trade: ["trade", "trades", "traded", "trading"],
+  };
+  const phrases = variants[restriction] ?? [restriction];
+  return phrases.some((phrase) => {
+    // Delimit tokens, so "deploy" does not match "undeployed".
+    let index = operation.indexOf(phrase);
+    while (index !== -1) {
+      const end = index + phrase.length;
+      const before = index === 0 || !/[a-z0-9]/.test(operation[index - 1]);
+      const after = end === operation.length || !/[a-z0-9]/.test(operation[end]);
+      if (before && after) return true;
+      index = operation.indexOf(phrase, index + 1);
+    }
+    return false;
+  });
+}
+
 export async function reviewWorkEvidence(raw: z.input<typeof ReviewInput>) {
   const input = ReviewInput.parse(raw);
   const contract = input.contract;
@@ -242,11 +274,25 @@ export async function reviewWorkEvidence(raw: z.input<typeof ReviewInput>) {
       detail: "Changed file is outside the defined paths: " + file,
     });
   }
-  const forbidden = new Set(contract.forbidden_actions.map(normalizeAction));
   for (const action of input.operations_performed) {
-    if (forbidden.has(normalizeAction(action))) issues.push({
+    if (contract.forbidden_actions.some((restriction) => mentionsForbiddenAction(action, restriction))) issues.push({
       code: "PROHIBITED_ACTION_REPORTED",
-      detail: "A forbidden action is reported as performed: " + action,
+      detail: "A reported operation may include a forbidden action; inspect the original execution record: " + action,
+    });
+  }
+
+  const allowedCheckIds = new Set(contract.verification_commands.map((check) => check.id));
+  const allowedAcceptanceIds = new Set(contract.success_criteria.map((criterion) => criterion.id));
+  for (const receipt of input.checks) {
+    if (!allowedCheckIds.has(receipt.id)) issues.push({
+      code: "UNEXPECTED_CHECK_RECEIPT",
+      detail: "Check receipt ID is not specified by the contract: " + receipt.id,
+    });
+  }
+  for (const receipt of input.acceptance) {
+    if (!allowedAcceptanceIds.has(receipt.id)) issues.push({
+      code: "UNEXPECTED_ACCEPTANCE_RECEIPT",
+      detail: "Acceptance receipt ID is not specified by the contract: " + receipt.id,
     });
   }
 
@@ -272,6 +318,10 @@ export async function reviewWorkEvidence(raw: z.input<typeof ReviewInput>) {
     else if (receipt.source !== "tool_output") issues.push({
       code: "SELF_REPORTED_CHECK",
       detail: "Command " + expected.id + " has no attributed tool-output receipt.",
+    });
+    else if (!receipt.evidence_excerpt.trim()) issues.push({
+      code: "EVIDENCE_EXCERPT_MISSING",
+      detail: "Command " + expected.id + " has no bounded tool-output summary or original evidence reference.",
     });
     else evidenceIDs.add(receipt.id);
   }
