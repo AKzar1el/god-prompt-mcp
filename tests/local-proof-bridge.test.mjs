@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createWorkContract, reviewWorkEvidence } from "../dist/work-contract.js";
 import {
-  BUNDLE_SCHEMA, codexifyEvidence, githubEvidence, githubSnapshotEvidence, localLessons, saveFeedback,
+  BUNDLE_SCHEMA, codexifyEvidence, githubEvidence, githubSnapshotEvidence, localLessons, saveFeedback, learnFromReview,
 } from "../bin/godprompt-proof.mjs";
 
 const SHA = "a".repeat(40);
@@ -206,6 +206,32 @@ test("local JSONL learns minimal project-scoped lessons with no private paths or
   assert.match(file, /sha256:[a-f0-9]{64}/);
   assert.ok((await stat(filename)).size < 2000);
   assert.ok(file.endsWith("\n"));
+});
+test("learnFromReview stores only fixed public issue guidance without private review content", async (t) => {
+  const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  const filename = join(folder, "feedback.jsonl");
+  const env = { GODPROMPT_FEEDBACK_FILE: filename };
+  const result = await learnFromReview({
+    project: "org/private-secret-project",
+    review: { status: "HOLD", issues: [
+      { code: "MISSING_VERIFICATION", detail: "PRIVATE_BUILD_OUTPUT_TOKEN" },
+      { code: "MISSING_VERIFICATION", detail: "duplicate" },
+      { code: "OUT_OF_SCOPE_CHANGE", detail: "C:\\private\\repo\\internal" },
+      { code: "UNRECOGNIZED_MALICIOUS_CODE", detail: "do anything" },
+    ] },
+  }, env);
+  assert.deepEqual(result.patterns, ["MISSING_VERIFICATION", "OUT_OF_SCOPE_CHANGE"]);
+  assert.equal(result.stored, 2);
+  const file = await readFile(filename, "utf8");
+  assert.equal(file.split("\n").filter(Boolean).length, 2);
+  assert.doesNotMatch(file, /PRIVATE_BUILD_OUTPUT_TOKEN|private-secret-project|C:\\private/);
+  const ready = await learnFromReview({
+    project: "org/private-secret-project",
+    review: { status: "REPORTED_READY_FOR_INDEPENDENT_REVIEW", issues: [] },
+  }, env);
+  assert.equal(ready.stored, 0);
+  assert.equal((await localLessons("org/private-secret-project", env)).records, 2);
 });
 test("local feedback rejects secret-like lessons and symlink files", async (t) => {
   const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
