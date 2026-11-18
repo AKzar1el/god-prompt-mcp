@@ -313,13 +313,15 @@ export async function saveFeedback({ project, outcome, pattern, lesson, verified
     outcome, pattern, lesson: lesson.trim(), verified_reported: verified,
   };
   const row = JSON.stringify(event) + "\n";
-  const used = Buffer.byteLength(current.map((e) => JSON.stringify(e) + "\n").join(""));
+  let used = 0;
+  try { used = (await lstat(filename)).size; }
+  catch (error) { if (error.code !== "ENOENT") throw error; }
   if (used + Buffer.byteLength(row) > MAX_FEEDBACK_BYTES) fail("Feedback file is full (256 KiB); archive or rotate it manually");
   await mkdir(dirname(filename), { recursive: true, mode: 0o700 });
   const fd = await open(filename, constants.O_CREAT | constants.O_APPEND | constants.O_WRONLY | (constants.O_NOFOLLOW || 0), 0o600);
   try { await fd.writeFile(row, "utf8"); }
   finally { await fd.close(); }
-  return { stored: true, scope: "local_only", project_hash: hash, records_for_project: current.filter((e) => e.project === hash).length + 1, verified_is_reported: true };
+  return { stored: true, scope: "local_only", project_hash: hash, records_for_project: current.filter((e) => e.project === hash).length + 1, verified_reported: verified };
 }
 export async function localLessons(project, env = process.env) {
   const hash = projectDigest(project);
