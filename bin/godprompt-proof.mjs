@@ -162,6 +162,32 @@ export async function githubEvidence({ repo, sha, contract, mapping = {}, fetchI
     check_run_list_complete: completeRuns,
   });
 }
+/**
+ * Use a previously authorized GitHub connector export when no local GitHub
+ * credential is available. Entirely offline; never claims authenticated proof.
+ */
+export async function githubSnapshotEvidence({ repo, sha, contract, mapping = {}, snapshot }) {
+  if (!snapshot || typeof snapshot !== "object" || snapshot.complete !== true ||
+      !snapshot.commit || !snapshot.check_runs ||
+      !Array.isArray(snapshot.commit.files) || !Array.isArray(snapshot.check_runs.check_runs)) {
+    fail("Snapshot must contain complete:true, commit.files and check_runs.check_runs");
+  }
+  if (snapshot.commit.files.length > 100 ||
+      (Number.isInteger(snapshot.check_runs.total_count) &&
+       snapshot.check_runs.total_count !== snapshot.check_runs.check_runs.length) ||
+      snapshot.check_runs.check_runs.length > 100) {
+    fail("Snapshot might be paginated; collect complete results or use direct GitHub reads");
+  }
+  const fetchImpl = async (url) => new Response(
+    JSON.stringify(url.includes("/check-runs?") ? snapshot.check_runs : snapshot.commit),
+    { status: 200 }
+  );
+  const bundle = await githubEvidence({ repo, sha, contract, mapping, fetchImpl });
+  bundle.adapter = "github_connector_snapshot";
+  bundle.provenance.provider = "caller_supplied_github_connector_snapshot";
+  bundle.gaps.push("CONNECTOR_SNAPSHOT_PROVENANCE_NOT_AUTHENTICATED");
+  return bundle;
+}
 export function codexifyEvidence({ contract, exportData }) {
   checkContract(contract);
   if (!exportData || typeof exportData !== "object" || Array.isArray(exportData)) fail("Codexify export must be an object");
@@ -300,11 +326,12 @@ function parseOptions(argv) {
   }
   const allowed = {
     github: ["repo", "sha", "contract", "map"],
+    "github-snapshot": ["repo", "sha", "contract", "map", "snapshot"],
     codexify: ["contract", "export"],
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
   };
-  if (!allowed[command]) fail("Usage: godprompt-proof github|codexify|learn|lessons [--name value ...]");
+  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|lessons [--name value ...]");
   for (const key of Object.keys(opts)) if (!allowed[command].includes(key)) fail("Unknown option --" + key);
   return { command, opts };
 }
@@ -317,6 +344,16 @@ export async function cli(argv = process.argv.slice(2)) {
       sha: opts.sha,
       contract: checkContract(await readSmallJson(opts.contract)),
       mapping: opts.map ? await readSmallJson(opts.map) : {},
+    });
+  }
+  if (command === "github-snapshot") {
+    if (!opts.repo || !opts.sha || !opts.contract || !opts.snapshot) fail("github-snapshot requires --repo --sha --contract --snapshot");
+    return githubSnapshotEvidence({
+      repo: opts.repo,
+      sha: opts.sha,
+      contract: checkContract(await readSmallJson(opts.contract)),
+      mapping: opts.map ? await readSmallJson(opts.map) : {},
+      snapshot: await readSmallJson(opts.snapshot),
     });
   }
   if (command === "codexify") {
