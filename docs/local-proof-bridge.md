@@ -147,3 +147,15 @@ Only recognized, generic **HOLD issue codes** become local text-file lessons. Th
 A project key is hashed before storage; the filename does not contain the key. The verified flag means **someone reported** independent verification, not that the CLI authenticated it. The CLI blocks obvious secrets, URLs, e-mail addresses and file paths in lessons, but these filters cannot guarantee perfect redaction; use generic lessons only.
 
 This design needs **no periodic job**. The coding agent can use lessons at the beginning of a task and learn after checking the outcome, if explicitly instructed by the user's workflow. Global rule promotion and measured workflow uplift are separate review-gated priorities.
+
+## D. Local observability (Priority 2, opt-in read)
+
+The same file supports **on-demand metrics** without a telemetry backend:
+
+~~~powershell
+node bin/godprompt-proof.mjs metrics --project sample-repo --days 30
+~~~
+
+The command reads only the existing local feedback.jsonl. It returns file size relative to the 256 KiB cap, number of reported events, separately labeled **reported** success/failure/blocked outcomes, count of user-reported verifications, and frequent HOLD patterns in the selected 1-365 day window. Project labels are hashed; no raw history or other projects' rows are returned. It does not write anything, run in the background, send telemetry or start a service.
+
+**Do not treat these results as an agent-success rate or proof of quality improvement.** Only tasks where feedback was explicitly recorded appear. Verified flags are themselves reports, not cryptographic attestations. The metrics identify recurring workflow gaps for later investigation, not a benchmark.
