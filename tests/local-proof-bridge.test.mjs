@@ -285,7 +285,7 @@ test("learnFromReview stores only fixed public issue guidance without private re
   const env = { GODPROMPT_FEEDBACK_FILE: filename };
   const result = await learnFromReview({
     project: "org/private-secret-project",
-    review: { status: "HOLD", issues: [
+    review: { contract_id: "sha256:" + "1".repeat(64), status: "HOLD", issues: [
       { code: "MISSING_VERIFICATION", detail: "PRIVATE_BUILD_OUTPUT_TOKEN" },
       { code: "MISSING_VERIFICATION", detail: "duplicate" },
       { code: "OUT_OF_SCOPE_CHANGE", detail: "C:\\private\\repo\\internal" },
@@ -294,6 +294,18 @@ test("learnFromReview stores only fixed public issue guidance without private re
   }, env);
   assert.deepEqual(result.patterns, ["MISSING_VERIFICATION", "OUT_OF_SCOPE_CHANGE"]);
   assert.equal(result.stored, 2);
+  const duplicate = await learnFromReview({
+    project: "org/private-secret-project",
+    review: { contract_id: "sha256:" + "1".repeat(64), status: "HOLD", issues: [
+      { code: "MISSING_VERIFICATION", detail: "REPLAYED_SENSITIVE_DETAILS" },
+      { code: "OUT_OF_SCOPE_CHANGE", detail: "another duplicate" },
+    ] },
+  }, env);
+  assert.equal(duplicate.stored, 0);
+  assert.equal(duplicate.skipped_duplicate_issues, 2);
+  await assert.rejects(learnFromReview({
+    project: "org/private-secret-project", review: { status: "HOLD", issues: [{ code: "MISSING_VERIFICATION" }] },
+  }, env), /contract_id/);
   const file = await readFile(filename, "utf8");
   assert.equal(file.split("\n").filter(Boolean).length, 2);
   assert.doesNotMatch(file, /PRIVATE_BUILD_OUTPUT_TOKEN|private-secret-project|C:\\private/);
