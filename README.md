@@ -32,7 +32,7 @@ To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.
 
 ### Optional local proof bridge (Priority 1, source branch)
 
-The new **godprompt-proof** CLI (Node 22+, **no additional dependencies**) can normalize pinned GitHub CI checks and exported Codexify command receipts into inputs for the existing GodPrompt evidence reviewer. It also supports an optional **single 256 KiB local JSONL feedback file** for project-scoped generic lessons. No database server, GPU, background worker or global telemetry is involved.
+The new **godprompt-proof** CLI (Node 22+, **no additional dependencies**) can normalize pinned GitHub CI checks and exported Codexify command receipts into inputs for the existing GodPrompt evidence reviewer. It also supports an optional **single 256 KiB local JSONL feedback file** for project-scoped generic lessons and **on-demand read-only metrics** from that same file (no telemetry). No database server, GPU, background worker or global telemetry is involved.
 
 GitHub can be read directly or from a **sanitized snapshot produced with an existing GitHub connector**, with no new token required for that offline path. Codexify is **client-orchestrated**: the authorized coding agent produces a receipt export, not a direct remote connection from the public Worker. The hosted MCP has **no access** to any user's local feedback file. No automatic uploads, training or rule promotion occur.
 
