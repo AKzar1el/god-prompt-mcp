@@ -38,6 +38,8 @@ GitHub can be read directly or from a **sanitized snapshot produced with an exis
 
 **This is unreleased source functionality**, not a claim that the public endpoint, existing installs or your local machine have been updated. See [local proof bridge setup, limitations, and examples](docs/local-proof-bridge.md). The CLI is optional; the MCP server continues to work without it.
 
+**ChatGPT publishing and storage:** The public hosted MCP remains **stateless** and does **not** create personal memory or store a JSONL file for ChatGPT users. Per-project learning is an **explicitly enabled local CLI**, not a hosted MCP feature. See [the hosting, privacy, local installation and release checklist](docs/chatgpt-local-first.md). Cloud sync is **not** included.
+
 ## Progressive Disclosure
 
 For minimum context usage, start with `get_core_skill`, then load `get_protocols`, `get_gates`, or `get_anti_patterns` only when the task requires deeper guidance. Use `get_god_prompt` when you want everything in one shot.
