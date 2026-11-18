@@ -41,7 +41,13 @@ No second tunnel, MCP endpoint or Codexify installation is created. The local co
 node bin/godprompt-proof.mjs github --repo owner/repository --sha FULL_40_CHARACTER_SHA --contract contract.json --map check-map.json
 ~~~
 
-The bridge reads the exact GitHub commit file list (including both rename paths) and checks tied to that SHA. It refuses mismatched SHAs and malformed responses; unsafe and out-of-scope changed paths are flagged by the subsequent GodPrompt reviewer. Missing, ambiguous, incomplete or failed CI produces gaps. Pagination is bounded at three pages. No GitHub writes are ever made.
+By default the bridge reads the exact **single commit** file list (including both rename paths) and checks tied to that SHA. **A single commit is not a full pull request diff.** To review the complete PR scope, add the exact PR number:
+
+~~~powershell
+node bin/godprompt-proof.mjs github --repo owner/repository --sha FULL_40_CHARACTER_PR_HEAD_SHA --pr 218 --contract contract.json --map check-map.json
+~~~
+
+In PR mode, it checks the head SHA before and after reading the paginated **entire PR changed-file list**, and fails if the branch moves. The CI check runs still have to match that exact SHA. It refuses mismatched SHAs and malformed responses; unsafe and out-of-scope changed paths are flagged by the subsequent GodPrompt reviewer. Missing, ambiguous, incomplete or failed CI produces gaps. Pagination is bounded at three pages. No GitHub writes are ever made.
 
 **Critical:** GitHub check names do not establish that the exact contract command ran. The map association is user/agent supplied, so inspect the pinned workflow and original CI run, including permissions and dependency changes, before claiming verification. The bridge emits review_input for review_work_evidence; it never auto-fills acceptance criteria or grants completion authorization.
 
@@ -76,6 +82,8 @@ The expected snapshot object has **complete: true**, **commit** (with sha and fi
   }
 }
 ~~~
+
+For an offline **full PR** review, add **--pr 218** and replace the snapshot's commit object with **pull_request** (number plus head.sha) and **pr_files** (the complete changed-file array). Keep **check_runs** and **complete: true**. The snapshot must be a single complete page with at most 100 files and checks; for larger PRs use direct GitHub reads or a separate exhaustive review.
 
 This path is offline. It refuses an explicitly incomplete, mismatched or oversized snapshot, limits it to one unpaginated page, and marks its provenance **caller-supplied**. It does **not** authenticate that the export came from the GitHub connector. Do not assert complete:true unless the exact source results were actually inspected for pagination and completeness. The best evidence remains a verified, pinned GitHub check inspected independently.
 
