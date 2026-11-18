@@ -187,23 +187,30 @@ export async function githubEvidence({ repo, sha, contract, mapping = {}, pr = n
  * Use a previously authorized GitHub connector export when no local GitHub
  * credential is available. Entirely offline; never claims authenticated proof.
  */
-export async function githubSnapshotEvidence({ repo, sha, contract, mapping = {}, snapshot }) {
+export async function githubSnapshotEvidence({ repo, sha, contract, mapping = {}, pr = null, snapshot }) {
+  const sourceFiles = pr === null ? snapshot?.commit?.files : snapshot?.pr_files;
   if (!snapshot || typeof snapshot !== "object" || snapshot.complete !== true ||
-      !snapshot.commit || !snapshot.check_runs ||
-      !Array.isArray(snapshot.commit.files) || !Array.isArray(snapshot.check_runs.check_runs)) {
-    fail("Snapshot must contain complete:true, commit.files and check_runs.check_runs");
+      !snapshot.check_runs || !Array.isArray(snapshot.check_runs.check_runs) ||
+      !Array.isArray(sourceFiles) ||
+      (pr === null && !snapshot.commit) ||
+      (pr !== null && (!snapshot.pull_request || snapshot.pull_request.number !== pr ||
+                      snapshot.pull_request.head?.sha !== sha))) {
+    fail("Snapshot must contain complete:true, matching commit or pull_request, files and check_runs");
   }
-  if (snapshot.commit.files.length > 100 ||
+  if (sourceFiles.length > 100 ||
       (Number.isInteger(snapshot.check_runs.total_count) &&
        snapshot.check_runs.total_count !== snapshot.check_runs.check_runs.length) ||
       snapshot.check_runs.check_runs.length > 100) {
     fail("Snapshot might be paginated; collect complete results or use direct GitHub reads");
   }
-  const fetchImpl = async (url) => new Response(
-    JSON.stringify(url.includes("/check-runs?") ? snapshot.check_runs : snapshot.commit),
-    { status: 200 }
-  );
-  const bundle = await githubEvidence({ repo, sha, contract, mapping, fetchImpl });
+  const fetchImpl = async (url) => {
+    const data = url.includes("/check-runs?") ? snapshot.check_runs :
+      pr !== null && url.includes("/pulls/" + pr + "/files?") ? snapshot.pr_files :
+      pr !== null && url.endsWith("/pulls/" + pr) ? snapshot.pull_request :
+      snapshot.commit;
+    return new Response(JSON.stringify(data), { status: 200 });
+  };
+  const bundle = await githubEvidence({ repo, sha, contract, mapping, pr, fetchImpl });
   bundle.adapter = "github_connector_snapshot";
   bundle.provenance.provider = "caller_supplied_github_connector_snapshot";
   bundle.gaps.push("CONNECTOR_SNAPSHOT_PROVENANCE_NOT_AUTHENTICATED");
@@ -386,8 +393,8 @@ function parseOptions(argv) {
     opts[key] = argv[i + 1];
   }
   const allowed = {
-    github: ["repo", "sha", "contract", "map"],
-    "github-snapshot": ["repo", "sha", "contract", "map", "snapshot"],
+    github: ["repo", "sha", "contract", "map", "pr"],
+    "github-snapshot": ["repo", "sha", "contract", "map", "snapshot", "pr"],
     codexify: ["contract", "export"],
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
@@ -406,6 +413,7 @@ export async function cli(argv = process.argv.slice(2)) {
       sha: opts.sha,
       contract: checkContract(await readSmallJson(opts.contract)),
       mapping: opts.map ? await readSmallJson(opts.map) : {},
+      pr: opts.pr ? Number(opts.pr) : null,
     });
   }
   if (command === "github-snapshot") {
@@ -415,6 +423,7 @@ export async function cli(argv = process.argv.slice(2)) {
       sha: opts.sha,
       contract: checkContract(await readSmallJson(opts.contract)),
       mapping: opts.map ? await readSmallJson(opts.map) : {},
+      pr: opts.pr ? Number(opts.pr) : null,
       snapshot: await readSmallJson(opts.snapshot),
     });
   }
