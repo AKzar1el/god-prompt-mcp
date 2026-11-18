@@ -203,7 +203,12 @@ export function registerCodexifyCheckpointTool(server: McpServer): void {
   server.registerTool("review_codexify_checkpoint", {
     title: "Review Codexify task checkpoint",
     description: "Local opt-in, read-only milestone review. At plan, implementation, verification and handoff, check reported contract, scope, tool errors, verification and acceptance. RECHECK/HOLD is not an execution permission or independent proof.",
-    inputSchema,
+    // The SDK echoes Zod validation errors, including unexpected field names.
+    // Preserve the detailed public schema, but hand invalid input to our
+    // redacted error handler instead of letting the SDK echo private data.
+    inputSchema: inputSchema.catch(() => ({
+      stage: "plan" as const, contract: {}, codexify_export: { changed_files: [], checks: [] },
+    })),
     annotations: {
       readOnlyHint: true, destructiveHint: false,
       idempotentHint: true, openWorldHint: false,

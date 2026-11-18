@@ -9,11 +9,13 @@ import { mkdir, open, readFile, lstat, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { codexifyEvidence } from "../dist/codexify-evidence.js";
+import {
+  codexifyEvidence, validateWorkContractEnvelope, CODEXIFY_BUNDLE_SCHEMA,
+} from "../dist/codexify-evidence.js";
 
 export { codexifyEvidence };
 
-export const BUNDLE_SCHEMA = "godprompt.evidence_bundle.v1";
+export const BUNDLE_SCHEMA = CODEXIFY_BUNDLE_SCHEMA;
 const MAX_JSON_BYTES = 256 * 1024;
 const MAX_FEEDBACK_BYTES = 256 * 1024;
 const MAX_PAGES = 3;
@@ -23,14 +25,6 @@ function sha256(text) {
 }
 function fail(message) {
   throw new Error(message);
-}
-function checkContract(contract) {
-  if (!contract || contract.schema !== "godprompt.work_contract.v1" ||
-      !/^sha256:[a-f0-9]{64}$/.test(contract.contract_id || "") ||
-      !Array.isArray(contract.verification_commands) ||
-      !Array.isArray(contract.allowed_paths) ||
-      !Array.isArray(contract.success_criteria)) fail("Expected a complete v1 GodPrompt contract");
-  return contract;
 }
 export async function readSmallJson(filename) {
   const bytes = await readFile(filename);
@@ -88,7 +82,7 @@ async function githubJson(url, fetchImpl) {
 }
 export async function githubEvidence({ repo, sha, contract, mapping = {}, pr = null, fetchImpl = fetch }) {
   validateRepo(repo, sha);
-  checkContract(contract);
+  validateWorkContractEnvelope(contract);
   if (!mapping || typeof mapping !== "object" || Array.isArray(mapping)) fail("Expected a VC-ID-to-check-name JSON map");
   const base = "https://api.github.com/repos/" + repo;
   const gaps = [];
@@ -529,7 +523,7 @@ export async function cli(argv = process.argv.slice(2)) {
     return githubEvidence({
       repo: opts.repo,
       sha: opts.sha,
-      contract: checkContract(await readSmallJson(opts.contract)),
+      contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       mapping: opts.map ? await readSmallJson(opts.map) : {},
       pr: opts.pr ? Number(opts.pr) : null,
     });
@@ -539,7 +533,7 @@ export async function cli(argv = process.argv.slice(2)) {
     return githubSnapshotEvidence({
       repo: opts.repo,
       sha: opts.sha,
-      contract: checkContract(await readSmallJson(opts.contract)),
+      contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       mapping: opts.map ? await readSmallJson(opts.map) : {},
       pr: opts.pr ? Number(opts.pr) : null,
       snapshot: await readSmallJson(opts.snapshot),
@@ -548,7 +542,7 @@ export async function cli(argv = process.argv.slice(2)) {
   if (command === "codexify") {
     if (!opts.contract || !opts.export) fail("codexify requires --contract --export");
     return codexifyEvidence({
-      contract: checkContract(await readSmallJson(opts.contract)),
+      contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       exportData: await readSmallJson(opts.export),
     });
   }

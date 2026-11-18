@@ -21,7 +21,7 @@ function record(value: unknown): RecordValue | null {
     ? value as RecordValue : null;
 }
 
-function checkContract(contract: unknown): asserts contract is WorkContract {
+export function validateWorkContractEnvelope(contract: unknown): WorkContract {
   const data = record(contract);
   if (data?.schema !== "godprompt.work_contract.v1" ||
       typeof data.contract_id !== "string" ||
@@ -31,6 +31,7 @@ function checkContract(contract: unknown): asserts contract is WorkContract {
       !Array.isArray(data.success_criteria)) {
     throw new Error("Expected a complete v1 GodPrompt contract");
   }
+  return contract as WorkContract;
 }
 
 async function digestShort(data: RecordValue): Promise<string> {
@@ -46,12 +47,13 @@ function hasToolError(receipt: RecordValue, response: RecordValue | null,
   // Treat malformed error flags and explicit failure statuses conservatively.
   // A present JSON-RPC error object is a failure even without isError.
   const nested = record(result?.upstream_result);
-  return [receipt, response, result, nested].some((data) =>
+  return [receipt, response, result, nested,
+    record(response?.structuredContent), record(result?.structuredContent)].some((data) =>
     data !== null && (
       (Object.hasOwn(data, "isError") && data.isError !== false) ||
-      data.success === false ||
+      (Object.hasOwn(data, "success") && data.success !== true) ||
       (typeof data.status === "string" &&
-        /^(error|failed|failure)$/i.test(data.status)) ||
+        /^(error|failed|failure|cancelled|canceled|timeout|timed_out|aborted|interrupted|rejected|pending|running)$/i.test(data.status.trim())) ||
       (data.error !== undefined && data.error !== null)
     ));
 }
@@ -59,7 +61,7 @@ function hasToolError(receipt: RecordValue, response: RecordValue | null,
 export async function codexifyEvidence({
   contract, exportData,
 }: { contract: WorkContract; exportData: unknown }) {
-  checkContract(contract);
+  validateWorkContractEnvelope(contract);
   const source = record(exportData);
   if (!source) throw new Error("Codexify export must be an object");
   const changedFiles = source.changed_files;
@@ -107,9 +109,13 @@ export async function codexifyEvidence({
   gaps.push("ACCEPTANCE_REQUIRES_INDEPENDENT_EVIDENCE");
 
   const rawOperations = source.operations_performed;
-  const operations = Array.isArray(rawOperations) && rawOperations.length <= 100 &&
-    rawOperations.every((value) => typeof value === "string" && value.length <= 500)
-    ? rawOperations as string[] : [];
+  if (rawOperations !== undefined &&
+      (!Array.isArray(rawOperations) || rawOperations.length > 100 ||
+       rawOperations.some((value) => typeof value !== "string" ||
+         value.trim().length < 3 || value.length > 500))) {
+    throw new Error("Codexify export needs a bounded operations_performed array");
+  }
+  const operations = rawOperations === undefined ? [] : rawOperations as string[];
   return {
     schema: CODEXIFY_BUNDLE_SCHEMA,
     adapter: "codexify_receipts",

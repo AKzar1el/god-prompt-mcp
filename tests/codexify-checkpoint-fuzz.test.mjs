@@ -80,3 +80,85 @@ test("192 deterministic adversarial checkpoint combinations stay fail-closed and
     }
   }
 });
+
+test("2,048 seeded checkpoint scenarios preserve fail-closed decisions and private-data boundaries", async () => {
+  const contracts = {};
+  for (const risk_level of ["medium", "high"]) {
+    contracts[risk_level] = (await createWorkContract({
+      task: "Exercise deterministic checkpoint scenarios without authorizing any real action",
+      task_type: "BUILD", risk_level, allowed_paths: ["src/"],
+      forbidden_actions: ["deploy", "merge", "publish"],
+      success_criteria: ["Synthetic version check is recorded"],
+      verification_commands: ["node --version"],
+    })).contract;
+  }
+  const stages = ["plan", "implementation", "verification", "handoff"];
+  const cases = [
+    ["pass", null], ["missing", "MISSING_VERIFICATION"],
+    ["mismatched", "COMMAND_MISMATCH"], ["nonzero", "VERIFICATION_FAILED"],
+    ["outer_error", "VERIFICATION_FAILED"],
+    ["structured_error", "VERIFICATION_FAILED"],
+    ["wrong_tool", "VERIFICATION_FAILED"],
+    ["outside_scope", "OUT_OF_SCOPE_CHANGE"],
+    ["unsafe_path", "INVALID_CHANGED_PATH"],
+    ["forbidden", "PROHIBITED_ACTION_REPORTED"],
+    ["contract_drift", "CONTRACT_DRIFT"],
+    ["duplicate_check", "DUPLICATE_CHECK_RECEIPT"],
+    ["missing_acceptance", "ACCEPTANCE_NOT_MET"],
+  ];
+  let seed = 0x6a09e667;
+  const next = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0);
+  let readyReports = 0;
+  for (let i = 0; i < 2048; i++) {
+    const stage = stages[i % stages.length];
+    const [scenario, expectedCode] = cases[Math.floor(i / stages.length) % cases.length];
+    const risk = next() % 7 === 0 ? "high" : "medium";
+    const human_review_reported = next() % 5 === 0;
+    const secret = `PRIVATE_CANARY_${i}_${next()}`;
+    const contract = structuredClone(contracts[risk]);
+    const receipt = {
+      id: "VC-01", command: scenario === "mismatched" ? "npm publish" : "node --version",
+      tool: scenario === "wrong_tool" ? "untrusted_tool" : "mcp__God_v5__exec_command",
+      response: {
+        ...(scenario === "outer_error" ? { isError: true } : {}),
+        ...(scenario === "structured_error" ? { structuredContent: { error: { code: "DENIED" } } } : {}),
+        upstream_result: {
+          exit_code: scenario === "nonzero" ? 12 : 0,
+          output: secret,
+        },
+      },
+    };
+    const input = {
+      stage, contract, human_review_reported,
+      codexify_export: {
+        changed_files: [scenario === "outside_scope" ? `private/${secret}` :
+          scenario === "unsafe_path" ? `../${secret}` : "src/parser.mjs"],
+        operations_performed: scenario === "forbidden" ? [`deployed ${secret}`] : ["edited source"],
+        checks: scenario === "missing" ? [] : scenario === "duplicate_check" ? [receipt, receipt] : [receipt],
+      },
+      acceptance: scenario === "missing_acceptance" ? [] :
+        [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }],
+    };
+    if (scenario === "contract_drift") input.contract.task = secret;
+    const result = await evaluateCheckpoint(input);
+    const summary = cloudSafeCheckpointSummary(result);
+    const codes = [...result.recheck, ...result.pending].map((item) => item.code);
+    if (expectedCode) assert.ok(codes.includes(expectedCode), `case ${i}: ${expectedCode}`);
+    const canBeReady = stage === "handoff" && scenario === "pass" &&
+      (risk !== "high" || human_review_reported);
+    if (canBeReady) {
+      assert.equal(result.status, "REPORTED_READY_FOR_INDEPENDENT_REVIEW", `case ${i}`);
+      readyReports++;
+    } else {
+      assert.notEqual(result.status, "REPORTED_READY_FOR_INDEPENDENT_REVIEW", `case ${i}`);
+    }
+    assert.equal(result.independently_verified, false);
+    assert.equal(result.completion_authorized, false);
+    assert.equal(summary.independently_verified, false);
+    assert.equal(summary.completion_authorized, false);
+    assert.deepEqual(summary.recheck_codes, result.recheck.map((item) => item.code));
+    assert.deepEqual(summary.pending_codes, result.pending.map((item) => item.code));
+    assert.doesNotMatch(JSON.stringify({ result, summary }), /PRIVATE_CANARY_/);
+  }
+  assert.ok(readyReports > 0, "the matrix must also exercise clean handoff");
+});
