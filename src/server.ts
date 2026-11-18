@@ -60,7 +60,7 @@ const TASK_TYPES = {
     description: "Building automation and pipelines",
   },
   PLAN: {
-    triggers: ["brainstorm", "think", "plan", "strategy", "architect", "design system"],
+    triggers: ["brainstorm", "think", "plan", "strategy", "roadmap", "release plan", "rollout plan", "architect", "design system"],
     protocol: "Explore → document → handoff",
     description: "Planning and brainstorming",
   },
@@ -111,6 +111,9 @@ const ACTION_SIGNALS = new Set([
   "write",
 ]);
 
+const RELEASE_ARTIFACT = /\brelease\s+(?:plan|notes|roadmap|strategy|checklist|schedule)\b/;
+const PLAN_DELIVERABLE_SIGNALS = new Set(["plan", "strategy", "roadmap"]);
+
 type MatchedSignal = {
   signal: string;
   strength: number;
@@ -147,6 +150,27 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
     }
   }
   return false;
+}
+
+function hasPrimaryPlanningIntent(text: string): boolean {
+  // Prefer the requested deliverable over incidental nouns like "feature" and
+  // "release". Mentioning how to build/deploy is not a request to do so.
+  const primaryPlan = /^(?:(?:please|can you|could you|would you|can we|help me(?: to)?|let's)\s+)*(?:plan\b|brainstorm\b|think through\b|(?:prepare|write|draft|create|make|outline|propose|design)\s+(?:(?!(?:and|then|but)\b)[a-z0-9-]+\s+){0,7}(?:plan|strategy|roadmap)\b)/.test(text);
+  const requestedArtifact = /^(?:(?:we|i)\s+(?:need|want)\s+(?:a|an|the)|give me\s+(?:a|an|the))\s+(?:(?!(?:and|then|but)\b)[a-z0-9-]+\s+){0,7}(?:plan|strategy|roadmap)\b/.test(text);
+  const separateAction = /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(?:build|implement|add|deploy|publish|push|merge|ship|launch|create|make|release)\b/.test(text);
+  return (primaryPlan || requestedArtifact) && !separateAction;
+}
+
+function requestedShippingVerb(text: string): string | null {
+  // Only an actual shipping instruction can outrank a product noun such as
+  // "feature"; references to release plans or notes are not release commands.
+  const direct = /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(deploy|release|publish|push|merge|ship|launch)\b/.exec(text);
+  const followup = /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(deploy|release|publish|push|merge|ship|launch)\b/.exec(text);
+  if (direct?.[1] === "release" &&
+    /^\s+(?:plan|notes|roadmap|strategy|checklist|schedule)\b/.test(text.slice(direct[0].length))) {
+    return null;
+  }
+  return direct?.[1] ?? followup?.[1] ?? null;
 }
 
 function signalStrength(trigger: string): number {
@@ -220,23 +244,35 @@ function classifyTask(description: string): {
     .some((trigger) => hasTrigger(normalized, trigger));
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
+  const primaryPlanningIntent = hasPrimaryPlanningIntent(normalized);
+  const shippingVerb = requestedShippingVerb(normalized);
+  const nominalRelease = RELEASE_ARTIFACT.test(normalized);
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
     if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
       (type === "DEBUG" && !affirmativeDebug))) continue;
+    // A plan may be the *subject* of review or implementation rather than
+    // the requested deliverable. Keep explicit multi-action requests visible.
+    if (type === "PLAN" && !primaryPlanningIntent &&
+      (inspectionRequested || affirmativeBuild || affirmativeDebug || shippingVerb !== null) &&
+      !/\b(?:and|then)\s+(?:plan|outline|brainstorm)\b/.test(normalized)) continue;
     // CI, cron and workflow names are audit subjects, not requests to automate them.
     if (type === "AUTOMATE" && inspectionRequested && !affirmativeBuild &&
       !hasAffirmativeActionTrigger(normalized, "automate")) continue;
     // Mentions of bugs or errors must not override an explicit no-debug instruction.
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
     const matches = info.triggers
-      .filter((trigger) => type === "SHIP" || type === "BUILD"
-        ? hasAffirmativeActionTrigger(normalized, trigger)
-        : hasTrigger(normalized, trigger))
+      .filter((trigger) =>
+        !(type === "SHIP" && trigger === "release" && nominalRelease && shippingVerb !== "release") &&
+        (type === "SHIP" || type === "BUILD"
+          ? hasAffirmativeActionTrigger(normalized, trigger)
+          : hasTrigger(normalized, trigger)))
       .map((trigger) => ({
         signal: trigger,
-        strength: signalStrength(trigger),
+        strength: (type === "PLAN" && primaryPlanningIntent &&
+          PLAN_DELIVERABLE_SIGNALS.has(trigger)) ||
+          (type === "SHIP" && trigger === shippingVerb) ? 3 : signalStrength(trigger),
         index: triggerIndex(normalized, trigger),
       }));
     if (matches.length === 0) continue;

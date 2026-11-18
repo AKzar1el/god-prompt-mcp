@@ -320,6 +320,94 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  const planningIntentCases = [
+    ["Plan a feature release without deploying anything", "PLAN"],
+    ["Write a rollout plan for a new feature", "PLAN"],
+    ["Create a release plan for the feature", "PLAN"],
+    ["Prepare a rollout plan for a new feature", "PLAN"],
+    ["Plan the release of a new feature", "PLAN"],
+    ["Please plan a new feature launch", "PLAN"],
+    ["Plan the new feature before coding", "PLAN"],
+    ["Draft a feature release plan", "PLAN"],
+    ["Plan a release, but do not deploy it", "PLAN"],
+    ["Plan how to deploy a new feature", "PLAN"],
+    ["Plan to build a new API", "PLAN"],
+    ["Plan the deployment of a new feature", "PLAN"],
+    ["Write a plan to implement the feature safely", "PLAN"],
+    ["We need a rollout plan for the new feature", "PLAN"],
+    ["I need a release plan for the new feature", "PLAN"],
+    ["Give me a rollout plan for the new feature", "PLAN"],
+    ["Can you plan a new feature release?", "PLAN"],
+    ["Let's plan a new feature launch", "PLAN"],
+    ["Help me prepare a roadmap for a new feature", "PLAN"],
+    ["Create a migration roadmap for a new feature", "PLAN"],
+    ["Outline a feature release strategy", "PLAN"],
+    ["Plan the feature release and then implement the code", "BUILD"],
+    ["Plan the feature release; implement the API", "BUILD"],
+    ["Plan the release and then deploy it to production", "SHIP"],
+    ["Plan the release; deploy the approved package", "SHIP"],
+    ["Deploy a new feature to production", "SHIP"],
+    ["Publish the new feature to the registry", "SHIP"],
+    ["Release the new feature after QA", "SHIP"],
+    ["Launch a new feature", "SHIP"],
+    ["Build a new feature and then deploy it", "SHIP"],
+    ["Plan a feature release and then deploy it", "SHIP"],
+    ["Plan a feature release, then publish it", "SHIP"],
+    ["Plan a feature release; deploy the approved package", "SHIP"],
+    ["Implement a new feature then publish it", "SHIP"],
+    ["Review and deploy the approved feature", "SHIP"],
+    ["Deploy the release plan to production", "SHIP"],
+    ["Please release the new feature after approval", "SHIP"],
+    ["Release the new feature alongside release notes", "SHIP"],
+    ["Please release the new feature and write release notes", "SHIP"],
+    ["Release plan for the new feature", "PLAN"],
+    ["Rollout plan for the new feature", "PLAN"],
+    ["Review the release plan for the new feature", "ANALYZE"],
+    ["Audit the release checklist before deployment", "ANALYZE"],
+    ["Do not deploy the new feature; review its release plan", "ANALYZE"],
+    ["Audit the feature roadmap", "ANALYZE"],
+    ["Build a roadmap feature", "BUILD"],
+    ["Review the rollout plan for the new feature", "ANALYZE"],
+    ["Implement the rollout plan in our app", "BUILD"],
+    ["Build the new feature and then plan its rollout", "BUILD"],
+    ["Plan and implement a new feature", "BUILD"],
+    ["Create the new feature, then prepare a rollout plan", "BUILD"],
+  ];
+  for (const [description, expected] of planningIntentCases) {
+    const result = await classify(child, pending, `planning-${description}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
+  // The verb specifies the work; the feature/API/service noun must not hijack
+  // planning, inspection, or deployment intent across different subjects.
+  const routingSubjects = [
+    "a new feature",
+    "the authentication feature",
+    "a REST API",
+    "the billing service",
+    "a mobile app",
+    "an internal tool",
+    "the checkout feature",
+  ];
+  const routingTemplates = [
+    [(subject) => `Plan a release of ${subject}`, "PLAN"],
+    [(subject) => `Plan how to deploy ${subject}`, "PLAN"],
+    [(subject) => `Write a rollout plan for ${subject}`, "PLAN"],
+    [(subject) => `Deploy ${subject} to production`, "SHIP"],
+    [(subject) => `Plan a release of ${subject}, then deploy it`, "SHIP"],
+    [(subject) => `Review the release plan for ${subject}`, "ANALYZE"],
+    [(subject) => `Do not deploy ${subject}; review its release plan`, "ANALYZE"],
+  ];
+  for (const [subjectIndex, subject] of routingSubjects.entries()) {
+    for (const [templateIndex, [template, expected]] of routingTemplates.entries()) {
+      const description = template(subject);
+      const result = await classify(child, pending, `intent-${subjectIndex}-${templateIndex}`, description);
+      assert.equal(result.task_type, expected, description);
+      assert.equal(result.ambiguous, false, description);
+    }
+  }
+
   const ambiguityCases = [
     ["build and fix authentication", ["BUILD", "DEBUG"]],
     ["review and refactor checkout", ["ANALYZE", "REFACTOR"]],
