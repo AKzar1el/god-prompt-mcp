@@ -13,11 +13,13 @@
     "dist/skill-content.js",
     "dist/skills.js",
     "dist/content.js",
+    "bin/godprompt-proof.mjs",
     "README.md",
     "LICENSE"
   ],
   "bin": {
-    "god-prompt-mcp": "dist/stdio.js"
+    "god-prompt-mcp": "dist/stdio.js",
+    "godprompt-proof": "bin/godprompt-proof.mjs"
   },
   "repository": {
     "type": "git",
