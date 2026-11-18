@@ -30,6 +30,14 @@ To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.
 
 > **Source feature:** `create_work_contract` and `review_work_evidence` are new on the feature branch; existing published/hosted releases and version-pinned packages may still expose only the original seven tools. These additions require a separately verified release. Both tools remain stateless and read-only, and neither independently authenticates caller-supplied evidence. See the [task-contract workflow and security limitations](docs/task-contracts.md).
 
+### Optional local proof bridge (Priority 1, source branch)
+
+The new **godprompt-proof** CLI (Node 22+, **no additional dependencies**) can normalize pinned GitHub CI checks and exported Codexify command receipts into inputs for the existing GodPrompt evidence reviewer. It also supports an optional **single 256 KiB local JSONL feedback file** for project-scoped generic lessons. No database server, GPU, background worker or global telemetry is involved.
+
+GitHub can be read directly or from a **sanitized snapshot produced with an existing GitHub connector**, with no new token required for that offline path. Codexify is **client-orchestrated**: the authorized coding agent produces a receipt export, not a direct remote connection from the public Worker. The hosted MCP has **no access** to any user's local feedback file. No automatic uploads, training or rule promotion occur.
+
+**This is unreleased source functionality**, not a claim that the public endpoint, existing installs or your local machine have been updated. See [local proof bridge setup, limitations, and examples](docs/local-proof-bridge.md). The CLI is optional; the MCP server continues to work without it.
+
 ## Progressive Disclosure
 
 For minimum context usage, start with `get_core_skill`, then load `get_protocols`, `get_gates`, or `get_anti_patterns` only when the task requires deeper guidance. Use `get_god_prompt` when you want everything in one shot.
