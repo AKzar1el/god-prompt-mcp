@@ -25,6 +25,10 @@ To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.
 | `get_anti_patterns` | `references/03-ANTI-PATTERNS.md` — red flags & recovery (~9KB) |
 | `classify_task` | Deterministically route a task to one of 9 GodPrompt task types, or `UNCLASSIFIED` when no reliable signal exists |
 | `get_version` | Version info and server metadata |
+| `create_work_contract` | Create a portable, fingerprinted task contract with explicit scope, acceptance criteria and required verification commands |
+| `review_work_evidence` | Fail-closed review of reported changed paths, verification receipts, acceptance results and forbidden actions |
+
+> **Source feature:** `create_work_contract` and `review_work_evidence` are new on the feature branch; existing published/hosted releases and version-pinned packages may still expose only the original seven tools. These additions require a separately verified release. Both tools remain stateless and read-only, and neither independently authenticates caller-supplied evidence. See the [task-contract workflow and security limitations](docs/task-contracts.md).
 
 ## Progressive Disclosure
 
