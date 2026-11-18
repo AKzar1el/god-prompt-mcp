@@ -10,12 +10,14 @@ const packageJson = JSON.parse(
 
 const EXPECTED_TOOLS = [
   "classify_task",
+  "create_work_contract",
   "get_anti_patterns",
   "get_core_skill",
   "get_gates",
   "get_god_prompt",
   "get_protocols",
   "get_version",
+  "review_work_evidence",
 ];
 
 const REQUEST_TIMEOUT_MS = 15000;
