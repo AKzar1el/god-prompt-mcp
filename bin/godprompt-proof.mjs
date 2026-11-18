@@ -345,6 +345,54 @@ export async function localLessons(project, env = process.env) {
     warning: "These are local user-reported observations, not trained weights, global rules or independently verified facts.",
   };
 }
+/**
+ * On-demand, read-only local observability. No telemetry or additional files.
+ * Outcomes are reported observations, never a measured agent success rate.
+ */
+export async function localMetrics(project, { days = 30, now = Date.now() } = {}, env = process.env) {
+  const hash = projectDigest(project);
+  if (!Number.isInteger(days) || days < 1 || days > 365) fail("Metric window must be 1-365 days");
+  const timestamp = typeof now === "number" ? now : Date.parse(now);
+  if (!Number.isFinite(timestamp)) fail("Invalid metrics reference time");
+  const filename = filePath(env);
+  const records = (await readEvents(filename)).filter((row) => row.project === hash);
+  const cutoff = timestamp - days * 86400000;
+  const inWindow = records.filter((row) => {
+    const time = Date.parse(row.at);
+    return Number.isFinite(time) && time <= timestamp && time >= cutoff;
+  });
+  const counts = (items) => {
+    const result = { success: 0, failure: 0, blocked: 0 };
+    for (const item of items) if (Object.hasOwn(result, item.outcome)) result[item.outcome]++;
+    return result;
+  };
+  const patterns = new Map();
+  for (const item of inWindow) {
+    if (item.outcome === "success") continue;
+    const count = patterns.get(item.pattern) || 0;
+    patterns.set(item.pattern, count + 1);
+  }
+  const topHolds = [...patterns].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 10).map(([pattern, reported_count]) => ({ pattern, reported_count }));
+  let fileBytes = 0;
+  try { fileBytes = (await lstat(filename)).size; }
+  catch (error) { if (error.code !== "ENOENT") throw error; }
+  return {
+    scope: "local_only",
+    project_hash: hash,
+    file_bytes: fileBytes,
+    file_cap_bytes: MAX_FEEDBACK_BYTES,
+    window_days: days,
+    reported_events_all_time: records.length,
+    reported_events_window: inWindow.length,
+    reported_outcomes_all_time: counts(records),
+    reported_outcomes_window: counts(inWindow),
+    reported_verifications_window: inWindow.filter((row) => row.verified_reported === true).length,
+    recurring_hold_patterns_window: topHolds,
+    latest_event_at: records.length ? records[records.length - 1].at : null,
+    warning: "Only user-reported events are counted. Sampling is incomplete and biased; do not interpret these counts as task success rates, measured quality uplift or independently verified telemetry.",
+  };
+}
 // Only fixed, public generic corrections are stored from a review. The
 // submitted task, issue details, command output and paths are never persisted.
 const REVIEW_LESSONS = Object.freeze({
@@ -401,8 +449,9 @@ function parseOptions(argv) {
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
     "learn-review": ["project", "review"],
+    metrics: ["project", "days"],
   };
-  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons [--name value ...]");
+  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics [--name value ...]");
   for (const key of Object.keys(opts)) if (!allowed[command].includes(key)) fail("Unknown option --" + key);
   return { command, opts };
 }
@@ -444,6 +493,10 @@ export async function cli(argv = process.argv.slice(2)) {
     for (const key of ["project", "outcome", "pattern", "lesson"]) if (!opts[key]) fail("learn requires --" + key);
     if (opts.verified && !["true", "false"].includes(opts.verified)) fail("--verified accepts true or false");
     return saveFeedback({ ...opts, verified: opts.verified === "true" });
+  }
+  if (command === "metrics") {
+    if (!opts.project) fail("metrics requires --project");
+    return localMetrics(opts.project, { days: opts.days ? Number(opts.days) : 30 });
   }
   if (!opts.project) fail("lessons requires --project");
   return localLessons(opts.project);
