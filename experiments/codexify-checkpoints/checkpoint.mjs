@@ -101,6 +101,24 @@ export function cloudSafeCheckpointSummary(result) {
   };
 }
 
+function disqualifyErrorMarkedReceipts(exportData) {
+  if (!exportData || !Array.isArray(exportData.checks)) return exportData;
+  return {
+    ...exportData,
+    checks: exportData.checks.map((receipt) => {
+      if (!receipt || typeof receipt !== "object") return receipt;
+      const failed = receipt.isError === true ||
+        receipt.response?.isError === true ||
+        receipt.response?.upstream_result?.isError === true;
+      if (!failed) return receipt;
+      // A tool-level failure cannot be rescued by a nested exit_code of zero.
+      // Preserve only the check identity; never forward failed raw output.
+      return { id: receipt.id, command: receipt.command, tool: receipt.tool,
+        response: { upstream_result: { exit_code: null } } };
+    }),
+  };
+}
+
 export async function evaluateCheckpoint(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new Error("Checkpoint input must be one JSON object");
@@ -116,7 +134,7 @@ export async function evaluateCheckpoint(input) {
   }
   const bundle = codexifyEvidence({
     contract: input.contract,
-    exportData: input.codexify_export,
+    exportData: disqualifyErrorMarkedReceipts(input.codexify_export),
   });
   const review = await reviewWorkEvidence({
     ...bundle.review_input,
