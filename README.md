@@ -66,7 +66,7 @@ Use the public Streamable HTTP endpoint directly in MCP clients that support rem
 https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp
 ```
 
-The hosted endpoint exposes the same seven read-only GodPrompt tools as the local server and requires no API key or local Node.js runtime. It accepts both the deployed `initialize` flow and the current MCP 2026-07-28 `server/discover` flow so clients can connect while the ecosystem transitions between protocol eras. It is also published as a remote option in the Official MCP Registry alongside the installable stdio packages.
+The hosted endpoint exposes the read-only GodPrompt tools included in its **currently deployed release** and requires no API key or local Node.js runtime. An unreleased source branch can have a different tool list; always inspect the live tool catalog after deployment. It accepts both the deployed `initialize` flow and the current MCP 2026-07-28 `server/discover` flow so clients can connect while the ecosystem transitions between protocol eras. It is also published as a remote option in the Official MCP Registry alongside the installable stdio packages.
 
 ### Agent Skills over MCP (SEP-2640)
 
@@ -85,7 +85,7 @@ On ChatGPT web, supported Business and Enterprise/Edu workspaces can connect God
 1. Open **Plugins**, select **+**, then **Add custom MCP server**. The current Plugins flow does **not** require Developer Mode.
 2. Enter a name and `https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp` as the public HTTPS MCP endpoint. Choose **no authentication**; GodPrompt requires no API key.
 3. Review the risk warning and select **I understand and want to continue**, then **Create as a plugin**.
-4. Review the discovered seven read-only GodPrompt tools and metadata, then install the plugin if your workspace permits it.
+4. Review the discovered read-only GodPrompt tools and metadata (the count depends on the deployed release), then install the plugin if your workspace permits it. Approved ChatGPT tool snapshots may require an admin refresh after a release.
 5. Start a new ChatGPT chat, type `@`, select the installed GodPrompt plugin, and try a read-only tool. Workspace approval may be required.
 
 **Legacy custom-app setup:** If your workspace still uses the older interface, open **Settings > Apps > Create** (or the workspace's app settings, if you are an admin/owner), use the same endpoint with no authentication, choose **Scan Tools**, then **Create**. This remains an alternative, not a prerequisite for the current Plugins flow.
@@ -113,7 +113,7 @@ This is a client-launcher workaround, not a GodPrompt MCP server change. Keep ex
 
 ### Docker / GHCR (local stdio; no host Node.js)
 
-For MCP clients that can launch a local process, the [public GHCR image](https://github.com/AKzar1el/god-prompt-mcp/pkgs/container/god-prompt-mcp) runs the same seven read-only tools without requiring Node.js on the host. Docker with Linux-container support is required; no API key is needed.
+For MCP clients that can launch a local process, the [public GHCR image](https://github.com/AKzar1el/god-prompt-mcp/pkgs/container/god-prompt-mcp) runs the read-only tools of its pinned published version without requiring Node.js on the host. Docker with Linux-container support is required; no API key is needed.
 
 ```json
 {
@@ -158,7 +158,7 @@ If you only want the Agent Skill, install it at user scope so VS Code discovers 
 gh skill install AKzar1el/god-prompt-mcp skills/god-prompt --agent github-copilot --scope user
 ```
 
-If you only want the seven callable MCP tools, use the native MCP install button:
+If you only want the callable MCP tools, use the native MCP install button:
 
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_GodPrompt_MCP-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect?url=vscode:mcp/install?%7B%22name%22%3A%22god-prompt-mcp%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22god-prompt-mcp%22%5D%7D)
 
@@ -276,7 +276,7 @@ Amp can load GodPrompt as an Agent Skill and expose the MCP tools only when that
 npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent amp --copy -y
 ```
 
-The skill includes Amp's sibling `mcp.json` configuration, pinned to the current GodPrompt MCP package. Amp keeps those seven MCP tool definitions hidden until the skill loads, avoiding a permanently expanded tool context while preserving the full progressive-disclosure surface. Node.js 22+ is required for the MCP server.
+The skill includes Amp's sibling `mcp.json` configuration, pinned to the current GodPrompt MCP package. Amp keeps those MCP tool definitions hidden until the skill loads, avoiding a permanently expanded tool context while preserving the full progressive-disclosure surface. Node.js 22+ is required for the MCP server.
 
 ### Factory Droid
 
@@ -292,7 +292,7 @@ Droid discovers compatible project skills under `.agents/skills/`. To add the ca
 droid mcp add god-prompt "npx -y god-prompt-mcp@1.0.45"
 ```
 
-Open `/mcp` in Droid to verify the server and available tools. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+Open `/mcp` in Droid to verify the server and available tools. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's read-only task and protocol tools. Node.js 22+ is required for the MCP server.
 
 ### Warp
 
