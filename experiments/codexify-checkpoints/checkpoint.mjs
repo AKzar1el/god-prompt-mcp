@@ -58,20 +58,43 @@ function uniqueHints(issues) {
   });
 }
 
+const SUMMARY_STATUSES = new Set([
+  "CONTINUE_WITH_PENDING_ITEMS", "RECHECK", "HOLD",
+  "REPORTED_READY_FOR_INDEPENDENT_REVIEW",
+]);
+
 export function cloudSafeCheckpointSummary(result) {
   // A future authenticated storage adapter may persist only this allowlisted,
   // identity-free summary, never full contracts, raw diffs, logs or user notes.
+  if (!result || !STAGES.has(result.stage) || !SUMMARY_STATUSES.has(result.status) ||
+      !Array.isArray(result.recheck) || !Array.isArray(result.pending) ||
+      result.recheck.length > 100 || result.pending.length > 100) {
+    throw new Error("Invalid checkpoint summary");
+  }
+  const codes = (items) => items.map(({ code }) => {
+    if (typeof code !== "string" || !Object.hasOwn(GUIDANCE, code)) {
+      throw new Error("Unknown issue code cannot cross the storage boundary");
+    }
+    return code;
+  });
+  const numeric = (key) => {
+    const value = result.counts?.[key];
+    if (!Number.isInteger(value) || value < 0 || value > 100) {
+      throw new Error("Invalid checkpoint count");
+    }
+    return value;
+  };
   return {
     schema: "godprompt.checkpoint_summary.v1",
     stage: result.stage,
     status: result.status,
-    recheck_codes: result.recheck.map(({ code }) => code),
-    pending_codes: result.pending.map(({ code }) => code),
+    recheck_codes: codes(result.recheck),
+    pending_codes: codes(result.pending),
     counts: {
-      required_checks: result.counts.required_checks,
-      supplied_checks: result.counts.supplied_checks,
-      required_criteria: result.counts.required_criteria,
-      supplied_criteria: result.counts.supplied_criteria,
+      required_checks: numeric("required_checks"),
+      supplied_checks: numeric("supplied_checks"),
+      required_criteria: numeric("required_criteria"),
+      supplied_criteria: numeric("supplied_criteria"),
     },
     independently_verified: false,
     completion_authorized: false,
