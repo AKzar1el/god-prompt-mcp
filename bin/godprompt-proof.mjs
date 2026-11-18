@@ -315,6 +315,46 @@ export async function localLessons(project, env = process.env) {
     warning: "These are local user-reported observations, not trained weights, global rules or independently verified facts.",
   };
 }
+// Only fixed, public generic corrections are stored from a review. The
+// submitted task, issue details, command output and paths are never persisted.
+const REVIEW_LESSONS = Object.freeze({
+  MISSING_VERIFICATION: "Run each required verification command before completion",
+  VERIFICATION_FAILED: "Fix failed checks and rerun them before completion",
+  COMMAND_MISMATCH: "Preserve exact contracted commands in verification receipts",
+  SELF_REPORTED_CHECK: "Use real structured tool receipts rather than claimed success",
+  OUT_OF_SCOPE_CHANGE: "Review and revert changes outside the approved paths",
+  INVALID_CHANGED_PATH: "Use safe repository relative paths for changed files",
+  PROHIBITED_ACTION_REPORTED: "Stop prohibited actions and request explicit authorization",
+  ACCEPTANCE_NOT_MET: "Validate each acceptance criterion with observable evidence",
+  ACCEPTANCE_EVIDENCE_MISSING: "Reference successful checks or observations for acceptance",
+  CONTRACT_DRIFT: "Recreate the contract after any approved scope change",
+  REVIEW_REQUIRED: "Obtain separately authorized human review for high risk",
+  DUPLICATE_CHECK_RECEIPT: "Deduplicate verification receipt identifiers before review",
+});
+export async function learnFromReview({ project, review }, env = process.env) {
+  if (!review || typeof review !== "object" ||
+      review.status !== "HOLD" || !Array.isArray(review.issues)) {
+    return { stored: 0, reason: "Only HOLD issue codes are stored; a ready report is not verified success" };
+  }
+  const codes = [...new Set(review.issues.map((item) => item?.code))].filter(
+    (code) => typeof code === "string" && Object.hasOwn(REVIEW_LESSONS, code)
+  ).slice(0, 8);
+  for (const code of codes) {
+    await saveFeedback({
+      project,
+      outcome: "blocked",
+      pattern: "review_" + code.toLowerCase(),
+      lesson: REVIEW_LESSONS[code],
+      verified: false,
+    }, env);
+  }
+  return {
+    stored: codes.length,
+    patterns: codes,
+    source_is_caller_supplied: true,
+    note: "Saved only generic hold patterns locally. No private issue details or automatic global rule changes.",
+  };
+}
 function parseOptions(argv) {
   const command = argv[0];
   const opts = {};
@@ -330,8 +370,9 @@ function parseOptions(argv) {
     codexify: ["contract", "export"],
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
+    "learn-review": ["project", "review"],
   };
-  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|lessons [--name value ...]");
+  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons [--name value ...]");
   for (const key of Object.keys(opts)) if (!allowed[command].includes(key)) fail("Unknown option --" + key);
   return { command, opts };
 }
@@ -362,6 +403,10 @@ export async function cli(argv = process.argv.slice(2)) {
       contract: checkContract(await readSmallJson(opts.contract)),
       exportData: await readSmallJson(opts.export),
     });
+  }
+  if (command === "learn-review") {
+    if (!opts.project || !opts.review) fail("learn-review requires --project --review");
+    return learnFromReview({ project: opts.project, review: await readSmallJson(opts.review) });
   }
   if (command === "learn") {
     for (const key of ["project", "outcome", "pattern", "lesson"]) if (!opts[key]) fail("learn requires --" + key);
