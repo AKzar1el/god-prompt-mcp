@@ -35,6 +35,8 @@ test("publishes ARD entries for the MCP server and portable Agent Skill", () => 
     "get_gates",
     "get_anti_patterns",
     "classify_task",
+    "create_work_contract",
+    "review_work_evidence",
     "get_version",
   ]);
 
