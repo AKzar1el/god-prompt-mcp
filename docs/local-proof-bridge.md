@@ -128,6 +128,14 @@ Before the next task, retrieve only the **same project's** bounded summary:
 node bin/godprompt-proof.mjs lessons --project sample-repo
 ~~~
 
+To record recurring failures from a **completed GodPrompt evidence review** without retyping or persisting private details, save the full reviewer response as **review.json**, then run:
+
+~~~powershell
+node bin/godprompt-proof.mjs learn-review --project sample-repo --review review.json
+~~~
+
+Only recognized, generic **HOLD issue codes** become local text-file lessons. The command does not copy issue descriptions, task text, logs or code. A reported-ready response is **not** treated as proof of success and stores nothing. Since the review is caller-supplied, these records remain unverified learning hints until independently checked.
+
 A project key is hashed before storage; the filename does not contain the key. The verified flag means **someone reported** independent verification, not that the CLI authenticated it. The CLI blocks obvious secrets, URLs, e-mail addresses and file paths in lessons, but these filters cannot guarantee perfect redaction; use generic lessons only.
 
 This design needs **no periodic job**. The coding agent can use lessons at the beginning of a task and learn after checking the outcome, if explicitly instructed by the user's workflow. Global rule promotion and measured workflow uplift are separate review-gated priorities.
