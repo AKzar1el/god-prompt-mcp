@@ -130,6 +130,10 @@ No accounts, external data sources, new API keys, storage or billable
 providers are required in GodPrompt MCP. The hosted endpoint is public:
 pass only sanitized task metadata and redacted excerpts.
 
+### Optional local evidence bridge
+
+A source-branch **godprompt-proof** Node CLI now provides bounded read-only GitHub CI reads, offline GitHub connector snapshots, parsed Codexify exec_command exports, and a tiny local JSONL lessons file. It does not call a public MCP with user data automatically and does not change the reviewer's trust boundary. See [local proof bridge](local-proof-bridge.md) for usage and security limits.
+
 ## Evaluation strategy
 
 This addition is a **hypothesis**, not a proven quality improvement.
