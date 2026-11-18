@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createWorkContract, reviewWorkEvidence } from "../dist/work-contract.js";
 import {
-  BUNDLE_SCHEMA, codexifyEvidence, githubEvidence, localLessons, saveFeedback,
+  BUNDLE_SCHEMA, codexifyEvidence, githubEvidence, githubSnapshotEvidence, localLessons, saveFeedback,
 } from "../bin/godprompt-proof.mjs";
 
 const SHA = "a".repeat(40);
@@ -104,6 +104,32 @@ test("GitHub adapter rejects malicious repo names, mismatched SHA and unsafe ext
     mapping: { "VC-01": "verify (22)" },
     fetchImpl: fakeGithub({ runSha: "b".repeat(40) }).fetchImpl,
   }), /head SHA/);
+});
+test("GitHub connector snapshot works fully offline and never claims source authentication", async () => {
+  const prepared = await contract();
+  const snapshot = {
+    complete: true,
+    commit: { sha: SHA, files: [{ filename: "src/parser.ts", status: "modified" }] },
+    check_runs: { total_count: 1, check_runs: [{
+      id: 42, name: "verify (22)", head_sha: SHA, status: "completed", conclusion: "success",
+    }] },
+  };
+  const bundle = await githubSnapshotEvidence({
+    repo: "owner/private-repo", sha: SHA, contract: prepared,
+    mapping: { "VC-01": "verify (22)" }, snapshot,
+  });
+  assert.equal(bundle.adapter, "github_connector_snapshot");
+  assert.equal(bundle.provenance.provider, "caller_supplied_github_connector_snapshot");
+  assert.ok(bundle.gaps.includes("CONNECTOR_SNAPSHOT_PROVENANCE_NOT_AUTHENTICATED"));
+  assert.equal(bundle.review_input.checks[0].exit_code, 0);
+  await assert.rejects(githubSnapshotEvidence({
+    repo: "owner/private-repo", sha: SHA, contract: prepared,
+    snapshot: { ...snapshot, complete: false },
+  }), /complete:true/);
+  await assert.rejects(githubSnapshotEvidence({
+    repo: "owner/private-repo", sha: SHA, contract: prepared,
+    snapshot: { ...snapshot, check_runs: { total_count: 2, check_runs: snapshot.check_runs.check_runs } },
+  }), /paginated/);
 });
 test("Codexify adapter accepts structured exec_command output and omits raw private logs", async () => {
   const prepared = await contract();
