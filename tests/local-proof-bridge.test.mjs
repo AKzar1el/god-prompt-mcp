@@ -1,4 +1,6 @@
 import test from "node:test";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, symlink, writeFile, stat } from "node:fs/promises";
 import { join } from "node:path";
@@ -252,6 +254,42 @@ test("local feedback rejects secret-like lessons and symlink files", async (t) =
     project: "demo", outcome: "success", pattern: "good_rule",
     lesson: "Run the reproducible test first",
   }, env), /regular file/);
+});
+test("offline CLI round-trip: Codexify receipt -> reviewer HOLD -> generic JSONL lesson", async (t) => {
+  const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  const env = { ...process.env, GODPROMPT_FEEDBACK_FILE: join(folder, "feedback.jsonl") };
+  const script = fileURLToPath(new URL("../bin/godprompt-proof.mjs", import.meta.url));
+  const contractFile = join(folder, "contract.json");
+  const exportFile = join(folder, "export.json");
+  const reviewFile = join(folder, "review.json");
+  await writeFile(contractFile, JSON.stringify(await contract()));
+  await writeFile(exportFile, JSON.stringify({
+    changed_files: ["src/parser.ts"],
+    checks: [{
+      id: "VC-01", command: "npm test", tool: "mcp__God_v5__exec_command",
+      response: { upstream_result: { exit_code: 0, stdout: "private log content never returned" } },
+    }],
+  }));
+  function run(args) {
+    const result = spawnSync(process.execPath, [script, ...args], { env, encoding: "utf8", timeout: 10000 });
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout);
+  }
+  const bundle = run(["codexify", "--contract", contractFile, "--export", exportFile]);
+  assert.equal(bundle.adapter, "codexify_receipts");
+  assert.doesNotMatch(JSON.stringify(bundle), /private log content never returned/);
+  const review = await reviewWorkEvidence(bundle.review_input);
+  assert.equal(review.status, "HOLD");
+  assert.ok(review.issues.some((x) => x.code === "ACCEPTANCE_NOT_MET"));
+  await writeFile(reviewFile, JSON.stringify(review));
+  const stored = run(["learn-review", "--project", "internal-repo", "--review", reviewFile]);
+  assert.equal(stored.stored, 1);
+  assert.deepEqual(stored.patterns, ["ACCEPTANCE_NOT_MET"]);
+  const learned = run(["lessons", "--project", "internal-repo"]);
+  assert.equal(learned.records, 1);
+  assert.equal(learned.recurring_patterns[0].pattern, "review_acceptance_not_met");
+  assert.doesNotMatch(await readFile(env.GODPROMPT_FEEDBACK_FILE, "utf8"), /private log|internal-repo/);
 });
 test("local feedback rejects oversized or corrupt history rather than destroying data", async (t) => {
   const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
