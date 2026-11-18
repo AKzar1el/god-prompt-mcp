@@ -81,29 +81,48 @@ async function githubJson(url, fetchImpl) {
     hasNext: /rel="next"/.test(response.headers.get("link") || ""),
   };
 }
-export async function githubEvidence({ repo, sha, contract, mapping = {}, fetchImpl = fetch }) {
+export async function githubEvidence({ repo, sha, contract, mapping = {}, pr = null, fetchImpl = fetch }) {
   validateRepo(repo, sha);
   checkContract(contract);
   if (!mapping || typeof mapping !== "object" || Array.isArray(mapping)) fail("Expected a VC-ID-to-check-name JSON map");
   const base = "https://api.github.com/repos/" + repo;
   const gaps = [];
+  if (pr !== null && (!Number.isInteger(pr) || pr < 1 || pr > 1000000)) fail("PR must be a positive integer");
   const files = [];
   let completeFiles = true;
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const item = await githubJson(base + "/commits/" + sha + "?per_page=100&page=" + page, fetchImpl);
-    if (item.data.sha !== sha || !Array.isArray(item.data.files)) fail("GitHub commit SHA or file list mismatch");
-    for (const entry of item.data.files) {
-      if (typeof entry.filename !== "string") fail("GitHub commit file lacks a path");
-      files.push(entry.filename);
-      if (entry.status === "renamed" && typeof entry.previous_filename === "string") {
-        files.push(entry.previous_filename);
+  const recordFile = (entry) => {
+    if (!entry || typeof entry.filename !== "string") fail("GitHub file list contains an invalid path");
+    files.push(entry.filename);
+    if (entry.status === "renamed" && typeof entry.previous_filename === "string") files.push(entry.previous_filename);
+  };
+  if (pr === null) {
+    gaps.push("SINGLE_COMMIT_DIFF_ONLY_NOT_FULL_PR");
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const item = await githubJson(base + "/commits/" + sha + "?per_page=100&page=" + page, fetchImpl);
+      if (item.data.sha !== sha || !Array.isArray(item.data.files)) fail("GitHub commit SHA or file list mismatch");
+      for (const entry of item.data.files) recordFile(entry);
+      if (!item.hasNext) break;
+      if (page === MAX_PAGES) {
+        completeFiles = false;
+        gaps.push("COMMIT_FILE_LIST_TRUNCATED");
       }
     }
-    if (!item.hasNext) break;
-    if (page === MAX_PAGES) {
-      completeFiles = false;
-      gaps.push("COMMIT_FILE_LIST_TRUNCATED");
+  } else {
+    const pullUrl = base + "/pulls/" + pr;
+    const before = await githubJson(pullUrl, fetchImpl);
+    if (before.data.number !== pr || before.data.head?.sha !== sha) fail("GitHub PR head SHA mismatch");
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const item = await githubJson(pullUrl + "/files?per_page=100&page=" + page, fetchImpl);
+      if (!Array.isArray(item.data)) fail("GitHub PR files response malformed");
+      for (const entry of item.data) recordFile(entry);
+      if (!item.hasNext) break;
+      if (page === MAX_PAGES) {
+        completeFiles = false;
+        gaps.push("PR_FILE_LIST_TRUNCATED");
+      }
     }
+    const after = await githubJson(pullUrl, fetchImpl);
+    if (after.data.number !== pr || after.data.head?.sha !== sha) fail("GitHub PR head moved while collecting evidence");
   }
   const runs = [];
   let completeRuns = true;
@@ -144,7 +163,7 @@ export async function githubEvidence({ repo, sha, contract, mapping = {}, fetchI
     const receipt = {
       id: expected.id,
       command: expected.command,
-      exit_code: passed ? 0 : (run.status === "completed" && !completeFiles && !completeRuns ? null : run.status === "completed" ? 1 : null),
+      exit_code: passed ? 0 : (!completeFiles || !completeRuns || run.status !== "completed" ? null : 1),
       source: "tool_output",
       evidence_excerpt: "GitHub check '" + name.slice(0, 100) + "' status=" + run.status + ", conclusion=" + run.conclusion + ", commit=" + sha.slice(0, 12) + ". Exact command execution NOT established.",
     };
@@ -157,6 +176,8 @@ export async function githubEvidence({ repo, sha, contract, mapping = {}, fetchI
   return makeBundle("github_checks", contract, [...new Set(files)], checks, gaps, {
     provider: "github_rest_readonly",
     commit_sha: sha,
+    diff_scope: pr === null ? "single_commit" : "pull_request",
+    pull_request_number: pr,
     check_run_ids: ids,
     file_list_complete: completeFiles,
     check_run_list_complete: completeRuns,
