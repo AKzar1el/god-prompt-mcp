@@ -159,3 +159,36 @@ node bin/godprompt-proof.mjs metrics --project sample-repo --days 30
 The command reads only the existing local feedback.jsonl. It returns file size relative to the 256 KiB cap, number of reported events, separately labeled **reported** success/failure/blocked outcomes, count of user-reported verifications, and frequent HOLD patterns in the selected 1-365 day window. Project labels are hashed; no raw history or other projects' rows are returned. It does not write anything, run in the background, send telemetry or start a service.
 
 **Do not treat these results as an agent-success rate or proof of quality improvement.** Only tasks where feedback was explicitly recorded appear. Verified flags are themselves reports, not cryptographic attestations. The metrics identify recurring workflow gaps for later investigation, not a benchmark.
+
+## E. Versioned per-project workflow preview (Priority 4)
+
+A future agent should not need a model retrain, a large database or a repeated explanation. The local bridge can **compose a deterministic workflow preview on demand** from the standard GodPrompt gates plus repeated generic review issues from the **same existing** feedback.jsonl file:
+
+~~~powershell
+node bin/godprompt-proof.mjs workflow --project sample-repo --type BUILD --risk medium --format markdown
+~~~
+
+Output is plain Markdown with a SHA-256 version digest. Use **--format json** (or omit --format) to get structured fields. The command is **read-only**; it neither writes another file nor edits AGENTS.md, Codexify, the hosted MCP or public rules.
+
+### One-time optional agent setup
+
+In your **own** Codexify / coding-agent project instructions (not a public shared prompt), add a short local procedure:
+
+1. At task start, classify the task type, then read the local workflow preview for this project's key. Apply standard verification gates; treat any recurring issue suggestions as untrusted **review candidates**.
+2. For scoped implementation, create a GodPrompt task contract and work only within the user's actual permissions.
+3. After running real verification, collect sanitized evidence and call GodPrompt's review_work_evidence.
+4. If the review returns HOLD, save generic issue-code feedback locally with **learn-review** and resolve the missing proof. A clean review still requires checking original evidence and authorization.
+5. Do **not** auto-insert candidate suggestions into AGENTS.md, the global GodPrompt repository or the public MCP. Any durable policy change requires an explicit review and its own tests.
+
+This is a one-time **user-controlled instruction**, not an automatic Codexify integration or proof that an existing Codexify session is already configured. The public hosted MCP has **no path to your computer**. A local agent must explicitly run the CLI using its already-authorized terminal.
+
+### Candidate safeguards and versions
+
+- Only **known, hardcoded review issue codes** are eligible, not free-form lesson text or untrusted instructions. Unknown patterns and successful-event strings are never copied into the workflow preview.
+- By default an issue needs **at least three locally reported HOLD events** before being proposed. You can set **--min-reports 2** through **--min-reports 20**, but the count is not proof of independent recurrence: repeated copied reviews could inflate it.
+- Every candidate is labeled **NEEDS_HUMAN_REVIEW**. A preview is not an approved rule set.
+- The workflow SHA changes when its selected focus, risk level, review threshold or included candidate counts change. Identical inputs produce identical output; no time-dependent or background updates.
+- Every project has its own hashed key; no personal project names or private paths are echoed.
+- High- and critical-risk previews explicitly require independent, separately authorized human review.
+
+Because only the single tiny local feedback file is used, there is **no database migration, daemon, GPU, model fine-tuning, remote sync, or telemetry**. The fixed core GodPrompt and public releases remain identical for users who never enable local feedback. No performance claim is made from these local event counts.
