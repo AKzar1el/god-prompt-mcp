@@ -5,7 +5,7 @@
  */
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
-import { mkdir, open, readFile, lstat } from "node:fs/promises";
+import { mkdir, open, readFile, lstat, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -622,7 +622,24 @@ export async function cli(argv = process.argv.slice(2)) {
   if (!opts.project) fail("lessons requires --project");
   return localLessons(opts.project);
 }
-const invokedAsScript = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+// npm's Windows launcher can invoke through an nvm/NTFS symlink while Node
+// canonicalizes import.meta.url. Compare physical paths so the CLI actually
+// runs instead of silently exiting 0 from its module-import guard.
+async function isDirectInvocation() {
+  if (!process.argv[1]) return false;
+  try {
+    const [entry, modulePath] = await Promise.all([
+      realpath(resolve(process.argv[1])),
+      realpath(fileURLToPath(import.meta.url)),
+    ]);
+    return process.platform === "win32"
+      ? entry.toLowerCase() === modulePath.toLowerCase()
+      : entry === modulePath;
+  } catch {
+    return false;
+  }
+}
+const invokedAsScript = await isDirectInvocation();
 if (invokedAsScript) {
   cli().then((result) => {
     process.stdout.write((typeof result === "string" ? result : JSON.stringify(result, null, 2)) + "\n");

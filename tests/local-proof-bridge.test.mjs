@@ -286,6 +286,23 @@ test("Codexify MCP tool errors stay on HOLD even when text embeds an exit code",
   assert.ok(result.issues.some((issue) => issue.code === "VERIFICATION_FAILED"));
   assert.equal(result.completion_authorized, false);
 });
+test("CLI prints output when invoked through a symlink, including Windows npm aliases", async (t) => {
+  const folder = await mkdtemp(join(tmpdir(), "godprompt-cli-link-"));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  const linked = join(folder, "godprompt-proof-link.mjs");
+  const original = fileURLToPath(new URL("../bin/godprompt-proof.mjs", import.meta.url));
+  await symlink(original, linked, "file");
+  const child = spawnSync(process.execPath, [
+    linked, "workflow", "--project", "public/test-repo", "--type", "ANALYZE", "--format", "markdown",
+  ], {
+    encoding: "utf8", timeout: 15000,
+    env: { ...process.env, GODPROMPT_FEEDBACK_FILE: join(folder, "feedback.jsonl") },
+  });
+  assert.equal(child.status, 0, child.stderr);
+  assert.match(child.stdout, /# GodPrompt local workflow/);
+  assert.match(child.stdout, /ANALYZE/);
+  assert.equal(child.stderr, "");
+});
 test("local JSONL learns minimal project-scoped lessons with no private paths or code", async (t) => {
   const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
   t.after(() => rm(folder, { recursive: true, force: true }));
