@@ -5,6 +5,9 @@ import * as z from "zod/v4";
 // runs commands, contacts providers, stores user work, or grants permissions.
 export const CONTRACT_SCHEMA = "godprompt.work_contract.v1";
 
+export const WORK_CONTRACT_INSTRUCTIONS =
+  "For coding tasks with scoped changes or required proof of completion, use classify_task then create_work_contract to define explicit acceptance, scope and actual verification commands before implementation. After authorized work, provide redacted command receipts and changed paths to review_work_evidence. All evidence is caller-supplied; a review is not independent verification, approval, or completion authorization.";
+
 const TASK_TYPES = [
   "BUILD", "DEBUG", "REFACTOR", "CONTENT", "DESIGN",
   "SHIP", "ANALYZE", "AUTOMATE", "PLAN", "UNCLASSIFIED",
