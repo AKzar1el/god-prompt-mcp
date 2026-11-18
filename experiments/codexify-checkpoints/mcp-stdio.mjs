@@ -62,4 +62,4 @@ export function createCheckpointPilotServer() {
   return server;
 }
 
-await serveStdio(createCheckpointPilotServer());
+await serveStdio(createCheckpointPilotServer);
