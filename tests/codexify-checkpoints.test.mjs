@@ -137,6 +137,20 @@ test("a cloud-ready summary never includes task content, paths, commands or raw 
   assert.equal(summary.completion_authorized, false);
 });
 
+test("cloud-safe summary rejects forged stage, issue code and non-numeric counts", async () => {
+  const input = await sample("verification");
+  const valid = await evaluateCheckpoint(input);
+  assert.throws(() => cloudSafeCheckpointSummary({
+    ...valid, stage: "PRIVATE_USER_TOKEN",
+  }), /Invalid checkpoint summary/);
+  assert.throws(() => cloudSafeCheckpointSummary({
+    ...valid, recheck: [{ code: "SECRET_FROM_USER" }],
+  }), /Unknown issue code/);
+  assert.throws(() => cloudSafeCheckpointSummary({
+    ...valid, counts: { ...valid.counts, required_checks: "PRIVATE" },
+  }), /Invalid checkpoint count/);
+});
+
 test("malformed phase and unexpected fields are rejected rather than ignored", async () => {
   const valid = await sample("plan");
   await assert.rejects(evaluateCheckpoint({ ...valid, stage: "deploy" }), /stage/);
