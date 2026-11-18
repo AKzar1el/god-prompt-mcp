@@ -28,15 +28,15 @@ To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.
 | `create_work_contract` | Create a portable, fingerprinted task contract with explicit scope, acceptance criteria and required verification commands |
 | `review_work_evidence` | Fail-closed review of reported changed paths, verification receipts, acceptance results and forbidden actions |
 
-> **Version 1.1.0:** `create_work_contract` and `review_work_evidence` expand the seven original MCP tools to nine. Older hosted or version-pinned installations may still expose only the original seven until separately updated. Both tools remain stateless and read-only, and neither independently authenticates caller-supplied evidence. See the [task-contract workflow and security limitations](docs/task-contracts.md).
+> **Version 1.1.1:** `create_work_contract` and `review_work_evidence` expand the seven original MCP tools to nine. Older hosted or version-pinned installations may still expose only the original seven until separately updated. Both tools remain stateless and read-only, and neither independently authenticates caller-supplied evidence. See the [task-contract workflow and security limitations](docs/task-contracts.md).
 
-### Optional local proof bridge (from v1.1.0)
+### Optional local proof bridge (from v1.1.1)
 
 The new **godprompt-proof** CLI (Node 22+, **no additional dependencies**) can normalize pinned GitHub CI checks and exported Codexify command receipts into inputs for the existing GodPrompt evidence reviewer. It also supports an optional **single 256 KiB local JSONL feedback file** for project-scoped generic lessons, **on-demand read-only metrics**, and **versioned workflow previews** from that same file (no telemetry or automatic rule changes). No database server, GPU, background worker or global telemetry is involved.
 
 GitHub can be read directly or from a **sanitized snapshot produced with an existing GitHub connector**, with no new token required for that offline path. Codexify is **client-orchestrated**: the authorized coding agent produces a receipt export, not a direct remote connection from the public Worker. The hosted MCP has **no access** to any user's local feedback file. No automatic uploads, training or rule promotion occur.
 
-**The optional CLI ships with v1.1.0**, but it is not installed or enabled automatically on a user's computer. The hosted MCP cannot read local files. See [local proof bridge setup, limitations, and examples](docs/local-proof-bridge.md). The CLI is optional; the MCP server continues to work without it.
+**The optional CLI ships with v1.1.1**, but it is not installed or enabled automatically on a user's computer. The hosted MCP cannot read local files. See [local proof bridge setup, limitations, and examples](docs/local-proof-bridge.md). The CLI is optional; the MCP server continues to work without it.
 
 **ChatGPT publishing and storage:** The public hosted MCP remains **stateless** and does **not** create personal memory or store a JSONL file for ChatGPT users. Per-project learning is an **explicitly enabled local CLI**, not a hosted MCP feature. See [the hosting, privacy, local installation and release checklist](docs/chatgpt-local-first.md). Cloud sync is **not** included.
 
@@ -118,11 +118,11 @@ For MCP clients that can launch a local process, the [public GHCR image](https:/
 ```json
 {
   "command": "docker",
-  "args": ["run", "--rm", "-i", "ghcr.io/akzar1el/god-prompt-mcp:1.1.0"]
+  "args": ["run", "--rm", "-i", "ghcr.io/akzar1el/god-prompt-mcp:1.1.1"]
 }
 ```
 
-Keep `-i` so the MCP client can exchange JSON-RPC over standard input/output; do not add `-t` (a TTY changes the stdio stream). The version tag selects the verified v1.1.0 image; update it deliberately for future releases rather than silently following the moving `latest` tag. The image is Linux/amd64 and runs as non-root user `10001:10001`. If Docker is unavailable, use the [hosted remote endpoint](#hosted-remote-no-nodejs-required) instead.
+Keep `-i` so the MCP client can exchange JSON-RPC over standard input/output; do not add `-t` (a TTY changes the stdio stream). The version tag selects the verified v1.1.1 image; update it deliberately for future releases rather than silently following the moving `latest` tag. The image is Linux/amd64 and runs as non-root user `10001:10001`. If Docker is unavailable, use the [hosted remote endpoint](#hosted-remote-no-nodejs-required) instead.
 
 ### Glama
 
@@ -289,7 +289,7 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent droi
 Droid discovers compatible project skills under `.agents/skills/`. To add the callable GodPrompt tools as a local stdio MCP server, use Droid's native MCP command with the published version pinned:
 
 ```bash
-droid mcp add god-prompt "npx -y god-prompt-mcp@1.1.0"
+droid mcp add god-prompt "npx -y god-prompt-mcp@1.1.1"
 ```
 
 Open `/mcp` in Droid to verify the server and available tools. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's read-only task and protocol tools. Node.js 22+ is required for the MCP server.
@@ -315,7 +315,7 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent goos
 Goose discovers the copied skill under `.goose/skills/god-prompt/`. To expose GodPrompt's callable tools for a session, start Goose with the published MCP package as an external stdio extension:
 
 ```bash
-goose session --with-extension "npx -y god-prompt-mcp@1.1.0"
+goose session --with-extension "npx -y god-prompt-mcp@1.1.1"
 ```
 
 Goose currently treats Agent Skills and MCP extensions as separate native surfaces, so this path does not depend on Agent Plugins support. The skill supplies the reusable workflow while MCP exposes GodPrompt's seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
@@ -380,7 +380,7 @@ The Trae target installs the skill under `.trae/skills/god-prompt/`, where TraeC
   "mcpServers": {
     "god-prompt": {
       "command": "npx",
-      "args": ["-y", "god-prompt-mcp@1.1.0"]
+      "args": ["-y", "god-prompt-mcp@1.1.1"]
     }
   }
 }
@@ -399,7 +399,7 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent open
 The copied skill lands under `.agents/skills/god-prompt/`, one of OpenClaw's documented project skill roots. To expose GodPrompt's callable tools to OpenClaw-managed agent runtimes as well, register the published stdio server:
 
 ```bash
-openclaw mcp add god-prompt --command npx --arg -y --arg god-prompt-mcp@1.1.0
+openclaw mcp add god-prompt --command npx --arg -y --arg god-prompt-mcp@1.1.1
 openclaw mcp probe god-prompt
 ```
 
@@ -420,7 +420,7 @@ The Qoder target installs the skill under `.qoder/skills/god-prompt/`, where Qod
   "mcpServers": {
     "god-prompt": {
       "command": "npx",
-      "args": ["-y", "god-prompt-mcp@1.1.0"]
+      "args": ["-y", "god-prompt-mcp@1.1.1"]
     }
   }
 }
@@ -460,7 +460,7 @@ Kimi Code CLI can install GodPrompt as one native custom plugin containing the e
 /reload
 ```
 
-The Kimi manifest points at `skills/`, so the `god-prompt` skill remains available through Kimi's normal relevance-based skill loading instead of being forced into every session. The same manifest exposes `god-prompt-mcp@1.1.0` as a local stdio MCP server, including the nine tools available in v1.1.0. The explicit `tree/main` URL matters because Kimi's bare GitHub-repository install form prefers the latest GitHub release; using `main` makes the current plugin manifest available without forcing a documentation-only npm/MCP Registry release. Node.js 22+ is required for the MCP server.
+The Kimi manifest points at `skills/`, so the `god-prompt` skill remains available through Kimi's normal relevance-based skill loading instead of being forced into every session. The same manifest exposes `god-prompt-mcp@1.1.1` as a local stdio MCP server, including the nine tools available in v1.1.1. The explicit `tree/main` URL matters because Kimi's bare GitHub-repository install form prefers the latest GitHub release; using `main` makes the current plugin manifest available without forcing a documentation-only npm/MCP Registry release. Node.js 22+ is required for the MCP server.
 
 ### JetBrains AI Assistant
 
