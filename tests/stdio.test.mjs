@@ -152,6 +152,48 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(versionTool.description, /verify which GodPrompt content\/server version/i);
   assert.match(versionTool.description, /content retrieval tools/i);
 
+  const contractTool = listed.tools.find((tool) => tool.name === "create_work_contract");
+  const evidenceTool = listed.tools.find((tool) => tool.name === "review_work_evidence");
+  assert.equal(contractTool.annotations?.readOnlyHint, true);
+  assert.equal(evidenceTool.annotations?.readOnlyHint, true);
+
+  const created = await request(child, pending, "contract-create", "tools/call", {
+    name: "create_work_contract",
+    arguments: {
+      task: "Build a bounded parser",
+      task_type: "BUILD",
+      allowed_paths: ["src/"],
+      success_criteria: ["Input validation is covered by tests"],
+      verification_commands: ["npm test"],
+      forbidden_actions: ["deploy"],
+    },
+  });
+  assert.notEqual(created.isError, true, toolText(created));
+  const prepared = JSON.parse(toolText(created));
+  assert.deepEqual(created.structuredContent, prepared);
+  assert.equal(prepared.definition_status, "DEFINED");
+
+  const reviewed = await request(child, pending, "contract-review", "tools/call", {
+    name: "review_work_evidence",
+    arguments: {
+      contract: prepared.contract,
+      changed_files: ["outside-scope.txt"],
+      checks: [{
+        id: "VC-01", command: "npm test", exit_code: 1, source: "tool_output",
+      }],
+      acceptance: [{
+        id: "AC-01", status: "unknown", evidence_refs: [],
+      }],
+    },
+  });
+  assert.notEqual(reviewed.isError, true, toolText(reviewed));
+  const report = JSON.parse(toolText(reviewed));
+  assert.deepEqual(reviewed.structuredContent, report);
+  assert.equal(report.status, "HOLD");
+  assert.equal(report.independently_verified, false);
+  assert.ok(report.issues.some((issue) => issue.code === "OUT_OF_SCOPE_CHANGE"));
+  assert.ok(report.issues.some((issue) => issue.code === "VERIFICATION_FAILED"));
+
   const core = await request(child, pending, 3, "tools/call", {
     name: "get_core_skill",
     arguments: {},
