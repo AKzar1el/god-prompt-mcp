@@ -153,7 +153,7 @@ test("blocks forbidden reported actions", async () => {
 
 test("audited forbidden actions block reported variants and whole phrase mentions", async () => {
   const contract = await definedContract();
-  for (const action of ["deployed to staging", "CI merged PR 17", "attempted deployment", "approved merge"]) {
+  for (const action of ["deployed to staging", "CI merged PR 17", "executed deploy", "approved merge"]) {
     const result = await reviewWorkEvidence({
       ...passingEvidence(contract),
       operations_performed: ["edited files", action],
@@ -163,7 +163,7 @@ test("audited forbidden actions block reported variants and whole phrase mention
   }
   const benign = await reviewWorkEvidence({
     ...passingEvidence(contract),
-    operations_performed: ["edited deployment docs", "verified merge strategy documentation"],
+    operations_performed: ["edited deployment docs", "verified integration test results"],
   });
   assert.equal(benign.status, "REPORTED_READY_FOR_INDEPENDENT_REVIEW");
 });
