@@ -1,6 +1,6 @@
 # Priority 1: local evidence bridge + tiny learning file
 
-> **Source feature under review, not a published capability.** This optional Node 22+ CLI is not installed on anyone's computer, connected to Codexify, or deployed by opening the PR. It ships only when a reviewed release packages the new binary.
+> **Optional local CLI from v1.1.0.** Installing the package does not enable local learning or wire it to Codexify automatically. Users must explicitly run it; hosted ChatGPT clients do not gain local storage.
 
 ## Resource and privacy model
 
@@ -13,15 +13,15 @@
 
 The learning file is deliberately **not** a trained model or rule-promotion engine. An agent can consult recurring lessons and use them as provisional guidance, then explicitly verify changes. Feedback is never silently promoted into public GodPrompt policies. It stops accepting new events when it reaches 256 KiB; archive/rotate it manually, rather than silently deleting history.
 
-## Installation (after release)
+## Installation (v1.1.0 and later)
 
-The source branch includes **bin/godprompt-proof.mjs**, which can be run from a checked-out repository with:
+The source package includes **bin/godprompt-proof.mjs**, which can be run from a checked-out repository with:
 
 ~~~shell
 node bin/godprompt-proof.mjs ...
 ~~~
 
-After a release containing this change, the npm binary will be **godprompt-proof**.
+The v1.1.0 npm package declares the **godprompt-proof** binary.
 
 No second tunnel, MCP endpoint or Codexify installation is created. The local coding agent may run it using its **existing authorized terminal tool**. The CLI is intended for **single-writer** use: simultaneous processes are not guaranteed a transactional 256 KiB cap. Project name hashes are **pseudonyms**, not encryption or a way to safely store secrets.
 

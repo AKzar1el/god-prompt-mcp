@@ -1,8 +1,8 @@
 # GodPrompt Task Contracts: scope -> execution -> evidence
 
-> **Source feature, not a released capability yet.** This document describes the
-> two new tools in this branch. Version-pinned npm, Docker and hosted MCP
-> installations remain on their own release schedule.
+> **Version 1.1.0 feature.** This document describes the two stateless
+> contract tools that extend the original seven tools to nine. Version-pinned
+> installations stay on their own schedule; inspect the live tool catalog.
 
 ## Why this exists
 

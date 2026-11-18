@@ -1,6 +1,6 @@
 # GodPrompt distribution: public stateless MCP + optional private local learning
 
-**Status: pre-release design and audit checklist, not a deployed or installed feature.**
+**Status: v1.1.0 distribution architecture and release checklist. Learning remains opt-in and never synchronizes automatically.**
 
 ## The actual storage boundary
 
@@ -19,7 +19,7 @@ No OpenAI-specific storage API, local filesystem tunnel, user login, telemetry, 
 
 ## How one person uses the local option
 
-1. Install a verified release that contains godprompt-proof (Node.js 22+). Until that release exists, the CLI is only in a GitHub draft branch.
+1. Install a verified release that contains godprompt-proof (Node.js 22+). The CLI remains optional and is not automatically run by a remote MCP client.
 2. Keep GodPrompt's remote or stdio MCP available as desired. The local CLI is **optional and separate**.
 3. If using a local coding agent, put a short **user-controlled** instruction into the project's agent setup: at task start, run the local workflow command for the project and task type. The project key stays on that machine and becomes a local SHA-256 hash in stored events.
 4. After real work, collect **redacted** GitHub checks or Codexify execution receipts, then run GodPrompt's review_work_evidence. For actual HOLD reports, run the learn-review local command with the review JSON.
