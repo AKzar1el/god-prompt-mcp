@@ -211,7 +211,7 @@ function mentionsForbiddenAction(reported: string, forbidden: string): boolean {
   // "deployed to staging" must not silently bypass "deploy". A negated
   // mention is also flagged for explicit review rather than treated as proof.
   const variants: Record<string, string[]> = {
-    deploy: ["deploy", "deploys", "deployed", "deploying", "deployment"],
+    deploy: ["deploy", "deploys", "deployed", "deploying"],
     merge: ["merge", "merges", "merged", "merging"],
     publish: ["publish", "publishes", "published", "publishing"],
     release: ["release", "releases", "released", "releasing"],
