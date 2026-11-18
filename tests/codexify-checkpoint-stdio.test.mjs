@@ -167,3 +167,98 @@ test("one-shot local caller pipes a real JSON fixture through the MCP and return
   assert.equal(output.completion_authorized, false);
   assert.equal(output.cloud_storage_preview.completion_authorized, false);
 });
+
+test("transport-level error flag with exit_code zero forces HOLD, not reported-ready", async (t) => {
+  const client = await clientForPilot(t);
+  const args = await input("handoff");
+  args.codexify_export.checks = [{
+    id: "VC-01", command: "npm test", tool: "mcp__God_v5__exec_command",
+    response: {
+      isError: true,
+      upstream_result: { exit_code: 0, output: "MCP_PRIVATE_CANARY_NEVER_ECHO" },
+    },
+  }];
+  args.acceptance = [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }];
+  const result = resultData(await client.request("tools/call", {
+    name: "review_codexify_checkpoint", arguments: args,
+  }));
+  assert.equal(result.status, "HOLD");
+  assert.ok(result.recheck.some((entry) => entry.code === "VERIFICATION_FAILED"));
+  assert.equal(result.independently_verified, false);
+  assert.equal(result.completion_authorized, false);
+  assert.doesNotMatch(JSON.stringify(result), /MCP_PRIVATE_CANARY/);
+});
+
+test("parallel burst keeps 24 checkpoint results isolated without state bleed", async (t) => {
+  const client = await clientForPilot(t);
+  const prepared = await input("plan");
+  const cases = Array.from({ length: 24 }, (_, index) => ({
+    ...prepared,
+    stage: "plan",
+    codexify_export: {
+      changed_files: [index % 2 ? "restricted/private_" + index + ".txt" : "src/valid_" + index + ".mjs"],
+      operations_performed: [],
+      checks: [],
+    },
+  }));
+  const responses = await Promise.all(cases.map((args) =>
+    client.request("tools/call", {
+      name: "review_codexify_checkpoint", arguments: args,
+    })));
+  assert.equal(responses.length, 24);
+  for (let index = 0; index < responses.length; index++) {
+    const output = resultData(responses[index]);
+    assert.equal(output.stage, "plan");
+    assert.equal(output.status, index % 2 ? "RECHECK" : "CONTINUE_WITH_PENDING_ITEMS");
+    assert.equal(output.completion_authorized, false);
+    assert.equal(output.cloud_storage_preview.completion_authorized, false);
+    if (index % 2) assert.ok(output.recheck.some((entry) => entry.code === "OUT_OF_SCOPE_CHANGE"));
+    else assert.deepEqual(output.recheck, []);
+    assert.doesNotMatch(JSON.stringify(output), /restricted\/private_/);
+  }
+});
+
+test("oversized secret-bearing request is rejected and the same MCP stays responsive", async (t) => {
+  const client = await clientForPilot(t);
+  const oversized = await input("verification");
+  oversized.codexify_export.checks = [{
+    id: "VC-01", command: "npm test", tool: "mcp__God_v5__exec_command",
+    response: {
+      upstream_result: { exit_code: 0, output: "SECRET_CANARY_" + "x".repeat(300 * 1024) },
+    },
+  }];
+  const refused = await client.request("tools/call", {
+    name: "review_codexify_checkpoint", arguments: oversized,
+  });
+  assert.equal(refused.isError, true);
+  assert.doesNotMatch(JSON.stringify(refused), /SECRET_CANARY/);
+  const valid = resultData(await client.request("tools/call", {
+    name: "review_codexify_checkpoint", arguments: await input("verification"),
+  }));
+  assert.equal(valid.status, "RECHECK");
+  assert.ok(valid.recheck.some((entry) => entry.code === "MISSING_VERIFICATION"));
+});
+
+test("forbidden reported actions produce immediate RECHECK without echoing raw operations", async (t) => {
+  const client = await clientForPilot(t);
+  const args = await input("implementation");
+  args.codexify_export.operations_performed = ["deployed forbidden action PRIVATE_CANARY"];
+  const data = resultData(await client.request("tools/call", {
+    name: "review_codexify_checkpoint", arguments: args,
+  }));
+  assert.equal(data.status, "RECHECK");
+  assert.ok(data.recheck.some((entry) => entry.code === "PROHIBITED_ACTION_REPORTED"));
+  assert.doesNotMatch(JSON.stringify(data), /PRIVATE_CANARY/);
+});
+
+test("tampered task contract cannot pass an MCP handoff", async (t) => {
+  const client = await clientForPilot(t);
+  const args = await input("handoff");
+  args.contract.task = "MALICIOUS_DRIFT_PRIVATE_SENTINEL";
+  const data = resultData(await client.request("tools/call", {
+    name: "review_codexify_checkpoint", arguments: args,
+  }));
+  assert.equal(data.status, "HOLD");
+  assert.ok(data.recheck.some((entry) => entry.code === "CONTRACT_DRIFT"));
+  assert.doesNotMatch(JSON.stringify(data), /PRIVATE_SENTINEL/);
+});
