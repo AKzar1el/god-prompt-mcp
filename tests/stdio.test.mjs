@@ -116,6 +116,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(initialized.instructions, /Start with get_core_skill/i);
   assert.match(initialized.instructions, /classify_task/i);
   assert.match(initialized.instructions, /All GodPrompt tools are read-only/i);
+  assert.match(initialized.instructions, /create_work_contract/i);
+  assert.match(initialized.instructions, /review_work_evidence/i);
 
   child.stdin.write(
     `${JSON.stringify({
@@ -485,6 +487,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(workerModern.result?.instructions, /Start with get_core_skill/i);
   assert.match(workerModern.result?.instructions, /classify_task/i);
   assert.match(workerModern.result?.instructions, /All GodPrompt tools are read-only/i);
+  assert.match(workerModern.result?.instructions, /create_work_contract/i);
+  assert.match(workerModern.result?.instructions, /review_work_evidence/i);
 
   const wrongPathResponse = await worker.fetch(
     new Request("https://example.test/not-mcp", { method: "GET" }),
@@ -568,6 +572,8 @@ test("serves the MCP 2026-07-28 era over stdio", async (t) => {
   assert.match(discovered.instructions, /Start with get_core_skill/i);
   assert.match(discovered.instructions, /classify_task/i);
   assert.match(discovered.instructions, /All GodPrompt tools are read-only/i);
+  assert.match(discovered.instructions, /create_work_contract/i);
+  assert.match(discovered.instructions, /review_work_evidence/i);
 
   const listed = await request(child, pending, "modern-tools", "tools/list", {
     _meta: requestMeta,
