@@ -63,7 +63,9 @@ const inputSchema = z.object({
 export type CheckpointInput = z.input<typeof inputSchema>;
 
 export const CODEXIFY_CHECKPOINT_INSTRUCTIONS =
-  "LOCAL OPT-IN ONLY: use create_work_contract before authorized edits, then deliberately call review_codexify_checkpoint at plan, after implementation, after verification, and before handoff. RECHECK means reconcile and repeat; HOLD means do not report ready. Missing evidence may be pending only before its due stage. The tool is advisory, not a host interrupt or an approval mechanism. Never infer permission to merge, deploy, spend, publish or claim independently verified completion.";
+  "LOCAL OPT-IN ONLY: use create_work_contract before authorized edits, then deliberately call review_codexify_checkpoint at plan, after implementation, after verification, and before handoff. " +
+  "Also treat a Codexify rollout_checkpoint_required notice as a reminder trigger: fulfill the host-required rollout_update first, then review the current contract and available redacted evidence with review_codexify_checkpoint before resuming substantive work. Never fabricate missing receipts or a missing contract. " +
+  "RECHECK means reconcile and repeat; HOLD means do not report ready. Missing evidence may be pending only before its due stage. The tool is advisory, not a host interrupt or an approval mechanism. Never infer permission to merge, deploy, spend, publish or claim independently verified completion.";
 
 type Hint = { code: string; next_action: string };
 type CheckpointResult = {

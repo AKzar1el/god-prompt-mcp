@@ -118,6 +118,17 @@ The current God v5 tool inventory does not advertise generic mid-run hook
 registration. A server instruction alone cannot forcibly interrupt an
 agent; start with explicitly supervised calls and verify each live result.
 
+Codexify's existing `rollout_checkpoint_required` reminder offers a bounded
+**best-effort trigger** without introducing a watcher or a second MCP. After
+the host-required `rollout_update`, a cooperating agent with a defined task
+contract should invoke `review_codexify_checkpoint` using the latest redacted
+receipts before continuing. This is reflected in the local stdio server's
+instructions. The reminder interval is a Codexify-wide setting (default 25
+work calls); this project does **not** change it, especially while other
+agents run. The reminder neither proves that the agent called the checkpoint
+nor blocks an agent that ignores it. Guaranteed interception still requires
+an explicitly supported host-level hook or middleware.
+
 ## Preferred next integration: one local opt-in tool in the main MCP
 
 This **draft-only** integration is the recommended target instead of running
