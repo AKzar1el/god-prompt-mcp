@@ -63,7 +63,9 @@ function validateRepo(repo, sha) {
 }
 async function githubJson(url, fetchImpl) {
   if (new URL(url).origin !== "https://api.github.com") fail("GitHub API origin mismatch");
-  const token = process.env.GITHUB_TOKEN;
+  // Only the actual network adapter needs credentials. Never pass a token to
+  // caller-injected fetch handlers (including the offline connector snapshot).
+  const token = fetchImpl === fetch ? process.env.GITHUB_TOKEN : null;
   const response = await fetchImpl(url, {
     headers: {
       "Accept": "application/vnd.github+json",
