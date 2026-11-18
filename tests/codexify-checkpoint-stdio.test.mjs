@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { createWorkContract } from "../dist/work-contract.js";
@@ -147,4 +150,20 @@ test("MCP tool rejects a malformed phase without leaking task content", async (t
   }
   assert.ok(response.isError || !response.structuredContent);
   assert.doesNotMatch(JSON.stringify(response), /PRIVATE_TOKEN/);
+});
+
+test("one-shot local caller pipes a real JSON fixture through the MCP and returns RECHECK", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "godprompt-pilot-client-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const filename = join(dir, "checkpoint.json");
+  await writeFile(filename, JSON.stringify(await input("verification")));
+  const script = fileURLToPath(new URL("../experiments/codexify-checkpoints/pilot-call.mjs", import.meta.url));
+  const child = spawnSync(process.execPath, [script, "--input", filename], {
+    encoding: "utf8", timeout: 25000,
+  });
+  assert.equal(child.status, 0, child.stderr);
+  const output = JSON.parse(child.stdout);
+  assert.equal(output.status, "RECHECK");
+  assert.equal(output.completion_authorized, false);
+  assert.equal(output.cloud_storage_preview.completion_authorized, false);
 });
