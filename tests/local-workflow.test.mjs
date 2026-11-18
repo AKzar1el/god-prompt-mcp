@@ -38,17 +38,22 @@ test("three recurring reported HOLDs produce a deterministic, human-review-gated
   t.after(() => rm(folder, { recursive: true, force: true }));
   const filename = join(folder, "feedback.jsonl");
   const env = { GODPROMPT_FEEDBACK_FILE: filename };
-  const issueReview = { status: "HOLD", issues: [
-    { code: "MISSING_VERIFICATION", detail: "PRIVATE_ORG_TOKEN leak not stored" },
-  ] };
-  for (let i = 0; i < 2; i++) {
-    const saved = await learnFromReview({ project: "private-team/client-code", review: issueReview }, env);
+  const issueReview = (n) => ({
+    contract_id: "sha256:" + String(n).repeat(64),
+    status: "HOLD",
+    issues: [{ code: "MISSING_VERIFICATION", detail: "PRIVATE_ORG_TOKEN leak not stored" }],
+  });
+  for (let i = 1; i <= 2; i++) {
+    const saved = await learnFromReview({ project: "private-team/client-code", review: issueReview(i) }, env);
     assert.equal(saved.stored, 1);
   }
   let preview = await localWorkflow("private-team/client-code", { taskType: "DEBUG" }, env);
   assert.equal(preview.review_candidates.length, 0);
   const before = preview.version;
-  await learnFromReview({ project: "private-team/client-code", review: issueReview }, env);
+  const replay = await learnFromReview({ project: "private-team/client-code", review: issueReview(2) }, env);
+  assert.equal(replay.stored, 0);
+  assert.equal((await localWorkflow("private-team/client-code", { taskType: "DEBUG" }, env)).version, before);
+  await learnFromReview({ project: "private-team/client-code", review: issueReview(3) }, env);
   preview = await localWorkflow("private-team/client-code", { taskType: "DEBUG" }, env);
   assert.notEqual(preview.version, before);
   assert.equal(preview.review_candidates.length, 1);
