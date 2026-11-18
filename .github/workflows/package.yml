@@ -86,6 +86,22 @@ jobs:
           npm init -y >/dev/null
           npm install --ignore-scripts "${GITHUB_WORKSPACE}/${{ steps.pack.outputs.tarball }}"
 
+      - name: Smoke test installed optional local proof CLI (read-only)
+        shell: bash
+        run: |
+          APP="$RUNNER_TEMP/god-prompt-npm-smoke"
+          OUTPUT="$RUNNER_TEMP/godprompt-proof-smoke.json"
+          export GODPROMPT_FEEDBACK_FILE="$RUNNER_TEMP/godprompt-proof-not-created.jsonl"
+          node "$APP/node_modules/god-prompt-mcp/bin/godprompt-proof.mjs" lessons --project packaging-smoke > "$OUTPUT"
+          node - "$OUTPUT" <<'NODE'
+          const fs = require('node:fs');
+          const result = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          if (result.scope !== 'local_only' || result.records !== 0) {
+            throw new Error('proof CLI smoke result mismatch');
+          }
+          NODE
+          test ! -e "$GODPROMPT_FEEDBACK_FILE"
+
       - name: Verify installed MCP tool surface
         shell: bash
         run: |
