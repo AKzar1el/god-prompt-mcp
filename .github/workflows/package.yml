@@ -39,7 +39,7 @@ jobs:
         run: |
           node - <<'NODE'
           const pkg = require('./package.json');
-          const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js', 'README.md', 'LICENSE'];
+          const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/work-contract.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js', 'bin/godprompt-proof.mjs', 'README.md', 'LICENSE'];
           if (pkg.name !== 'god-prompt-mcp') throw new Error('package name drift');
           const serverSource = require('fs').readFileSync('src/server.ts', 'utf8');
           const match = serverSource.match(/version:\s*"([^"]+)"/);
@@ -67,7 +67,7 @@ jobs:
           node - <<'NODE'
           const pack = require(process.env.RUNNER_TEMP + '/npm-pack.json')[0];
           const names = new Set(pack.files.map((f) => f.path));
-          const required = ['package.json', 'README.md', 'LICENSE', 'dist/stdio.js', 'dist/server.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js'];
+          const required = ['package.json', 'README.md', 'LICENSE', 'dist/stdio.js', 'dist/server.js', 'dist/work-contract.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js'];
           for (const file of required) {
             if (!names.has(file)) throw new Error(`missing packaged file: ${file}`);
           }
@@ -85,6 +85,22 @@ jobs:
           cd "$APP"
           npm init -y >/dev/null
           npm install --ignore-scripts "${GITHUB_WORKSPACE}/${{ steps.pack.outputs.tarball }}"
+
+      - name: Smoke test installed optional local proof CLI (read-only)
+        shell: bash
+        run: |
+          APP="$RUNNER_TEMP/god-prompt-npm-smoke"
+          OUTPUT="$RUNNER_TEMP/godprompt-proof-smoke.json"
+          export GODPROMPT_FEEDBACK_FILE="$RUNNER_TEMP/godprompt-proof-not-created.jsonl"
+          node "$APP/node_modules/god-prompt-mcp/bin/godprompt-proof.mjs" lessons --project packaging-smoke > "$OUTPUT"
+          node - "$OUTPUT" <<'NODE'
+          const fs = require('node:fs');
+          const result = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          if (result.scope !== 'local_only' || result.records !== 0) {
+            throw new Error('proof CLI smoke result mismatch');
+          }
+          NODE
+          test ! -e "$GODPROMPT_FEEDBACK_FILE"
 
       - name: Verify installed MCP tool surface
         shell: bash
@@ -147,6 +163,8 @@ jobs:
             const names = (listed.result?.tools ?? []).map((tool) => tool.name).sort();
             const expected = [
               'classify_task',
+              'create_work_contract',
+              'review_work_evidence',
               'get_anti_patterns',
               'get_core_skill',
               'get_gates',

@@ -25,6 +25,8 @@ export function buildArdManifest() {
           "get_gates",
           "get_anti_patterns",
           "classify_task",
+          "create_work_contract",
+          "review_work_evidence",
           "get_version",
         ],
         representativeQueries: [
@@ -32,6 +34,7 @@ export function buildArdManifest() {
           "show me the verification gates I should run before shipping this code change",
           "load the GodPrompt guidance for debugging a failing implementation",
           "review this coding task for scope, verification, and common execution mistakes",
+          "create a bounded task contract and audit completion evidence",
         ],
         version: SERVER_INFO.version,
         trustManifest: TRUST_MANIFEST,
