@@ -151,6 +151,48 @@ test("blocks forbidden reported actions", async () => {
   assert.ok(result.issues.some((v) => v.code === "PROHIBITED_ACTION_REPORTED"));
 });
 
+test("audited forbidden actions block reported variants and whole phrase mentions", async () => {
+  const contract = await definedContract();
+  for (const action of ["deployed to staging", "CI merged PR 17", "attempted deployment", "approved merge"]) {
+    const result = await reviewWorkEvidence({
+      ...passingEvidence(contract),
+      operations_performed: ["edited files", action],
+    });
+    assert.equal(result.status, "HOLD", action);
+    assert.ok(result.issues.some((issue) => issue.code === "PROHIBITED_ACTION_REPORTED"), action);
+  }
+  const benign = await reviewWorkEvidence({
+    ...passingEvidence(contract),
+    operations_performed: ["edited deployment docs", "verified merge strategy documentation"],
+  });
+  assert.equal(benign.status, "REPORTED_READY_FOR_INDEPENDENT_REVIEW");
+});
+
+test("unexpected verification and acceptance receipts cannot silently pass review", async () => {
+  const contract = await definedContract();
+  const base = passingEvidence(contract);
+  const result = await reviewWorkEvidence({
+    ...base,
+    checks: [...base.checks, { id: "VC-99", command: "echo bypass", exit_code: 0, source: "tool_output", evidence_excerpt: "ok" }],
+    acceptance: [...base.acceptance, { id: "AC-99", status: "met", evidence_refs: ["VC-01"] }],
+  });
+  assert.equal(result.status, "HOLD");
+  assert.ok(result.issues.some((issue) => issue.code === "UNEXPECTED_CHECK_RECEIPT"));
+  assert.ok(result.issues.some((issue) => issue.code === "UNEXPECTED_ACCEPTANCE_RECEIPT"));
+});
+
+test("claimed tool-output success without a meaningful excerpt remains on HOLD", async () => {
+  const contract = await definedContract();
+  const base = passingEvidence(contract);
+  const result = await reviewWorkEvidence({
+    ...base,
+    checks: [{ ...base.checks[0], evidence_excerpt: "   " }],
+  });
+  assert.equal(result.status, "HOLD");
+  assert.ok(result.issues.some((issue) => issue.code === "EVIDENCE_EXCERPT_MISSING"));
+  assert.equal(result.independently_verified, false);
+});
+
 test("requires evidence-bound acceptance instead of a bare completion claim", async () => {
   const contract = await definedContract();
   for (const criterion of [
