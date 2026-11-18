@@ -288,14 +288,16 @@ async function readEvents(filename) {
   const lines = text.split("\n").filter(Boolean);
   return lines.map((line) => {
     const event = JSON.parse(line);
-    if (event.v !== 1 || typeof event.project !== "string" ||
-        typeof event.pattern !== "string" || typeof event.lesson !== "string") {
+    if (!event || event.v !== 1 ||
+        typeof event.project !== "string" || !/^sha256:[a-f0-9]{64}$/.test(event.project) ||
+        typeof event.pattern !== "string" || typeof event.lesson !== "string" ||
+        (event.review_ref !== undefined && !/^[a-f0-9]{24}$/.test(event.review_ref))) {
       fail("Malformed feedback file; no automatic repair or overwrite");
     }
     return event;
   });
 }
-export async function saveFeedback({ project, outcome, pattern, lesson, verified = false }, env = process.env) {
+export async function saveFeedback({ project, outcome, pattern, lesson, verified = false, reviewRef = null }, env = process.env) {
   const hash = projectDigest(project);
   if (!["success", "failure", "blocked"].includes(outcome)) fail("Outcome must be success, failure or blocked");
   if (typeof pattern !== "string" || !/^[a-z][a-z0-9_-]{2,47}$/.test(pattern)) {
@@ -306,11 +308,18 @@ export async function saveFeedback({ project, outcome, pattern, lesson, verified
     fail("Lesson must be a short generic correction with no URLs, paths, credentials, or personal data");
   }
   if (typeof verified !== "boolean") fail("verified must be a boolean");
+  if (reviewRef !== null && (typeof reviewRef !== "string" || !/^[a-f0-9]{24}$/.test(reviewRef))) {
+    fail("Invalid bounded review fingerprint");
+  }
   const filename = filePath(env);
   const current = await readEvents(filename);
+  if (reviewRef && current.some((event) => event.project === hash && event.review_ref === reviewRef)) {
+    return { stored: false, reason: "duplicate_review_issue", scope: "local_only", project_hash: hash };
+  }
   const event = {
     v: 1, project: hash, at: new Date().toISOString(),
     outcome, pattern, lesson: lesson.trim(), verified_reported: verified,
+    ...(reviewRef ? { review_ref: reviewRef } : {}),
   };
   const row = JSON.stringify(event) + "\n";
   let used = 0;
@@ -414,23 +423,30 @@ export async function learnFromReview({ project, review }, env = process.env) {
       review.status !== "HOLD" || !Array.isArray(review.issues)) {
     return { stored: 0, reason: "Only HOLD issue codes are stored; a ready report is not verified success" };
   }
+  if (typeof review.contract_id !== "string" || !/^sha256:[a-f0-9]{64}$/.test(review.contract_id)) {
+    fail("A HOLD review must contain its original v1 contract_id to avoid double-counting");
+  }
   const codes = [...new Set(review.issues.map((item) => item?.code))].filter(
     (code) => typeof code === "string" && Object.hasOwn(REVIEW_LESSONS, code)
   ).slice(0, 8);
+  const storedCodes = [];
   for (const code of codes) {
-    await saveFeedback({
+    const result = await saveFeedback({
       project,
       outcome: "blocked",
       pattern: "review_" + code.toLowerCase(),
       lesson: REVIEW_LESSONS[code],
       verified: false,
+      reviewRef: sha256(review.contract_id + ":" + code).slice(0, 24),
     }, env);
+    if (result.stored) storedCodes.push(code);
   }
   return {
-    stored: codes.length,
-    patterns: codes,
+    stored: storedCodes.length,
+    skipped_duplicate_issues: codes.length - storedCodes.length,
+    patterns: storedCodes,
     source_is_caller_supplied: true,
-    note: "Saved only generic hold patterns locally. No private issue details or automatic global rule changes.",
+    note: "Stored only previously unseen contract-and-HOLD-code pairs as generic local lessons; no raw details or global policy changes.",
   };
 }
 // Versioned, bounded workflow previews. This stays entirely local and is
@@ -466,6 +482,7 @@ export async function localWorkflow(project, {
   const issueCodes = new Map();
   for (const row of events) {
     if (row.outcome !== "blocked" || typeof row.pattern !== "string" ||
+        typeof row.review_ref !== "string" ||
         !row.pattern.startsWith(REVIEW_PATTERN_PREFIX)) continue;
     const issue = row.pattern.slice(REVIEW_PATTERN_PREFIX.length).toUpperCase();
     if (!Object.hasOwn(REVIEW_LESSONS, issue)) continue;
