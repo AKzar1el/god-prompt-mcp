@@ -73,6 +73,7 @@ test("review-derived generic HOLD lessons appear in local observability but not 
   const saved = await learnFromReview({
     project: "client-internal",
     review: {
+      contract_id: "sha256:" + "2".repeat(64),
       status: "HOLD",
       issues: [{ code: "MISSING_VERIFICATION", detail: "PRIVATE_KEY_SKIPPED_IN_LOGS" }],
     },
