@@ -137,6 +137,8 @@ jobs:
             const names = (listed.result?.tools ?? []).map((tool) => tool.name).sort();
             const expected = [
               'classify_task',
+              'create_work_contract',
+              'review_work_evidence',
               'get_anti_patterns',
               'get_core_skill',
               'get_gates',
