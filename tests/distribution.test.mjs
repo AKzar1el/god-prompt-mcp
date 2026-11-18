@@ -119,6 +119,8 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
     "dist/stdio.js",
     "dist/server.js",
     "dist/work-contract.js",
+    "dist/codexify-evidence.js",
+    "dist/codexify-checkpoint.js",
     "dist/skill-content.js",
     "dist/skills.js",
     "dist/content.js",

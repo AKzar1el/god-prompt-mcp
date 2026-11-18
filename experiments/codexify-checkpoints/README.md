@@ -1,7 +1,11 @@
 # Codexify mid-run checkpoint test kit (DRAFT - no release)
 
-**Scope:** source-only experimental code. Nothing here is imported into
-the hosted Cloudflare Worker, the published npm binary, or the ChatGPT skill.
+**Scope:** source-only experimental work on a draft branch. The checkpoint
+engine now lives in `src/codexify-checkpoint.ts`; the receipt adapter lives in
+`src/codexify-evidence.ts`. The main local stdio MCP and this compatibility
+pilot call those same implementations. Neither module is imported by the
+hosted Cloudflare Worker or the OpenAI/ChatGPT skill. None of these changes
+has been merged or published in the currently released npm binary.
 No deployments, cloud database, plugins, hooks, scheduled jobs, telemetry,
 remote storage or new API credentials are created by this kit.
 
@@ -12,9 +16,10 @@ contract evidence. Codexify can call that check **at multiple milestones**,
 not just at the end. An MCP cannot independently interrupt an agent:
 the Codexify agent must invoke the checkpoint and obey its result.
 
-The optional local runner connects the existing codexifyEvidence adapter
-to the shipped reviewWorkEvidence function. It has no new dependencies,
-network, automatic writes or background services.
+The optional local runner and main stdio tool share a single Codexify receipt
+adapter, checkpoint evaluator, and the existing `reviewWorkEvidence`
+function. They add no new dependencies, network, automatic writes or
+background services.
 
 The runner does NOT independently authenticate execution, verify the diff,
 or approve work. Even an internally consistent report is only
@@ -108,14 +113,45 @@ source evidence, CI, diff and actual human authorization inspection.
 > extra permission. Never auto-merge, deploy, submit, spend, or claim
 > independent verification based on it.
 
-This is just a suggested workflow, not an installed Codexify hook.
-The current God v5 tool inventory does not advertise generic mid-run
-hook registration. Start with explicit supervised agent calls.
+This is agent-driven opt-in guidance, **not** a host-enforced lifecycle hook.
+The current God v5 tool inventory does not advertise generic mid-run hook
+registration. A server instruction alone cannot forcibly interrupt an
+agent; start with explicitly supervised calls and verify each live result.
 
-## Local stdio MCP pilot (not the public Worker)
+## Preferred next integration: one local opt-in tool in the main MCP
 
-`mcp-stdio.mjs` exposes exactly one **read-only** MCP tool:
-`review_codexify_checkpoint`. It uses the same phase review as the CLI,
+This **draft-only** integration is the recommended target instead of running
+two separate MCP implementations. The existing main MCP keeps all nine
+published tools with the flag absent. In a NEW local session, start its
+Node stdio entrypoint with the exact opt-in:
+
+~~~powershell
+$env:GODPROMPT_CODEXIFY_CHECKPOINT = '1'
+node dist/stdio.js
+~~~
+
+For a future Codexify source configuration, supply that environment variable
+to the **existing** GodPrompt stdio source and pin its Node command to a
+reviewed checkout that includes this branch. Then inspect the **live**
+model-visible tool catalog before using it: exactly ten tools means the
+opt-in has loaded. The new tool is `review_codexify_checkpoint`, read-only
+with phases `plan`, `implementation`, `verification`, and `handoff`.
+The MCP instructions tell cooperative agents to call it at those milestones,
+including after receiving a failed verification receipt. This remains a
+cooperative workflow, not automatic interception or permission escalation.
+Malformed/error-marked receipts cannot turn an exit_code of zero into success.
+
+Do not modify or restart another agent's active MCP process or checkout.
+For rollback, omit the opt-in flag or restore the previously backed-up local
+Codexify config; the default server always exposes the original nine tools.
+No global skill, hook, scheduled task, or production configuration needs to
+be changed for the isolated verification.
+
+## Legacy local stdio MCP pilot (compatibility only, not the public Worker)
+
+`mcp-stdio.mjs` retains the existing pilot identity and exactly one
+**read-only** MCP tool, `review_codexify_checkpoint`. It now registers the
+same checkpoint tool and receipt adapter as the opt-in main MCP,
 and reports `RECHECK` / `HOLD` as ordinary results so agents can correct
 missing work without treating a checklist finding as a transport failure.
 
@@ -129,12 +165,11 @@ The one-shot client starts its own child MCP process and closes **only that
 child** when finished. It does not touch other Codexify workers, agents,
 sessions, Git branches, global configuration, or remote services.
 
-To make the tool discoverable in **future** Codexify sessions, add a separate
-opt-in local `[mcp_servers."godprompt-checkpoint-pilot"]` stdio source
-pointing at the exact tested `mcp-stdio.mjs` path. Keep the existing
-`god-prompt-mcp` source intact until separately verified. An already-running
-agent can keep its cached tool catalog; an MCP configuration edit is
-**not** proof of a live refresh and must not trigger a forced restart.
+The old `[mcp_servers."godprompt-checkpoint-pilot"]` source remains usable
+for existing sessions. Prefer a single main source with opt-in for new
+supervised trials once its exact checkout and catalog have been verified.
+An already-running agent may keep its cached tool catalog; a configuration
+edit is **not** proof of a live refresh and must not trigger a forced restart.
 
 At plan / implementation / verification / handoff, have Codexify call the
 pilot tool explicitly with the exact task contract and redacted Codexify
@@ -172,7 +207,10 @@ A SHA of a project name is NOT user authentication.
 
 ## No-publish boundary
 
-This folder is not in package.json published files[] and is not imported
-by the hosted Worker. Keep the PR as a DRAFT. Do NOT merge, tag,
+This `experiments/` folder is not in package.json published files[] and is
+not imported by the hosted Worker. Two new compiled modules are listed in
+the draft npm files[] for a possible *future* release, but the local MCP
+entrypoint only registers its extra tool when explicitly enabled. Keep the
+PR as a DRAFT. Do NOT merge, tag,
 publish npm or MCP Registry, deploy Cloudflare, or refresh ChatGPT tools
 as part of this test preparation.

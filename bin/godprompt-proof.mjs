@@ -9,6 +9,9 @@ import { mkdir, open, readFile, lstat, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { codexifyEvidence } from "../dist/codexify-evidence.js";
+
+export { codexifyEvidence };
 
 export const BUNDLE_SCHEMA = "godprompt.evidence_bundle.v1";
 const MAX_JSON_BYTES = 256 * 1024;
@@ -216,53 +219,6 @@ export async function githubSnapshotEvidence({ repo, sha, contract, mapping = {}
   bundle.adapter = "github_connector_snapshot";
   bundle.provenance.provider = "caller_supplied_github_connector_snapshot";
   bundle.gaps.push("CONNECTOR_SNAPSHOT_PROVENANCE_NOT_AUTHENTICATED");
-  return bundle;
-}
-export function codexifyEvidence({ contract, exportData }) {
-  checkContract(contract);
-  if (!exportData || typeof exportData !== "object" || Array.isArray(exportData)) fail("Codexify export must be an object");
-  const rawFiles = exportData.changed_files;
-  if (!Array.isArray(rawFiles) || rawFiles.length > 150 || rawFiles.some((v) => typeof v !== "string")) {
-    fail("Codexify export needs a bounded changed_files array");
-  }
-  const rawChecks = exportData.checks;
-  if (!Array.isArray(rawChecks) || rawChecks.length > 100) fail("Codexify export needs a bounded checks array");
-  const gaps = [];
-  const checks = rawChecks.map((receipt) => {
-    if (!receipt || typeof receipt !== "object" || typeof receipt.id !== "string" || typeof receipt.command !== "string") {
-      fail("Malformed Codexify receipt");
-    }
-    // Only a pasted structured exec_command envelope is attributed to tool output.
-    // An ordinary claimed numeric exit_code is never promoted to tool provenance.
-    const result = receipt.tool === "mcp__God_v5__exec_command" &&
-      receipt.response && typeof receipt.response === "object" ? receipt.response.upstream_result : null;
-    const code = Number.isInteger(result?.exit_code) && result.exit_code >= 0 ? result.exit_code : null;
-    const attributed = code !== null;
-    if (!attributed) gaps.push("NO_STRUCTURED_CODEXIFY_RECEIPT:" + receipt.id);
-    return {
-      id: receipt.id,
-      command: receipt.command,
-      exit_code: code,
-      source: attributed ? "tool_output" : "self_report",
-      evidence_excerpt: attributed
-        ? "Codexify exec_command exported envelope: exit_code=" + code + "; result_sha256=" + sha256(JSON.stringify(result)).slice(0, 16) + "; raw output withheld."
-        : "No structured Codexify exec_command tool result; self-report only.",
-    };
-  });
-  for (const required of contract.verification_commands) {
-    if (!checks.some((c) => c.id === required.id)) gaps.push("VERIFICATION_MISSING:" + required.id);
-  }
-  gaps.push("CHANGED_FILE_LIST_IS_CALLER_SUPPLIED");
-  gaps.push("ACCEPTANCE_REQUIRES_INDEPENDENT_EVIDENCE");
-  const bundle = makeBundle("codexify_receipts", contract, rawFiles, checks, gaps, {
-    provider: "codexify_export",
-    claimed_receipts: checks.length,
-  });
-  if (Array.isArray(exportData.operations_performed) &&
-      exportData.operations_performed.length <= 100 &&
-      exportData.operations_performed.every((v) => typeof v === "string" && v.length <= 500)) {
-    bundle.review_input.operations_performed = exportData.operations_performed;
-  }
   return bundle;
 }
 function filePath(env = process.env) {
