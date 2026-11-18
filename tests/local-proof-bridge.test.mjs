@@ -72,6 +72,22 @@ test("GitHub adapter fetches the exact SHA and creates only explicitly mapped re
   assert.equal(hold.status, "HOLD");
   assert.ok(hold.issues.some((x) => x.code === "ACCEPTANCE_MISSING" || x.code === "ACCEPTANCE_NOT_MET"));
 });
+test("injected GitHub adapters never receive ambient GitHub credentials", async () => {
+  const prior = process.env.GITHUB_TOKEN;
+  process.env.GITHUB_TOKEN = "TEST_FAKE_TOKEN_DO_NOT_FORWARD";
+  try {
+    const { fetchImpl, seen } = fakeGithub();
+    await githubEvidence({
+      repo: "owner/sample-repo", sha: SHA, contract: await contract(),
+      mapping: { "VC-01": "verify (22)" }, fetchImpl,
+    });
+    assert.equal(seen.length, 2);
+    assert.ok(seen.every((entry) => !Object.hasOwn(entry.opts.headers, "Authorization")));
+  } finally {
+    if (prior === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = prior;
+  }
+});
 test("GitHub checks are not invented for missing maps or incomplete runs", async () => {
   const prepared = await contract();
   const { fetchImpl } = fakeGithub({ status: "in_progress", conclusion: null });
@@ -246,6 +262,29 @@ test("Codexify adapter refuses to launder a claimed exit code into tool evidence
     acceptance: [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }],
   });
   assert.equal(result.status, "HOLD");
+});
+test("Codexify MCP tool errors stay on HOLD even when text embeds an exit code", async () => {
+  const prepared = await contract();
+  const bundle = codexifyEvidence({
+    contract: prepared,
+    exportData: {
+      changed_files: [],
+      checks: [{
+        id: "VC-01", command: "npm test", tool: "mcp__God_v5__exec_command",
+        response: { isError: true, content: [{ type: "text", text: '{"exit_code": 0}' }] },
+      }],
+    },
+  });
+  assert.equal(bundle.review_input.checks[0].source, "self_report");
+  assert.equal(bundle.review_input.checks[0].exit_code, null);
+  assert.ok(bundle.gaps.includes("NO_STRUCTURED_CODEXIFY_RECEIPT:VC-01"));
+  const result = await reviewWorkEvidence({
+    ...bundle.review_input,
+    acceptance: [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }],
+  });
+  assert.equal(result.status, "HOLD");
+  assert.ok(result.issues.some((issue) => issue.code === "VERIFICATION_FAILED"));
+  assert.equal(result.completion_authorized, false);
 });
 test("local JSONL learns minimal project-scoped lessons with no private paths or code", async (t) => {
   const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
