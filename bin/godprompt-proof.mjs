@@ -433,6 +433,97 @@ export async function learnFromReview({ project, review }, env = process.env) {
     note: "Saved only generic hold patterns locally. No private issue details or automatic global rule changes.",
   };
 }
+// Versioned, bounded workflow previews. This stays entirely local and is
+// read-only. Repeated HOLDs suggest human-reviewed changes, never trust grants.
+export const WORKFLOW_SCHEMA = "godprompt.local_workflow.v1";
+const WORKFLOW_FOCUS = Object.freeze({
+  BUILD: "Define observable acceptance; add focused regression tests before implementation.",
+  DEBUG: "Reproduce the failure; isolate its root cause; test the fix and neighboring paths.",
+  REFACTOR: "Characterize existing behavior; change structure; verify behavior preservation.",
+  CONTENT: "Verify sources and factual claims; make focused edits; review accuracy and clarity.",
+  DESIGN: "Define design constraints; inspect responsive and accessible states; verify screenshots.",
+  SHIP: "Inspect release impact and rollback path; require explicit publish or deployment approval.",
+  ANALYZE: "Inspect authoritative evidence; separate observations from interpretation and unknowns.",
+  AUTOMATE: "Test idempotence, retries, failure handling and dry-run behavior before activation.",
+  PLAN: "Record constraints, assumptions, alternatives, uncertainties and explicit next actions.",
+});
+const BASE_WORKFLOW_GATES = Object.freeze([
+  "Use only paths and actions that the user and host authorize.",
+  "Create or review a task contract with explicit success criteria and verification commands.",
+  "Run checks in the actual environment and retain redacted tool or CI receipts.",
+  "Treat reported-ready evidence as unverified until independent source review.",
+  "Do not merge, publish, deploy, spend or widen risk limits without separate authorization.",
+]);
+const REVIEW_PATTERN_PREFIX = "review_";
+export async function localWorkflow(project, {
+  taskType = "BUILD", riskLevel = "medium", minReports = 3,
+} = {}, env = process.env) {
+  const hash = projectDigest(project);
+  if (!Object.hasOwn(WORKFLOW_FOCUS, taskType)) fail("Workflow task type must be a classified GodPrompt task type");
+  if (!["low", "medium", "high", "critical"].includes(riskLevel)) fail("Invalid workflow risk level");
+  if (!Number.isInteger(minReports) || minReports < 2 || minReports > 20) fail("minReports must be an integer from 2 through 20");
+  const events = (await readEvents(filePath(env))).filter((row) => row.project === hash);
+  const issueCodes = new Map();
+  for (const row of events) {
+    if (row.outcome !== "blocked" || typeof row.pattern !== "string" ||
+        !row.pattern.startsWith(REVIEW_PATTERN_PREFIX)) continue;
+    const issue = row.pattern.slice(REVIEW_PATTERN_PREFIX.length).toUpperCase();
+    if (!Object.hasOwn(REVIEW_LESSONS, issue)) continue;
+    issueCodes.set(issue, (issueCodes.get(issue) || 0) + 1);
+  }
+  const candidates = [...issueCodes].filter(([, count]) => count >= minReports)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 8).map(([code, count]) => ({
+      issue_code: code,
+      reported_holds: count,
+      proposed_safeguard: REVIEW_LESSONS[code],
+      status: "NEEDS_HUMAN_REVIEW",
+    }));
+  const payload = {
+    schema: WORKFLOW_SCHEMA,
+    project_hash: hash,
+    task_type: taskType,
+    risk_level: riskLevel,
+    focus: WORKFLOW_FOCUS[taskType],
+    standard_gates: [...BASE_WORKFLOW_GATES],
+    human_review_required: riskLevel === "high" || riskLevel === "critical",
+    suggestion_threshold: minReports,
+    review_candidates: candidates,
+    auto_promoted: false,
+    independently_verified: false,
+  };
+  const version = "sha256:" + sha256(JSON.stringify(payload));
+  const markdown = [
+    "# GodPrompt local workflow — " + taskType,
+    "",
+    "Version: " + version,
+    "Scope: per-project local preview; no policy changes applied",
+    "",
+    "## Task focus",
+    payload.focus,
+    "",
+    "## Standard verification gates",
+    ...payload.standard_gates.map((gate) => "- " + gate),
+    ...(payload.human_review_required
+      ? ["", "## High-risk requirement", "- Obtain separately authorized human review before completion."] : []),
+    "",
+    "## Repeated local HOLD patterns — review candidates, NOT trusted rules",
+    ...(candidates.length ? candidates.map((entry) =>
+      "- " + entry.issue_code + " (" + entry.reported_holds + " reported HOLDs): " + entry.proposed_safeguard
+    ) : ["- None met the review threshold."]),
+    "",
+    "These are caller-supplied observations, not authenticated results. Do not copy candidates into project policy or global GodPrompt rules without an authorized human review and independent evidence.",
+    "The CLI never edits AGENTS.md, source files, the public MCP or local feedback during preview.",
+  ].join("\n");
+  return {
+    ...payload,
+    version,
+    markdown,
+    read_only: true,
+    source_reports_examined: events.length,
+    warning: "Version tracks a deterministic preview, not an approved rule set. Repeated self-reports are not independent evidence, and no policy is automatically applied.",
+  };
+}
 function parseOptions(argv) {
   const command = argv[0];
   const opts = {};
@@ -450,8 +541,9 @@ function parseOptions(argv) {
     lessons: ["project"],
     "learn-review": ["project", "review"],
     metrics: ["project", "days"],
+    workflow: ["project", "type", "risk", "min-reports", "format"],
   };
-  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics [--name value ...]");
+  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics|workflow [--name value ...]");
   for (const key of Object.keys(opts)) if (!allowed[command].includes(key)) fail("Unknown option --" + key);
   return { command, opts };
 }
@@ -498,13 +590,23 @@ export async function cli(argv = process.argv.slice(2)) {
     if (!opts.project) fail("metrics requires --project");
     return localMetrics(opts.project, { days: opts.days ? Number(opts.days) : 30 });
   }
+  if (command === "workflow") {
+    if (!opts.project || !opts.type) fail("workflow requires --project and --type");
+    if (opts.format && !["json", "markdown"].includes(opts.format)) fail("workflow --format must be json or markdown");
+    const result = await localWorkflow(opts.project, {
+      taskType: opts.type,
+      riskLevel: opts.risk || "medium",
+      minReports: opts["min-reports"] ? Number(opts["min-reports"]) : 3,
+    });
+    return opts.format === "markdown" ? result.markdown : result;
+  }
   if (!opts.project) fail("lessons requires --project");
   return localLessons(opts.project);
 }
 const invokedAsScript = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
   cli().then((result) => {
-    process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+    process.stdout.write((typeof result === "string" ? result : JSON.stringify(result, null, 2)) + "\n");
   }).catch((error) => {
     process.stderr.write("GodPrompt proof bridge: " + error.message + "\n");
     process.exitCode = 1;
