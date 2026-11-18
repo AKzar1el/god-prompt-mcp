@@ -23,7 +23,7 @@ node bin/godprompt-proof.mjs ...
 
 After a release containing this change, the npm binary will be **godprompt-proof**.
 
-No second tunnel, MCP endpoint or Codexify installation is created. The local coding agent may run it using its **existing authorized terminal tool**.
+No second tunnel, MCP endpoint or Codexify installation is created. The local coding agent may run it using its **existing authorized terminal tool**. The CLI is intended for **single-writer** use: simultaneous processes are not guaranteed a transactional 256 KiB cap. Project name hashes are **pseudonyms**, not encryption or a way to safely store secrets.
 
 ## A. GitHub CI -> GodPrompt review
 
@@ -142,7 +142,7 @@ To record recurring failures from a **completed GodPrompt evidence review** with
 node bin/godprompt-proof.mjs learn-review --project sample-repo --review review.json
 ~~~
 
-Only recognized, generic **HOLD issue codes** become local text-file lessons. The command does not copy issue descriptions, task text, logs or code. A reported-ready response is **not** treated as proof of success and stores nothing. Since the review is caller-supplied, these records remain unverified learning hints until independently checked.
+Only recognized, generic **HOLD issue codes** from a complete reviewer response containing a SHA-256 **contract_id** become local lessons. Repeating the same contract-and-issue pair is ignored, so a replay cannot inflate the recurrence threshold. The command does not copy issue descriptions, task text, logs or code. A reported-ready response is **not** treated as proof of success and stores nothing. Since the review is caller-supplied, these records remain unverified learning hints until independently checked.
 
 A project key is hashed before storage; the filename does not contain the key. The verified flag means **someone reported** independent verification, not that the CLI authenticated it. The CLI blocks obvious secrets, URLs, e-mail addresses and file paths in lessons, but these filters cannot guarantee perfect redaction; use generic lessons only.
 
@@ -185,7 +185,7 @@ This is a one-time **user-controlled instruction**, not an automatic Codexify in
 ### Candidate safeguards and versions
 
 - Only **known, hardcoded review issue codes** are eligible, not free-form lesson text or untrusted instructions. Unknown patterns and successful-event strings are never copied into the workflow preview.
-- By default an issue needs **at least three locally reported HOLD events** before being proposed. You can set **--min-reports 2** through **--min-reports 20**, but the count is not proof of independent recurrence: repeated copied reviews could inflate it.
+- By default an issue needs **at least three distinct contract-and-issue records** before being proposed. You can set **--min-reports 2** through **--min-reports 20**, but the count is not proof of independent recurrence: different fabricated contract IDs could still inflate it.
 - Every candidate is labeled **NEEDS_HUMAN_REVIEW**. A preview is not an approved rule set.
 - The workflow SHA changes when its selected focus, risk level, review threshold or included candidate counts change. Identical inputs produce identical output; no time-dependent or background updates.
 - Every project has its own hashed key; no personal project names or private paths are echoed.
