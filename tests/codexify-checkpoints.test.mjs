@@ -171,3 +171,21 @@ test("CLI reports HOLD in JSON while exiting zero for an evaluated checkpoint", 
   assert.equal(output.status, "HOLD");
   assert.equal(child.stderr, "");
 });
+
+test("no-write synthetic demonstration exercises all three checkpoint stages", () => {
+  const demo = fileURLToPath(new URL("../experiments/codexify-checkpoints/demo.mjs", import.meta.url));
+  const child = spawnSync(process.execPath, [demo], {
+    encoding: "utf8", timeout: 20000,
+  });
+  assert.equal(child.status, 0, child.stderr);
+  const output = JSON.parse(child.stdout);
+  assert.equal(output.mode, "SYNTHETIC_OFFLINE_DEMO");
+  assert.equal(output.no_writes, true);
+  assert.deepEqual(output.checkpoints.map((entry) => entry.status), [
+    "CONTINUE_WITH_PENDING_ITEMS",
+    "RECHECK",
+    "REPORTED_READY_FOR_INDEPENDENT_REVIEW",
+  ]);
+  assert.equal(output.checkpoints[2].independently_verified, false);
+  assert.equal(output.checkpoints[2].completion_authorized, false);
+});
