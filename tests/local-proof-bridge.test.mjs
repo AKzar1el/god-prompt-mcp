@@ -107,6 +107,62 @@ test("GitHub adapter rejects malicious repo names, mismatched SHA and unsafe ext
     fetchImpl: fakeGithub({ runSha: "b".repeat(40) }).fetchImpl,
   }), /head SHA/);
 });
+test("GitHub full-PR adapter pins the branch head and includes every PR file", async () => {
+  const prepared = await contract();
+  let metadataRequests = 0;
+  const fetchImpl = async (url) => {
+    if (url.endsWith("/pulls/12")) {
+      metadataRequests++;
+      return new Response(JSON.stringify({ number: 12, head: { sha: SHA } }), { status: 200 });
+    }
+    if (url.includes("/pulls/12/files?")) {
+      return new Response(JSON.stringify([
+        { filename: "src/from-first-commit.ts", status: "modified" },
+        { filename: "tests/from-last-commit.test.ts", status: "added" },
+      ]), { status: 200 });
+    }
+    if (url.includes("/check-runs?")) {
+      return new Response(JSON.stringify({
+        total_count: 1,
+        check_runs: [{ id: 42, name: "verify (22)", head_sha: SHA, status: "completed", conclusion: "success" }],
+      }), { status: 200 });
+    }
+    throw new Error("Unexpected API route: " + url);
+  };
+  const bundle = await githubEvidence({
+    repo: "owner/repo", sha: SHA, pr: 12, contract: prepared,
+    mapping: { "VC-01": "verify (22)" }, fetchImpl,
+  });
+  assert.equal(metadataRequests, 2);
+  assert.equal(bundle.provenance.diff_scope, "pull_request");
+  assert.equal(bundle.provenance.pull_request_number, 12);
+  assert.deepEqual(bundle.review_input.changed_files, [
+    "src/from-first-commit.ts", "tests/from-last-commit.test.ts",
+  ]);
+  assert.ok(!bundle.gaps.includes("SINGLE_COMMIT_DIFF_ONLY_NOT_FULL_PR"));
+  await assert.rejects(githubEvidence({
+    repo: "owner/repo", sha: SHA, pr: -5, contract: prepared, fetchImpl,
+  }), /positive integer/);
+});
+test("GitHub PR adapter fails closed if head moves during collection", async () => {
+  const prepared = await contract();
+  let count = 0;
+  const fetchImpl = async (url) => {
+    if (url.endsWith("/pulls/12")) {
+      count++;
+      return new Response(JSON.stringify({
+        number: 12, head: { sha: count === 1 ? SHA : "b".repeat(40) },
+      }), { status: 200 });
+    }
+    if (url.includes("/pulls/12/files?")) {
+      return new Response(JSON.stringify([{ filename: "src/p.ts", status: "modified" }]), { status: 200 });
+    }
+    throw new Error("Unexpected API route");
+  };
+  await assert.rejects(githubEvidence({
+    repo: "owner/repo", sha: SHA, pr: 12, contract: prepared, fetchImpl,
+  }), /head moved/);
+});
 test("GitHub connector snapshot works fully offline and never claims source authentication", async () => {
   const prepared = await contract();
   const snapshot = {
@@ -121,6 +177,19 @@ test("GitHub connector snapshot works fully offline and never claims source auth
     mapping: { "VC-01": "verify (22)" }, snapshot,
   });
   assert.equal(bundle.adapter, "github_connector_snapshot");
+  const prSnapshot = {
+    complete: true,
+    pull_request: { number: 12, head: { sha: SHA } },
+    pr_files: [{ filename: "src/parser.ts", status: "modified" }],
+    check_runs: snapshot.check_runs,
+  };
+  const offlinePr = await githubSnapshotEvidence({
+    repo: "owner/private-repo", sha: SHA, pr: 12, contract: prepared,
+    mapping: { "VC-01": "verify (22)" }, snapshot: prSnapshot,
+  });
+  assert.equal(offlinePr.provenance.diff_scope, "pull_request");
+  assert.equal(offlinePr.review_input.changed_files[0], "src/parser.ts");
+
   assert.equal(bundle.provenance.provider, "caller_supplied_github_connector_snapshot");
   assert.ok(bundle.gaps.includes("CONNECTOR_SNAPSHOT_PROVENANCE_NOT_AUTHENTICATED"));
   assert.equal(bundle.review_input.checks[0].exit_code, 0);
