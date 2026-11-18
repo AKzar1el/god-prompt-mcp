@@ -6,11 +6,11 @@ import {
   SERVER_INSTRUCTIONS,
 } from "./server.js";
 import { registerGodPromptSkillExtension } from "./skills.js";
-import { registerWorkContractTools } from "./work-contract.js";
+import { registerWorkContractTools, WORK_CONTRACT_INSTRUCTIONS } from "./work-contract.js";
 
 function createServer(): McpServer {
   const server = new McpServer(SERVER_INFO, {
-    instructions: SERVER_INSTRUCTIONS,
+    instructions: `${SERVER_INSTRUCTIONS} ${WORK_CONTRACT_INSTRUCTIONS}`,
     maxToolInputElements: 2048,
   });
   registerGodPromptTools(server);
