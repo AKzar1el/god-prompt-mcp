@@ -102,8 +102,10 @@ There is no public Codexify API dependency. Codexify can produce a small **sanit
       "tool": "mcp__God_v5__exec_command",
       "response": {
         "upstream_result": {
+          "chunk_id": "chunk-example",
           "exit_code": 0,
-          "stdout": "redacted"
+          "output": "[redacted]",
+          "wall_time_seconds": 0.1
         }
       }
     }
@@ -112,6 +114,8 @@ There is no public Codexify API dependency. Codexify can produce a small **sanit
 ~~~
 
 Use the **real tool response**, never fabricate a success exit code. If the connector wraps its response differently or returns only narrative text, the bridge reports a missing structured receipt and the GodPrompt reviewer should **HOLD**. The exported shape is an interoperability format, not an assertion that every Codexify version emits that exact JSON envelope.
+
+**Live connector behavior checked on 2026-11-18:** Codexify God v5 (connector 2.3.29) returned successful commands as an object containing `upstream_result.exit_code`, `upstream_result.output`, `chunk_id`, and execution duration. **Nonzero command exits were delivered as MCP tool errors**, not ordinary successful tool responses. If that happens, do not parse error text or fabricate a normal upstream_result: leave the missing structured receipt unverified so the reviewer returns **HOLD**. Tool responses also do not independently bind the submitted `command` field to actual invocation arguments; the exporter is caller-supplied and the original command/call receipt must be checked separately.
 
 ~~~powershell
 node bin/godprompt-proof.mjs codexify --contract contract.json --export codexify-export.json
