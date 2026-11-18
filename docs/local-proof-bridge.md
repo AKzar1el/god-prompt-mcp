@@ -7,7 +7,7 @@
 - **Zero new npm dependencies, services, databases, embeddings, AI calls, GPU work, or background jobs.**
 - GitHub reads are HTTPS **GET** requests to the official GitHub REST API, executed only when the user runs the github command. Public repositories do not require a token. A private repository needs an already-authorized GITHUB_TOKEN in the local process; this bridge does not create credentials or an OAuth client.
 - Codexify evidence is an **explicit caller-supplied JSON export** of existing exec_command results, not a direct connection from the public Worker. The command only parses and summarizes exported evidence.
-- Local learning is a single append-only **feedback.jsonl** text file, maximum **256 KiB**, keyed by a SHA-256 hash of the supplied project identifier. It stores short generic patterns/lessons, outcomes and user-reported verification flags. **Never raw task text, raw logs, code, credentials, private project names, or complete file paths.**
+- Local learning is a single append-only **feedback.jsonl** text file, maximum **256 KiB**, keyed by a SHA-256 hash of the supplied project identifier. It stores short generic patterns/lessons, outcomes and user-reported verification flags. **Only generic lessons should be entered: the tool does not intentionally ingest raw logs, code, credentials, private project names, or file paths, but its filter is not a substitute for user redaction.**
 - The file lives under **%LOCALAPPDATA%/godprompt/feedback.jsonl** on Windows, **$XDG_STATE_HOME/godprompt/feedback.jsonl** when set on Linux/macOS, otherwise **~/.local/state/godprompt/feedback.jsonl**. An optional GODPROMPT_FEEDBACK_FILE can override this with an **absolute local path**. It is created only by learn, with restrictive permissions where supported.
 - Hosted GodPrompt MCP is still **stateless** and never sees the local text file. For hosted reviews, share **only carefully sanitized** review_input fields; prefer a local stdio MCP for sensitive tasks. Each user has a separate local file and no cross-user synchronization.
 
@@ -41,11 +41,43 @@ No second tunnel, MCP endpoint or Codexify installation is created. The local co
 node bin/godprompt-proof.mjs github --repo owner/repository --sha FULL_40_CHARACTER_SHA --contract contract.json --map check-map.json
 ~~~
 
-The bridge reads the exact GitHub commit file list (including both rename paths) and checks tied to that SHA. It refuses mismatched SHAs, invalid paths and malformed responses; it marks missing, ambiguous, incomplete or failed CI as gaps. Pagination is bounded at three pages. No GitHub writes are ever made.
+The bridge reads the exact GitHub commit file list (including both rename paths) and checks tied to that SHA. It refuses mismatched SHAs and malformed responses; unsafe and out-of-scope changed paths are flagged by the subsequent GodPrompt reviewer. Missing, ambiguous, incomplete or failed CI produces gaps. Pagination is bounded at three pages. No GitHub writes are ever made.
 
 **Critical:** GitHub check names do not establish that the exact contract command ran. The map association is user/agent supplied, so inspect the pinned workflow and original CI run, including permissions and dependency changes, before claiming verification. The bridge emits review_input for review_work_evidence; it never auto-fills acceptance criteria or grants completion authorization.
 
 When a private repository is already accessible through a GitHub connector but the local terminal has no authorized GITHUB_TOKEN, use the connector to inspect the same checks and supply only redacted output to review_work_evidence. Do **not** generate a new credential just for this bridge. The optional direct GitHub adapter is not mandatory.
+
+### Offline GitHub connector export (no token or network)
+
+If the agent already has the GitHub connector, it can save a sanitized JSON snapshot of the **exact pinned commit** and its check-runs into **github-snapshot.json**, then use:
+
+~~~powershell
+node bin/godprompt-proof.mjs github-snapshot --repo owner/repository --sha FULL_40_CHARACTER_SHA --contract contract.json --map check-map.json --snapshot github-snapshot.json
+~~~
+
+The expected snapshot object has **complete: true**, **commit** (with sha and files array) and **check_runs** (with total_count and check_runs array). Example shape:
+
+~~~json
+{
+  "complete": true,
+  "commit": {
+    "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "files": [{"filename": "src/parser.ts", "status": "modified"}]
+  },
+  "check_runs": {
+    "total_count": 1,
+    "check_runs": [{
+      "id": 1234,
+      "name": "verify (22)",
+      "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "completed",
+      "conclusion": "success"
+    }]
+  }
+}
+~~~
+
+This path is offline. It refuses an explicitly incomplete, mismatched or oversized snapshot, limits it to one unpaginated page, and marks its provenance **caller-supplied**. It does **not** authenticate that the export came from the GitHub connector. Do not assert complete:true unless the exact source results were actually inspected for pagination and completeness. The best evidence remains a verified, pinned GitHub check inspected independently.
 
 ## B. Codexify exec_command -> GodPrompt review
 
