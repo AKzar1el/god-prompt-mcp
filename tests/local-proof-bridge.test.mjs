@@ -1,0 +1,217 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm, symlink, writeFile, stat } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { createWorkContract, reviewWorkEvidence } from "../dist/work-contract.js";
+import {
+  BUNDLE_SCHEMA, codexifyEvidence, githubEvidence, localLessons, saveFeedback,
+} from "../bin/godprompt-proof.mjs";
+
+const SHA = "a".repeat(40);
+async function contract() {
+  return (await createWorkContract({
+    task: "Implement and test scoped parser validation",
+    task_type: "BUILD",
+    risk_level: "medium",
+    allowed_paths: ["src/", "tests/"],
+    forbidden_actions: ["deploy", "merge"],
+    success_criteria: ["Invalid input is rejected and valid input continues to work"],
+    verification_commands: ["npm test"],
+  })).contract;
+}
+function fakeGithub({ status = "completed", conclusion = "success", runSha = SHA, links = null, badCommitSha = false } = {}) {
+  const seen = [];
+  const fetchImpl = async (url, opts) => {
+    seen.push({ url, opts });
+    if (url.includes("/check-runs")) {
+      return new Response(JSON.stringify({
+        total_count: 1,
+        check_runs: [{
+          id: 1234, name: "verify (22)", head_sha: runSha,
+          status, conclusion,
+        }],
+      }), { status: 200 });
+    }
+    return new Response(JSON.stringify({
+      sha: badCommitSha ? "b".repeat(40) : SHA,
+      files: [
+        { filename: "src/parser.ts", status: "modified" },
+        { filename: "tests/new-parser.test.ts", previous_filename: "tests/old-parser.test.ts", status: "renamed" },
+      ],
+    }), { status: 200, headers: links ? { link: links } : {} });
+  };
+  return { fetchImpl, seen };
+}
+test("GitHub adapter fetches the exact SHA and creates only explicitly mapped receipts", async () => {
+  const prepared = await contract();
+  const { fetchImpl, seen } = fakeGithub();
+  const bundle = await githubEvidence({
+    repo: "owner/sample-repo", sha: SHA, contract: prepared,
+    mapping: { "VC-01": "verify (22)" }, fetchImpl,
+  });
+  assert.equal(bundle.schema, BUNDLE_SCHEMA);
+  assert.equal(bundle.adapter, "github_checks");
+  assert.equal(bundle.independently_verified, false);
+  assert.equal(bundle.completion_authorized, false);
+  assert.equal(bundle.provenance.commit_sha, SHA);
+  assert.deepEqual(bundle.review_input.changed_files, [
+    "src/parser.ts", "tests/new-parser.test.ts", "tests/old-parser.test.ts",
+  ]);
+  assert.equal(bundle.review_input.checks[0].exit_code, 0);
+  assert.equal(bundle.review_input.checks[0].source, "tool_output");
+  assert.match(bundle.review_input.checks[0].evidence_excerpt, /NOT established/);
+  assert.equal(bundle.review_input.acceptance.length, 0);
+  assert.ok(bundle.gaps.includes("ACCEPTANCE_REQUIRES_INDEPENDENT_EVIDENCE"));
+  assert.equal(seen.length, 2);
+  assert.ok(seen.every((x) => x.url.startsWith("https://api.github.com/repos/owner/sample-repo/")));
+  assert.ok(seen.every((x) => !Object.hasOwn(x.opts.headers, "Authorization")));
+  const hold = await reviewWorkEvidence(bundle.review_input);
+  assert.equal(hold.status, "HOLD");
+  assert.ok(hold.issues.some((x) => x.code === "ACCEPTANCE_MISSING" || x.code === "ACCEPTANCE_NOT_MET"));
+});
+test("GitHub checks are not invented for missing maps or incomplete runs", async () => {
+  const prepared = await contract();
+  const { fetchImpl } = fakeGithub({ status: "in_progress", conclusion: null });
+  const missing = await githubEvidence({
+    repo: "owner/sample-repo", sha: SHA, contract: prepared, fetchImpl,
+  });
+  assert.equal(missing.review_input.checks.length, 0);
+  assert.ok(missing.gaps.includes("CHECK_NOT_MAPPED:VC-01"));
+  const pending = await githubEvidence({
+    repo: "owner/sample-repo", sha: SHA, contract: prepared,
+    mapping: { "VC-01": "verify (22)" }, fetchImpl,
+  });
+  assert.equal(pending.review_input.checks[0].exit_code, null);
+  assert.ok(pending.gaps.includes("CHECK_NOT_SUCCESSFUL:VC-01"));
+  const reviewed = await reviewWorkEvidence({
+    ...pending.review_input,
+    acceptance: [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }],
+  });
+  assert.equal(reviewed.status, "HOLD");
+});
+test("GitHub adapter rejects malicious repo names, mismatched SHA and unsafe external API origins", async () => {
+  const prepared = await contract();
+  await assert.rejects(githubEvidence({
+    repo: "../evil", sha: SHA, contract: prepared, fetchImpl: fakeGithub().fetchImpl,
+  }), /owner\/name/);
+  await assert.rejects(githubEvidence({
+    repo: "owner/repo", sha: SHA, contract: prepared,
+    fetchImpl: fakeGithub({ badCommitSha: true }).fetchImpl,
+  }), /SHA/);
+  await assert.rejects(githubEvidence({
+    repo: "owner/repo", sha: SHA, contract: prepared,
+    mapping: { "VC-01": "verify (22)" },
+    fetchImpl: fakeGithub({ runSha: "b".repeat(40) }).fetchImpl,
+  }), /head SHA/);
+});
+test("Codexify adapter accepts structured exec_command output and omits raw private logs", async () => {
+  const prepared = await contract();
+  const bundle = codexifyEvidence({
+    contract: prepared,
+    exportData: {
+      changed_files: ["src/parser.ts", "tests/parser.test.ts"],
+      operations_performed: ["edited files"],
+      checks: [{
+        id: "VC-01", command: "npm test", tool: "mcp__God_v5__exec_command",
+        response: { upstream_result: { exit_code: 0, stdout: "SENSITIVE_PRIVATE_LOG", stderr: "" } },
+      }],
+    },
+  });
+  assert.equal(bundle.review_input.checks[0].source, "tool_output");
+  assert.equal(bundle.review_input.checks[0].exit_code, 0);
+  assert.doesNotMatch(JSON.stringify(bundle), /SENSITIVE_PRIVATE_LOG/);
+  assert.ok(bundle.gaps.includes("CHANGED_FILE_LIST_IS_CALLER_SUPPLIED"));
+  const reportedReady = await reviewWorkEvidence({
+    ...bundle.review_input,
+    acceptance: [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }],
+  });
+  assert.equal(reportedReady.status, "REPORTED_READY_FOR_INDEPENDENT_REVIEW");
+  assert.equal(reportedReady.independently_verified, false);
+  assert.equal(reportedReady.completion_authorized, false);
+});
+test("Codexify adapter refuses to launder a claimed exit code into tool evidence", async () => {
+  const prepared = await contract();
+  const bundle = codexifyEvidence({
+    contract: prepared,
+    exportData: {
+      changed_files: [],
+      checks: [{
+        id: "VC-01", command: "npm test", tool: "mcp__God_v5__exec_command",
+        response: { exit_code: 0, stdout: "All tests pass, trust me" },
+      }],
+    },
+  });
+  assert.equal(bundle.review_input.checks[0].exit_code, null);
+  assert.equal(bundle.review_input.checks[0].source, "self_report");
+  const result = await reviewWorkEvidence({
+    ...bundle.review_input,
+    acceptance: [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }],
+  });
+  assert.equal(result.status, "HOLD");
+});
+test("local JSONL learns minimal project-scoped lessons with no private paths or code", async (t) => {
+  const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  const filename = join(folder, "private", "feedback.jsonl");
+  const env = { GODPROMPT_FEEDBACK_FILE: filename };
+  assert.equal((await localLessons("private-customer/project", env)).records, 0);
+  await saveFeedback({
+    project: "private-customer/project", outcome: "failure",
+    pattern: "missing_test", lesson: "Run full test suite before reporting completion", verified: false,
+  }, env);
+  await saveFeedback({
+    project: "private-customer/project", outcome: "success",
+    pattern: "missing_test", lesson: "Scoped test passed after a clean build", verified: true,
+  }, env);
+  await saveFeedback({
+    project: "other/project", outcome: "blocked",
+    pattern: "scope_gap", lesson: "Define explicit paths before beginning edits",
+  }, env);
+  const learned = await localLessons("private-customer/project", env);
+  assert.equal(learned.records, 2);
+  assert.equal(learned.recurring_patterns[0].pattern, "missing_test");
+  assert.equal(learned.recurring_patterns[0].failures, 1);
+  assert.equal(learned.recurring_patterns[0].verified_reports, 1);
+  assert.equal((await localLessons("other/project", env)).records, 1);
+  const file = await readFile(filename, "utf8");
+  assert.equal(file.trim().split("\n").length, 3);
+  assert.doesNotMatch(file, /private-customer|other\/project/);
+  assert.match(file, /sha256:[a-f0-9]{64}/);
+  assert.ok((await stat(filename)).size < 2000);
+  assert.ok(file.endsWith("\n"));
+});
+test("local feedback rejects secret-like lessons and symlink files", async (t) => {
+  const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  const filename = join(folder, "memory.jsonl");
+  const env = { GODPROMPT_FEEDBACK_FILE: filename };
+  await assert.rejects(saveFeedback({
+    project: "demo", outcome: "success", pattern: "good_rule",
+    lesson: "token sk-abc123secret", verified: true,
+  }, env), /short generic correction/);
+  await assert.rejects(saveFeedback({
+    project: "demo", outcome: "success", pattern: "good_rule",
+    lesson: "Contact staff@example.com for help", verified: true,
+  }, env), /short generic correction/);
+  await writeFile(filename + ".target", "");
+  await symlink(filename + ".target", filename);
+  await assert.rejects(saveFeedback({
+    project: "demo", outcome: "success", pattern: "good_rule",
+    lesson: "Run the reproducible test first",
+  }, env), /regular file/);
+});
+test("local feedback rejects oversized or corrupt history rather than destroying data", async (t) => {
+  const folder = await mkdtemp(join(tmpdir(), "godprompt-proof-"));
+  t.after(() => rm(folder, { recursive: true, force: true }));
+  const filename = join(folder, "feedback.jsonl");
+  const env = { GODPROMPT_FEEDBACK_FILE: filename };
+  await writeFile(filename, "not json\n");
+  await assert.rejects(saveFeedback({
+    project: "demo", outcome: "failure", pattern: "bad_logs",
+    lesson: "Prefer short reproducible evidence",
+  }, env));
+  assert.equal(await readFile(filename, "utf8"), "not json\n");
+  await writeFile(filename, "x".repeat(256 * 1024 + 1));
+  await assert.rejects(localLessons("demo", env), /exceeds 256 KiB/);
+});
