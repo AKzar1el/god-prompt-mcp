@@ -112,6 +112,49 @@ This is just a suggested workflow, not an installed Codexify hook.
 The current God v5 tool inventory does not advertise generic mid-run
 hook registration. Start with explicit supervised agent calls.
 
+## Local stdio MCP pilot (not the public Worker)
+
+`mcp-stdio.mjs` exposes exactly one **read-only** MCP tool:
+`review_codexify_checkpoint`. It uses the same phase review as the CLI,
+and reports `RECHECK` / `HOLD` as ordinary results so agents can correct
+missing work without treating a checklist finding as a transport failure.
+
+For a supervised one-shot local Codexify run with a redacted input file:
+
+~~~powershell
+node experiments/codexify-checkpoints/pilot-call.mjs --input private-checkpoint.json
+~~~
+
+The one-shot client starts its own child MCP process and closes **only that
+child** when finished. It does not touch other Codexify workers, agents,
+sessions, Git branches, global configuration, or remote services.
+
+To make the tool discoverable in **future** Codexify sessions, add a separate
+opt-in local `[mcp_servers."godprompt-checkpoint-pilot"]` stdio source
+pointing at the exact tested `mcp-stdio.mjs` path. Keep the existing
+`god-prompt-mcp` source intact until separately verified. An already-running
+agent can keep its cached tool catalog; an MCP configuration edit is
+**not** proof of a live refresh and must not trigger a forced restart.
+
+At plan / implementation / verification / handoff, have Codexify call the
+pilot tool explicitly with the exact task contract and redacted Codexify
+`exec_command` receipt envelopes. `RECHECK` means fix/check and repeat;
+`HOLD` means do not finish; reported-ready never means verified.
+
+The pilot source is not packaged in the published npm `files[]`, and
+requires its isolated checkout's Node 22+ dependencies. Do not remove
+that test checkout while the Codexify pilot configuration refers to it.
+
+### MCP protocol verification
+
+~~~powershell
+node --test tests/codexify-checkpoint-stdio.test.mjs
+npm test
+~~~
+
+This includes a real JSON-RPC initialization, tool discovery, simultaneous
+calls with independent data, invalid-input handling and the one-shot caller.
+
 ## Cloud persistence - future interface ONLY
 
 The pure cloudSafeCheckpointSummary function emits an allowlisted record
