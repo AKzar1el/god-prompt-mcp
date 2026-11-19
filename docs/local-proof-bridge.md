@@ -123,7 +123,13 @@ node bin/godprompt-proof.mjs codexify --contract contract.json --export codexify
 
 The returned review_input contains bounded receipt summaries and a digest of the submitted structured result. It intentionally does **not** repeat raw stdout/stderr. It does not interpret free-text assertions like "tests passed" as verified command execution.
 
-For either provider, send the returned review_input to GodPrompt's existing review_work_evidence and supply **actual independently checked acceptance evidence** separately. Even a REPORTED_READY_FOR_INDEPENDENT_REVIEW response is not authorization to merge, deploy, spend, publish or make completion claims.
+For either provider, send the returned `review_input` to GodPrompt's existing `review_work_evidence` and supply **actual independently checked acceptance evidence** separately. For Codexify exports, the local CLI can run both stages in one offline invocation, without writing an intermediate evidence file:
+
+~~~powershell
+node bin/godprompt-proof.mjs review --contract contract.json --export codexify-export.json
+~~~
+
+Alternatively, review any previously saved UTF-8 v1 evidence bundle with `node bin/godprompt-proof.mjs review --bundle proof-bundle.json`. The offline `review` command accepts only unverified v1 bundles, performs no network request, creates no feedback, and returns the same `HOLD` or `REPORTED_READY_FOR_INDEPENDENT_REVIEW` assessment. It does not authenticate supplied commands, changed files, acceptance evidence or approvals. **Neither status authorizes merge, deployment, spending, publication, or completion**; independently inspect original receipts and the complete diff before taking action.
 
 ## C. Tiny per-project learning
 
