@@ -35,7 +35,7 @@ const TASK_TYPES = {
     description: "Improving code without changing behavior",
   },
   CONTENT: {
-    triggers: ["write", "draft", "content", "article", "documentation", "blog", "docs", "copy", "text"],
+    triggers: ["write", "draft", "content", "article", "documentation", "blog", "docs", "copy", "text", "release notes"],
     protocol: "Research → verify → SEO",
     description: "Writing or editing content",
   },
@@ -50,7 +50,11 @@ const TASK_TYPES = {
     description: "Deploying to production",
   },
   ANALYZE: {
-    triggers: ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"],
+    triggers: [
+      "audit", "review", "check", "analyze", "inspect", "assess",
+      "evaluate", "verify", "validate", "test", "investigate", "compare",
+      "examine", "determine", "trace", "look into", "find out",
+    ],
     protocol: "Evidence-based investigation",
     description: "Auditing and reviewing existing systems",
   },
@@ -60,7 +64,7 @@ const TASK_TYPES = {
     description: "Building automation and pipelines",
   },
   PLAN: {
-    triggers: ["brainstorm", "think", "plan", "strategy", "roadmap", "release plan", "rollout plan", "architect", "design system"],
+    triggers: ["brainstorm", "think", "plan", "strategy", "roadmap", "proposal", "release plan", "rollout plan", "architect", "design system"],
     protocol: "Explore → document → handoff",
     description: "Planning and brainstorming",
   },
@@ -79,16 +83,20 @@ const ACTION_SIGNALS = new Set([
   "brainstorm",
   "build",
   "check",
+  "compare",
   "clean",
   "create",
   "deploy",
   "diagnose",
+  "determine",
   "design",
   "evaluate",
+  "examine",
   "fix",
   "implement",
   "improve",
   "inspect",
+  "investigate",
   "launch",
   "make",
   "merge",
@@ -104,6 +112,7 @@ const ACTION_SIGNALS = new Set([
   "ship",
   "simplify",
   "test",
+  "trace",
   "think",
   "troubleshoot",
   "validate",
@@ -112,7 +121,7 @@ const ACTION_SIGNALS = new Set([
 ]);
 
 const RELEASE_ARTIFACT = /\brelease\s+(?:plan|notes|roadmap|strategy|checklist|schedule)\b/;
-const PLAN_DELIVERABLE_SIGNALS = new Set(["plan", "strategy", "roadmap"]);
+const PLAN_DELIVERABLE_SIGNALS = new Set(["plan", "strategy", "roadmap", "proposal"]);
 
 type MatchedSignal = {
   signal: string;
@@ -128,20 +137,33 @@ type Candidate = {
   firstMatchIndex: number;
 };
 
+const TRIGGER_REGEX_CACHE = new Map<string, { boundary: RegExp; all: RegExp }>();
+
+function triggerRegex(trigger: string): { boundary: RegExp; all: RegExp } {
+  let patterns = TRIGGER_REGEX_CACHE.get(trigger);
+  if (!patterns) {
+    const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    patterns = {
+      boundary: new RegExp('(^|[^a-z0-9])' + escaped + '($|[^a-z0-9])'),
+      all: new RegExp('(^|[^a-z0-9])(' + escaped + ')(?=$|[^a-z0-9])', 'g'),
+    };
+    TRIGGER_REGEX_CACHE.set(trigger, patterns);
+  }
+  return patterns;
+}
+
 function hasTrigger(text: string, trigger: string): boolean {
-  const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(^|[^a-z0-9])${escaped}($|[^a-z0-9])`).test(text);
+  return triggerRegex(trigger).boundary.test(text);
 }
 
 function triggerIndex(text: string, trigger: string): number {
-  const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = new RegExp(`(^|[^a-z0-9])${escaped}($|[^a-z0-9])`).exec(text);
+  const match = triggerRegex(trigger).boundary.exec(text);
   return match ? match.index + match[1].length : -1;
 }
 
 function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
-  const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const matches = text.matchAll(new RegExp(`(^|[^a-z0-9])(${escaped})(?=$|[^a-z0-9])`, "g"));
+  // matchAll clones the global regex: no shared lastIndex across requests.
+  const matches = text.matchAll(triggerRegex(trigger).all);
   for (const match of matches) {
     const prefix = text.slice(0, match.index + match[1].length).split(/[.!?;,]/).at(-1) ?? "";
     // A forbidden downstream action is not a requested deployment action.
@@ -155,8 +177,8 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
 function hasPrimaryPlanningIntent(text: string): boolean {
   // Prefer the requested deliverable over incidental nouns like "feature" and
   // "release". Mentioning how to build/deploy is not a request to do so.
-  const primaryPlan = /^(?:(?:please|can you|could you|would you|can we|help me(?: to)?|let's)\s+)*(?:plan\b|brainstorm\b|think through\b|(?:prepare|write|draft|create|make|outline|propose|design)\s+(?:(?!(?:and|then|but)\b)[a-z0-9-]+\s+){0,7}(?:plan|strategy|roadmap)\b)/.test(text);
-  const requestedArtifact = /^(?:(?:we|i)\s+(?:need|want)\s+(?:a|an|the)|give me\s+(?:a|an|the))\s+(?:(?!(?:and|then|but)\b)[a-z0-9-]+\s+){0,7}(?:plan|strategy|roadmap)\b/.test(text);
+  const primaryPlan = /^(?:(?:please|can you|could you|would you|can we|help me(?: to)?|let's)\s+)*(?:plan\b|brainstorm\b|think through\b|(?:prepare|write|draft|create|make|outline|propose|design)\s+(?:(?!(?:and|then|but)\b)[a-z0-9-]+\s+){0,7}(?:plan|strategy|roadmap|proposal)\b)/.test(text);
+  const requestedArtifact = /^(?:(?:we|i)\s+(?:need|want)\s+(?:a|an|the)|give me\s+(?:a|an|the))\s+(?:(?!(?:and|then|but)\b)[a-z0-9-]+\s+){0,7}(?:plan|strategy|roadmap|proposal)\b/.test(text);
   const separateAction = /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(?:build|implement|add|deploy|publish|push|merge|ship|launch|create|make|release)\b/.test(text);
   return (primaryPlan || requestedArtifact) && !separateAction;
 }
@@ -171,6 +193,19 @@ function requestedShippingVerb(text: string): string | null {
     return null;
   }
   return direct?.[1] ?? followup?.[1] ?? null;
+}
+
+function requestedFollowupBuildVerb(text: string): string | null {
+  // A requested second action outranks a preceding investigation; a mere
+  // mention of a build pipeline or a feature does not.
+  const match = /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(build|implement|add|create|make)\b/.exec(text);
+  if (!match) return null;
+  // Adding regression tests or diagnostics is part of fixing a bug, not an
+  // independent feature-build request. A distinct new feature still wins.
+  const debugging = /^(?:(?:please|can you|could you|would you)\s+)*(?:fix|debug|diagnose|troubleshoot)\b/.test(text);
+  const supportingWork = /^\s+(?:(?:a|an|new|more|extra|some|unit|integration|regression|e2e|error|robust)\s+){0,4}(?:tests?|checks?|coverage|logs?|logging|docs|documentation|error handling)\b/
+    .test(text.slice(match.index + match[0].length));
+  return debugging && supportingWork ? null : match[1];
 }
 
 function signalStrength(trigger: string): number {
@@ -240,13 +275,15 @@ function classifyTask(description: string): {
   const affirmativeDebug = debugActions.some(
     (trigger) => hasAffirmativeActionTrigger(normalized, trigger),
   );
-  const inspectionRequested = ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"]
+  const inspectionRequested = TASK_TYPES.ANALYZE.triggers
     .some((trigger) => hasTrigger(normalized, trigger));
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
   const primaryPlanningIntent = hasPrimaryPlanningIntent(normalized);
   const shippingVerb = requestedShippingVerb(normalized);
+  const followupBuildVerb = requestedFollowupBuildVerb(normalized);
   const nominalRelease = RELEASE_ARTIFACT.test(normalized);
+  const writingRequested = /^(?:(?:please|can you|could you|would you|help me(?: to)?)\s+)*(?:write|draft|prepare|edit|translate|create)\b/.test(normalized);
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
@@ -257,6 +294,10 @@ function classifyTask(description: string): {
     if (type === "PLAN" && !primaryPlanningIntent &&
       (inspectionRequested || affirmativeBuild || affirmativeDebug || shippingVerb !== null) &&
       !/\b(?:and|then)\s+(?:plan|outline|brainstorm)\b/.test(normalized)) continue;
+    // Release notes are content only when drafting/editing them is the task.
+    // An inspection or an actual publish command must not become copywriting.
+    if (type === "CONTENT" && (shippingVerb !== null ||
+      (inspectionRequested && !writingRequested))) continue;
     // CI, cron and workflow names are audit subjects, not requests to automate them.
     if (type === "AUTOMATE" && inspectionRequested && !affirmativeBuild &&
       !hasAffirmativeActionTrigger(normalized, "automate")) continue;
@@ -264,7 +305,9 @@ function classifyTask(description: string): {
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
     const matches = info.triggers
       .filter((trigger) =>
-        !(type === "SHIP" && trigger === "release" && nominalRelease && shippingVerb !== "release") &&
+        !(type === "SHIP" &&
+          ((trigger === "release" && nominalRelease && shippingVerb !== "release") ||
+           (inspectionRequested && shippingVerb === null))) &&
         (type === "SHIP" || type === "BUILD"
           ? hasAffirmativeActionTrigger(normalized, trigger)
           : hasTrigger(normalized, trigger)))
@@ -272,7 +315,9 @@ function classifyTask(description: string): {
         signal: trigger,
         strength: (type === "PLAN" && primaryPlanningIntent &&
           PLAN_DELIVERABLE_SIGNALS.has(trigger)) ||
-          (type === "SHIP" && trigger === shippingVerb) ? 3 : signalStrength(trigger),
+          (type === "SHIP" && trigger === shippingVerb) ||
+          (type === "BUILD" && trigger === followupBuildVerb)
+          ? 3 : signalStrength(trigger),
         index: triggerIndex(normalized, trigger),
       }));
     if (matches.length === 0) continue;

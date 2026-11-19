@@ -379,6 +379,45 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  // Real-world GodPrompt calls: investigative verbs, release-as-subject,
+  // and proposal deliverables must not trigger build/deployment workflows.
+  const realWorldIntentCases = [
+    ["Investigate the Google Search Console visibility collapse on digestseo.com, compare query/page data, and report findings. Read-only, no site edits.", "ANALYZE"],
+    ["Investigate the root cause of a broken API", "ANALYZE"],
+    ["Find out why production impressions collapsed yesterday", "ANALYZE"],
+    ["Look into the incident and summarize the evidence", "ANALYZE"],
+    ["Compare the login flow before and after the release", "ANALYZE"],
+    ["Determine whether a Cloudflare deployment caused the incident", "ANALYZE"],
+    ["Examine how an untrusted email could exploit an MCP integration", "ANALYZE"],
+    ["Investigate the release failures without making changes", "ANALYZE"],
+    ["Review the release logs and trace when the errors began", "ANALYZE"],
+    ["Inspect the new feature implementation for security issues", "ANALYZE"],
+    ["Can you prepare a proposal for a new release without deploying it", "PLAN"],
+    ["Write a proposal for a new authentication feature", "PLAN"],
+    ["Create an implementation proposal for a new API", "PLAN"],
+    ["Prepare a release proposal for the next feature", "PLAN"],
+    ["Investigate the incident and fix the broken endpoint", "DEBUG"],
+    ["Fix the Codexify MCP oversized structuredContent error by bounding downstream responses; reproduce the crash and add tests.", "DEBUG"],
+    ["Fix the login bug and add regression tests", "DEBUG"],
+    ["Troubleshoot the outage, then add error logging", "DEBUG"],
+    ["Fix the login bug and add a new payment feature", "BUILD"],
+    ["Compare the two implementations, then build the selected one", "BUILD"],
+    ["Compare the two releases, then deploy the approved rollback", "SHIP"],
+    ["Release the approved update to npm", "SHIP"],
+    ["Write release notes for the new feature", "CONTENT"],
+    ["Prepare the release notes for the website", "CONTENT"],
+    ["Review the release notes for mistakes", "ANALYZE"],
+    ["Publish the release notes to the public site", "SHIP"],
+    ["Write the release notes, then publish them", "SHIP"],
+    ["Review the release proposal and report risks", "ANALYZE"],
+    ["Audit the deployment pipeline and its release status", "ANALYZE"],
+  ];
+  for (const [description, expected] of realWorldIntentCases) {
+    const result = await classify(child, pending, `dogfood-${description}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
   // The verb specifies the work; the feature/API/service noun must not hijack
   // planning, inspection, or deployment intent across different subjects.
   const routingSubjects = [
