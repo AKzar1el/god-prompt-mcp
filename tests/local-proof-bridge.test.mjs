@@ -11,6 +11,60 @@ import {
 } from "../bin/godprompt-proof.mjs";
 
 const SHA = "a".repeat(40);
+
+test("offline proof CLI can review a generated evidence bundle without granting completion", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "godprompt-offline-review-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const script = fileURLToPath(new URL("../bin/godprompt-proof.mjs", import.meta.url));
+  const filename = join(dir, "bundle.json");
+  const prepared = await contract();
+  const { fetchImpl } = fakeGithub();
+  const bundle = await githubEvidence({
+    repo: "owner/sample-repo", sha: SHA, contract: prepared,
+    mapping: { "VC-01": "verify (22)" }, fetchImpl,
+  });
+  await writeFile(filename, JSON.stringify(bundle));
+
+  const result = spawnSync(process.execPath, [script, "review", "--bundle", filename], {
+    encoding: "utf8", timeout: 10000,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.status, "HOLD");
+  assert.equal(report.contract_id, prepared.contract_id);
+  assert.equal(report.independently_verified, false);
+  assert.equal(report.completion_authorized, false);
+  assert.match(report.warning, /caller-supplied and untrusted/i);
+
+  const contractFile = join(dir, "contract.json");
+  const exportFile = join(dir, "codexify.json");
+  await writeFile(contractFile, JSON.stringify(prepared));
+  await writeFile(exportFile, JSON.stringify({
+    changed_files: ["src/parser.ts"], operations_performed: ["edited files"], checks: [],
+  }));
+  const direct = spawnSync(process.execPath, [
+    script, "review", "--contract", contractFile, "--export", exportFile,
+  ], { encoding: "utf8", timeout: 10000 });
+  assert.equal(direct.status, 0, direct.stderr);
+  const directReport = JSON.parse(direct.stdout);
+  assert.equal(directReport.status, "HOLD");
+  assert.equal(directReport.contract_id, prepared.contract_id);
+  assert.equal(directReport.independently_verified, false);
+  assert.equal(directReport.completion_authorized, false);
+
+  const ambiguous = spawnSync(process.execPath, [
+    script, "review", "--bundle", filename, "--contract", contractFile, "--export", exportFile,
+  ], { encoding: "utf8", timeout: 10000 });
+  assert.equal(ambiguous.status, 1);
+  assert.match(ambiguous.stderr, /either --bundle or --contract/i);
+
+  await writeFile(filename, JSON.stringify({ ...bundle, independently_verified: true }));
+  const misleading = spawnSync(process.execPath, [script, "review", "--bundle", filename], {
+    encoding: "utf8", timeout: 10000,
+  });
+  assert.equal(misleading.status, 1);
+  assert.match(misleading.stderr, /evidence bundle/i);
+});
 async function contract() {
   return (await createWorkContract({
     task: "Implement and test scoped parser validation",

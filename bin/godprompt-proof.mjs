@@ -9,6 +9,7 @@ import { mkdir, open, readFile, lstat, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { reviewWorkEvidence } from "../dist/work-contract.js";
 
 export const BUNDLE_SCHEMA = "godprompt.evidence_bundle.v1";
 const MAX_JSON_BYTES = 256 * 1024;
@@ -556,13 +557,14 @@ function parseOptions(argv) {
     github: ["repo", "sha", "contract", "map", "pr"],
     "github-snapshot": ["repo", "sha", "contract", "map", "snapshot", "pr"],
     codexify: ["contract", "export"],
+    review: ["bundle", "contract", "export"],
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
     "learn-review": ["project", "review"],
     metrics: ["project", "days"],
     workflow: ["project", "type", "risk", "min-reports", "format"],
   };
-  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics|workflow [--name value ...]");
+  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|review|learn|learn-review|lessons|metrics|workflow [--name value ...]");
   for (const key of Object.keys(opts)) if (!allowed[command].includes(key)) fail("Unknown option --" + key);
   return { command, opts };
 }
@@ -595,6 +597,24 @@ export async function cli(argv = process.argv.slice(2)) {
       contract: checkContract(await readSmallJson(opts.contract)),
       exportData: await readSmallJson(opts.export),
     });
+  }
+  if (command === "review") {
+    if (opts.bundle && (opts.contract || opts.export)) {
+      fail("Choose either --bundle or --contract and --export for review");
+    }
+    if (!opts.bundle && (!opts.contract || !opts.export)) {
+      fail("review requires --bundle or both --contract and --export");
+    }
+    const bundle = opts.bundle ? await readSmallJson(opts.bundle) : codexifyEvidence({
+      contract: checkContract(await readSmallJson(opts.contract)),
+      exportData: await readSmallJson(opts.export),
+    });
+    if (!bundle || bundle.schema !== BUNDLE_SCHEMA || !bundle.review_input ||
+        bundle.independently_verified !== false || bundle.completion_authorized !== false) {
+      fail("Expected an unverified v1 GodPrompt evidence bundle");
+    }
+    // Run the existing structural reviewer locally, never authenticate or trust the export.
+    return reviewWorkEvidence(bundle.review_input);
   }
   if (command === "learn-review") {
     if (!opts.project || !opts.review) fail("learn-review requires --project --review");
