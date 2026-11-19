@@ -131,6 +131,72 @@ test("cannot promote fabricated or incomplete host execution to successful verif
   }
 });
 
+test("genuine nonzero host exit is preserved as failed verification, not missing provenance", async (t) => {
+  const source = events();
+  source[1].success = false;
+  source[1].exit_code = 7;
+  source[2].status = "error";
+  const file = await fixture(t, source);
+  assert.deepEqual(await correlateCodexifyAudit(request(file)), {
+    exit_code: 7, source: "host_audit_correlated",
+  });
+  const contract = (await createWorkContract({
+    task: "Report a failed host command instead of inventing successful evidence",
+    task_type: "ANALYZE", risk_level: "low",
+    allowed_paths: ["src/"], forbidden_actions: ["deploy"],
+    success_criteria: ["Command succeeded"], verification_commands: ["node --version"],
+  })).contract;
+  const previous = {
+    GODPROMPT_CODEXIFY_AUDIT_FILE: process.env.GODPROMPT_CODEXIFY_AUDIT_FILE,
+    GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID: process.env.GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID,
+    GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID: process.env.GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID,
+  };
+  try {
+    process.env.GODPROMPT_CODEXIFY_AUDIT_FILE = file;
+    process.env.GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID = REF.conversation_id;
+    process.env.GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID = REF.project_id;
+    const codexify_export = {
+      changed_files: [],
+      checks: [{
+        id: "VC-01", command: "node --version", host_audit_ref: REF,
+        tool: "mcp__God_v5__exec_command",
+        response: { isError: true, upstream_result: { exit_code: 7 } },
+      }],
+    };
+    const bundle = await codexifyEvidence({ contract, exportData: codexify_export });
+    assert.equal(bundle.review_input.checks[0].exit_code, 7);
+    assert.equal(bundle.review_input.checks[0].source, "tool_output");
+    const checkpoint = await evaluateCheckpoint({
+      stage: "verification", contract, codexify_export,
+    });
+    assert.equal(checkpoint.status, "RECHECK");
+    assert.ok(checkpoint.recheck.some((hint) => hint.code === "VERIFICATION_FAILED"));
+    assert.ok(!checkpoint.recheck.some((hint) =>
+      hint.code === "HOST_AUDIT_MISSING_OR_MISMATCH"));
+    assert.equal(checkpoint.completion_authorized, false);
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  }
+});
+
+test("host audit rejects contradictory exit metadata even with matching run and command", async (t) => {
+  const cases = [
+    { success: false, exit_code: 0, finish: "error" },
+    { success: true, exit_code: 7, finish: "error" },
+    { success: false, exit_code: 7, finish: "ok" },
+  ];
+  for (const variant of cases) {
+    const source = events();
+    source[1].success = variant.success;
+    source[1].exit_code = variant.exit_code;
+    source[2].status = variant.finish;
+    const file = await fixture(t, source);
+    assert.equal(await correlateCodexifyAudit(request(file)), null);
+  }
+});
+
 test("host-linked audit receipt fails closed when no trusted local scope or file is configured", async (t) => {
   const file = await fixture(t);
   const contract = (await createWorkContract({

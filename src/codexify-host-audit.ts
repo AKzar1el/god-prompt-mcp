@@ -148,11 +148,15 @@ function verifyLifecycle(
       finish.resolved_tool !== "exec_command" ||
       // The host redacts/truncates previews: only exact, intact matches count.
       start.command_preview !== expected_command ||
-      finish.status !== "ok" ||
       workerExit.worker_kind !== "exec" ||
-      workerExit.success !== true || workerExit.wait_error != null ||
+      workerExit.wait_error != null ||
       !Number.isInteger(workerExit.exit_code) ||
-      Number(workerExit.exit_code) < 0) return null;
+      Number(workerExit.exit_code) < 0 ||
+      // Nonzero process exit is authenticated as a *failed check*, not
+      // discarded as absent evidence. Validate the real host's consistent
+      // worker/finish flags so contradictory metadata still fails closed.
+      workerExit.success !== (workerExit.exit_code === 0) ||
+      finish.status !== (workerExit.exit_code === 0 ? "ok" : "error")) return null;
   return { exit_code: Number(workerExit.exit_code), source: "host_audit_correlated" };
 }
 

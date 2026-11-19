@@ -30,10 +30,21 @@ const reportFile = env.GODPROMPT_CODEXIFY_CHECKPOINT_REPORT_FILE;
 const flags = process.argv.slice(2);
 const watch = flags.includes("--watch");
 const pos = flags.indexOf("--duration-ms");
-const duration = pos >= 0 && /^\d{1,6}$/.test(flags[pos + 1] ?? "")
+const validFlags = flags.filter((flag) => flag === "--watch").length <= 1 &&
+  flags.filter((flag) => flag === "--duration-ms").length <= 1 &&
+  flags.every((flag, index) => flag === "--watch" ||
+    flag === "--duration-ms" || (pos >= 0 && index === pos + 1));
+const validDuration = pos < 0 || /^[1-9]\d{0,5}$/.test(flags[pos + 1] ?? "");
+const duration = pos >= 0 && validDuration
   ? Number(flags[pos + 1]) : watch ? 0 : 400;
 
-if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
+if (!validFlags) {
+  process.stderr.write("Invalid observer argument: use --watch and optional --duration-ms N.\n");
+  process.exitCode = 2;
+} else if (!validDuration) {
+  process.stderr.write("Invalid --duration-ms: expected a positive integer in milliseconds.\n");
+  process.exitCode = 2;
+} else if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
     ![auditFile, contractFile, reportFile].every(isAbsolute) ||
     !auditFile.endsWith(".jsonl") || !reportFile.endsWith(".jsonl")) {
   process.stderr.write("Opt-in audit scope and absolute local file paths are required.\n");
@@ -144,7 +155,12 @@ if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
     }
     capMemory();
     const start = call.start, finish = call.finish, exit = call.exit;
-    if (!start || !finish || !exit || fired.has(key + ":verification") ||
+    // A tool_finish without a worker-exit record can mean the worker died
+    // before Codexify recorded its process status. Still review the scoped
+    // contracted check: host correlation will fail closed with RECHECK.
+    const finishedWithoutExit = event.event === "tool_finish" && !exit;
+    if (!start || !finish || (!exit && !finishedWithoutExit) ||
+        fired.has(key + ":verification") ||
         start.tool !== "exec_command" || finish.tool !== "exec_command" ||
         start.conversation_id !== conversation || start.project_id !== project ||
         finish.conversation_id !== conversation || finish.project_id !== project) return;

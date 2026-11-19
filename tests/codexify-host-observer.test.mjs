@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { appendFile, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -107,4 +107,108 @@ test("observer preserves a scoped verification under 4,100 unrelated host events
   assert.ok(report.every((entry) =>
     entry.independently_verified === false && entry.completion_authorized === false));
   assert.doesNotMatch(JSON.stringify(report) + stdout, /node --version|contract_id|conversation_id/);
+});
+
+test("observer distinguishes missing worker exit from a confirmed failed command", async (t) => {
+  const base = toolEvents("exec_command", 55);
+  const failed = toolEvents("exec_command", 56, { exit_code: 7 });
+  const scenarios = [
+    {
+      label: "missing-exit",
+      records: [base[0], { ...base[2], status: "error" }],
+      issue: "HOST_AUDIT_MISSING_OR_MISMATCH",
+    },
+    {
+      label: "nonzero-exit",
+      records: [failed[0], failed[1], { ...failed[2], status: "error" }],
+      issue: "VERIFICATION_FAILED",
+    },
+  ];
+  const contract = (await createWorkContract({
+    task: "Distinguish failed commands from missing Codexify process records",
+    task_type: "ANALYZE", risk_level: "low",
+    allowed_paths: ["src/"], forbidden_actions: ["deploy"],
+    success_criteria: ["Node check succeeded"], verification_commands: ["node --version"],
+  })).contract;
+  for (const scenario of scenarios) {
+    const dir = await mkdtemp(join(tmpdir(), "godprompt-" + scenario.label + "-"));
+    t.after(() => rm(dir, { recursive: true, force: true }));
+    const audit = join(dir, "audit.jsonl");
+    const contractFile = join(dir, "contract.json");
+    const reportFile = join(dir, "reviews.jsonl");
+    await writeFile(contractFile, JSON.stringify(contract));
+    await writeFile(audit, scenario.records.map(JSON.stringify).join("\n") + "\n");
+
+    const child = spawn(process.execPath,
+      ["scripts/codexify-audit-checkpoint-observer.mjs"], {
+        stdio: ["ignore", "pipe", "pipe"], windowsHide: true,
+        env: {
+          ...process.env,
+          GODPROMPT_CODEXIFY_AUDIT_FILE: audit,
+          GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID: conversation,
+          GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID: project,
+          GODPROMPT_CODEXIFY_CONTRACT_FILE: contractFile,
+          GODPROMPT_CODEXIFY_CHECKPOINT_REPORT_FILE: reportFile,
+        },
+      });
+    t.after(() => { if (child.exitCode === null) child.kill(); });
+    let output = "", errors = "";
+    child.stdout.on("data", (chunk) => { output += chunk; });
+    child.stderr.on("data", (chunk) => { errors += chunk; });
+    const [code] = await once(child, "exit");
+    assert.equal(code, 0, scenario.label + ": " + errors);
+    const summary = JSON.parse(output.trim());
+    assert.equal(summary.observed_checkpoints, 1, scenario.label);
+    const reports = (await readFile(reportFile, "utf8")).trim().split("\n").map(JSON.parse);
+    assert.equal(reports.length, 1, scenario.label);
+    assert.equal(reports[0].stage, "verification");
+    assert.equal(reports[0].status, "RECHECK");
+    assert.ok(reports[0].recheck_codes.includes(scenario.issue), scenario.label);
+    if (scenario.label === "nonzero-exit") {
+      assert.ok(!reports[0].recheck_codes.includes("HOST_AUDIT_MISSING_OR_MISMATCH"));
+    }
+    assert.equal(reports[0].completion_authorized, false);
+  }
+});
+
+test("invalid explicit observer duration must not silently enable an endless watch", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "godprompt-invalid-watch-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const audit = join(dir, "audit.jsonl");
+  const contractFile = join(dir, "contract.json");
+  const reportFile = join(dir, "reviews.jsonl");
+  const contract = (await createWorkContract({
+    task: "Validate that bounded observer mode has an actual deadline",
+    task_type: "ANALYZE", risk_level: "low",
+    allowed_paths: ["src/"], forbidden_actions: ["deploy"],
+    success_criteria: ["Watch ends"], verification_commands: ["node --version"],
+  })).contract;
+  await writeFile(contractFile, JSON.stringify(contract));
+  await writeFile(audit, "");
+  const invalidCases = [
+    ["0", ["--watch", "--duration-ms", "0"]],
+    ["nonsense", ["--watch", "--duration-ms", "nonsense"]],
+    ["-1", ["--watch", "--duration-ms", "-1"]],
+    ["misspelled flag", ["--watch", "--duraton-ms", "5000"]],
+  ];
+  for (const [invalid, flags] of invalidCases) {
+    const result = spawnSync(process.execPath, [
+      "scripts/codexify-audit-checkpoint-observer.mjs",
+      ...flags,
+    ], {
+      // Node startup can be delayed by the full parallel test suite and a
+      // concurrent Codexify build; allow enough time to detect a real hang.
+      timeout: 15000, encoding: "utf8", windowsHide: true,
+      env: {
+        ...process.env,
+        GODPROMPT_CODEXIFY_AUDIT_FILE: audit,
+        GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID: conversation,
+        GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID: project,
+        GODPROMPT_CODEXIFY_CONTRACT_FILE: contractFile,
+        GODPROMPT_CODEXIFY_CHECKPOINT_REPORT_FILE: reportFile,
+      },
+    });
+    assert.equal(result.status, 2, "invalid duration " + invalid + " must exit safely");
+    assert.match(result.stderr, /duration|argument/i);
+  }
 });

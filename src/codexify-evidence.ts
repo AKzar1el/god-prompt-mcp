@@ -114,7 +114,11 @@ export async function codexifyEvidence({
     // A host-linked command is still suspect when the enclosing MCP result
     // explicitly reports an error (or names a different tool). Fail closed
     // rather than letting a valid audit ID mask contradictory input.
-    const hostReceiptError = hasToolError(receipt, response, result) ||
+    // Error flags are expected for a genuine host-observed nonzero process
+    // exit: preserve its exit code for VERIFICATION_FAILED. They remain
+    // contradictory and disqualifying when the host observed exit_code=0.
+    const hostReceiptError = (hostAudit?.exit_code === 0 &&
+        hasToolError(receipt, response, result)) ||
       (receipt.tool !== undefined && receipt.tool !== "mcp__God_v5__exec_command");
     const code = hostAuditRequested
       ? hostReceiptError ? null : hostAudit?.exit_code ?? null :
