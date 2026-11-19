@@ -69,7 +69,12 @@ if (!validFlags) {
   const calls = new Map();
   const fired = new Set();
   let pending = "";
-  const original = (await stat(auditFile)).size;
+  const originalStat = await stat(auditFile);
+  const original = originalStat.size;
+  let fileIdentity = {
+    dev: originalStat.dev, ino: originalStat.ino,
+    birthtimeMs: originalStat.birthtimeMs,
+  };
   // Never replay historical events when starting the watcher. The --once
   // mode scans the last bounded segment for a deterministic pilot replay.
   let cursor = watch ? original : Math.max(0, original - MAX_READ);
@@ -181,11 +186,40 @@ if (!validFlags) {
   }
 
   async function readNewEvents() {
-    const size = (await stat(auditFile)).size;
-    if (size < cursor) { cursor = size; pending = ""; return; }
+    let info;
+    try {
+      info = await stat(auditFile);
+    } catch (error) {
+      // File rotation may briefly remove the audit path between closing the
+      // old log and creating its replacement. Preserve the old cursor and
+      // retry on the next poll instead of terminating the observer.
+      if (error?.code === "ENOENT") return;
+      throw error;
+    }
+    const size = info.size;
+    // Host audit rotation can replace the file with a *larger* new inode;
+    // truncation can produce a smaller file. In either case, reading from the
+    // old cursor silently discards the first scoped events. Reset to offset 0
+    // and clear partial-line state, but do not replay the historical file
+    // when the watcher first starts.
+    if (size < cursor ||
+        info.dev !== fileIdentity.dev || info.ino !== fileIdentity.ino ||
+        info.birthtimeMs !== fileIdentity.birthtimeMs) {
+      cursor = 0;
+      pending = "";
+      first = false;
+    }
+    fileIdentity = { dev: info.dev, ino: info.ino, birthtimeMs: info.birthtimeMs };
     const amount = Math.min(size - cursor, MAX_READ);
     if (amount === 0) return;
-    const handle = await open(auditFile, "r");
+    let handle;
+    try {
+      handle = await open(auditFile, "r");
+    } catch (error) {
+      // A second rotation can happen after stat and before open.
+      if (error?.code === "ENOENT") return;
+      throw error;
+    }
     try {
       const bytes = Buffer.allocUnsafe(amount);
       const read = await handle.read(bytes, 0, amount, cursor);

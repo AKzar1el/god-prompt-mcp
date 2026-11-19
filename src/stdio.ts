@@ -27,7 +27,7 @@ function createServer(): McpServer {
   const instructions = `${SERVER_INSTRUCTIONS} ${WORK_CONTRACT_INSTRUCTIONS}` +
     (enabled ? ` ${CODEXIFY_CHECKPOINT_INSTRUCTIONS}` : "");
   const identity = enabled
-    ? { ...SERVER_INFO, version: SERVER_INFO.version + "-checkpoint-preview.9" }
+    ? { ...SERVER_INFO, version: SERVER_INFO.version + "-checkpoint-preview.10" }
     : SERVER_INFO;
   const server = new McpServer(identity, { instructions });
   registerGodPromptTools(server);

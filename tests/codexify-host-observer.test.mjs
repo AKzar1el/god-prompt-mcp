@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { appendFile, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { appendFile, mkdtemp, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { once } from "node:events";
@@ -210,5 +210,75 @@ test("invalid explicit observer duration must not silently enable an endless wat
     });
     assert.equal(result.status, 2, "invalid duration " + invalid + " must exit safely");
     assert.match(result.stderr, /duration|argument/i);
+  }
+});
+
+test("watcher preserves newly written checks after truncation, rotation, or temporary log absence", async (t) => {
+  const contract = (await createWorkContract({
+    task: "Follow one scoped verification after host audit truncation or rotation",
+    task_type: "ANALYZE", risk_level: "low",
+    allowed_paths: ["src/"], forbidden_actions: ["deploy"],
+    success_criteria: ["Node command was checked"], verification_commands: ["node --version"],
+  })).contract;
+  for (const mode of ["truncate", "rotate", "rotate-gap"]) {
+    const dir = await mkdtemp(join(tmpdir(), "godprompt-rotated-audit-"));
+    t.after(() => rm(dir, { recursive: true, force: true }));
+    const audit = join(dir, "audit.jsonl");
+    const contractFile = join(dir, "contract.json");
+    const reportFile = join(dir, "reviews.jsonl");
+    const readyFile = join(dir, "watcher.ready");
+    await writeFile(contractFile, JSON.stringify(contract));
+    // One case shrinks the file; the other replaces it with a new inode
+    // larger than the old cursor. Both used to skip the first new events.
+    await writeFile(audit, JSON.stringify({
+      schema_version: 2, event: "audit_started", padding: "x".repeat(
+        mode === "truncate" ? 5000 : 8),
+    }) + "\n");
+    const child = spawn(process.execPath, [
+      "scripts/codexify-audit-checkpoint-observer.mjs",
+      "--watch", "--duration-ms", "4700",
+    ], {
+      stdio: ["ignore", "pipe", "pipe"], windowsHide: true,
+      env: {
+        ...process.env,
+        GODPROMPT_CODEXIFY_AUDIT_FILE: audit,
+        GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID: conversation,
+        GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID: project,
+        GODPROMPT_CODEXIFY_CONTRACT_FILE: contractFile,
+        GODPROMPT_CODEXIFY_CHECKPOINT_REPORT_FILE: reportFile,
+        GODPROMPT_CODEXIFY_OBSERVER_READY_FILE: readyFile,
+      },
+    });
+    const exitPromise = once(child, "exit");
+    t.after(() => { if (child.exitCode === null) child.kill(); });
+    let output = "", errors = "";
+    child.stdout.on("data", (chunk) => { output += chunk; });
+    child.stderr.on("data", (chunk) => { errors += chunk; });
+    let ready = false;
+    for (let i = 0; i < 100; i++) {
+      try { await stat(readyFile); ready = true; break; }
+      catch { await new Promise((resolve) => setTimeout(resolve, 100)); }
+    }
+    assert.equal(ready, true, mode + ": watcher did not start");
+    const replacement = toolEvents("exec_command", 105).map(JSON.stringify).join("\n") + "\n";
+    if (mode.startsWith("rotate")) {
+      await rename(audit, join(dir, "audit-previous.jsonl"));
+      if (mode === "rotate-gap") {
+        // The new audit path may not exist during an actual rotation.
+        // Give the poll loop time to observe that temporary gap.
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+      }
+    }
+    await writeFile(audit, replacement);
+    const [code] = await exitPromise;
+    assert.equal(code, 0, mode + ": " + errors);
+    const summary = JSON.parse(output.trim());
+    assert.equal(summary.observed_checkpoints, 1,
+      mode + ": rotated audit must not discard a new command");
+    const reviews = (await readFile(reportFile, "utf8")).trim().split("\n").map(JSON.parse);
+    assert.equal(reviews.length, 1);
+    assert.equal(reviews[0].stage, "verification");
+    assert.equal(reviews[0].counts.supplied_checks, 1);
+    assert.equal(reviews[0].completion_authorized, false);
   }
 });
