@@ -55,6 +55,7 @@ const TASK_TYPES = {
       "evaluate", "verify", "validate", "test", "investigate", "compare",
       "examine", "determine", "identify", "trace", "look into",
       "find out", "find why", "find the root cause",
+      "tell me why", "why did", "why are", "why is",
     ],
     protocol: "Evidence-based investigation",
     description: "Auditing and reviewing existing systems",
