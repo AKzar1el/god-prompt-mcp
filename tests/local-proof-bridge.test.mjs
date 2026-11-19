@@ -286,6 +286,30 @@ test("Codexify MCP tool errors stay on HOLD even when text embeds an exit code",
   assert.ok(result.issues.some((issue) => issue.code === "VERIFICATION_FAILED"));
   assert.equal(result.completion_authorized, false);
 });
+test("Codexify contradictory tool-error envelopes never become successful verification", async () => {
+  const prepared = await contract();
+  for (const response of [
+    { isError: true, upstream_result: { exit_code: 0, output: "claimed success" } },
+    { upstream_result: { isError: true, exit_code: 0, output: "claimed success" } },
+  ]) {
+    const bundle = codexifyEvidence({
+      contract: prepared,
+      exportData: {
+        changed_files: [],
+        checks: [{ id: "VC-01", command: "npm test", tool: "mcp__God_v5__exec_command", response }],
+      },
+    });
+    assert.equal(bundle.review_input.checks[0].source, "self_report");
+    assert.equal(bundle.review_input.checks[0].exit_code, null);
+    assert.ok(bundle.gaps.includes("NO_STRUCTURED_CODEXIFY_RECEIPT:VC-01"));
+    const result = await reviewWorkEvidence({
+      ...bundle.review_input,
+      acceptance: [{ id: "AC-01", status: "met", evidence_refs: ["VC-01"] }],
+    });
+    assert.equal(result.status, "HOLD");
+    assert.equal(result.completion_authorized, false);
+  }
+});
 test("CLI prints output when invoked through a symlink, including Windows npm aliases", async (t) => {
   const folder = await mkdtemp(join(tmpdir(), "godprompt-cli-link-"));
   t.after(() => rm(folder, { recursive: true, force: true }));

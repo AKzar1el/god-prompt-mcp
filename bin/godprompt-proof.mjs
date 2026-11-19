@@ -234,8 +234,12 @@ export function codexifyEvidence({ contract, exportData }) {
     }
     // Only a pasted structured exec_command envelope is attributed to tool output.
     // An ordinary claimed numeric exit_code is never promoted to tool provenance.
+    // A contradictory error envelope is not a successful execution receipt,
+    // even when its caller-supplied nested result contains exit_code: 0.
+    const response = receipt.response;
     const result = receipt.tool === "mcp__God_v5__exec_command" &&
-      receipt.response && typeof receipt.response === "object" ? receipt.response.upstream_result : null;
+      response && typeof response === "object" && response.isError !== true &&
+      response.upstream_result?.isError !== true ? response.upstream_result : null;
     const code = Number.isInteger(result?.exit_code) && result.exit_code >= 0 ? result.exit_code : null;
     const attributed = code !== null;
     if (!attributed) gaps.push("NO_STRUCTURED_CODEXIFY_RECEIPT:" + receipt.id);
