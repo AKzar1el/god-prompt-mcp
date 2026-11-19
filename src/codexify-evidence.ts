@@ -74,30 +74,41 @@ export async function codexifyEvidence({
     throw new Error("Codexify export needs a bounded checks array");
   }
 
-  const gaps: string[] = [];
-  const checks: Check[] = await Promise.all(rawChecks.map(async (raw): Promise<Check> => {
+  const receipts = rawChecks.map((raw): RecordValue => {
     const receipt = record(raw);
     if (!receipt || typeof receipt.id !== "string" ||
         typeof receipt.command !== "string") {
       throw new Error("Malformed Codexify receipt");
     }
+    return receipt;
+  });
+  const hostIndices = receipts.flatMap((receipt, index) =>
+    Object.hasOwn(receipt, "host_audit_ref") ? [index] : []);
+  const hostMatches = new Map<number, { exit_code: number } | null>();
+  if (hostIndices.length > 0) {
+    const path = process.env.GODPROMPT_CODEXIFY_AUDIT_FILE;
+    const conversation_id = process.env.GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID;
+    const project_id = process.env.GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID;
+    if (path && conversation_id && project_id) {
+      const { correlateCodexifyAuditBatch } = await import("./codexify-host-audit.js");
+      const matched = await correlateCodexifyAuditBatch({
+        path, conversation_id, project_id,
+        not_before: process.env.GODPROMPT_CODEXIFY_AUDIT_NOT_BEFORE,
+        checks: hostIndices.map((index) => ({
+          ref: receipts[index].host_audit_ref,
+          expected_command: receipts[index].command as string,
+        })),
+      });
+      hostIndices.forEach((index, i) => hostMatches.set(index, matched[i] ?? null));
+    }
+  }
+
+  const gaps: string[] = [];
+  const checks: Check[] = await Promise.all(receipts.map(async (receipt, index): Promise<Check> => {
     const response = record(receipt.response);
     const result = record(response?.upstream_result);
     const hostAuditRequested = Object.hasOwn(receipt, "host_audit_ref");
-    const hostAudit = hostAuditRequested
-      ? await (async () => {
-          const path = process.env.GODPROMPT_CODEXIFY_AUDIT_FILE;
-          const conversation_id = process.env.GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID;
-          const project_id = process.env.GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID;
-          if (!path || !conversation_id || !project_id) return null;
-          const { correlateCodexifyAudit } = await import("./codexify-host-audit.js");
-          return correlateCodexifyAudit({
-            path, conversation_id, project_id,
-            not_before: process.env.GODPROMPT_CODEXIFY_AUDIT_NOT_BEFORE,
-            ref: receipt.host_audit_ref, expected_command: receipt.command as string,
-          });
-        })()
-      : null;
+    const hostAudit = hostAuditRequested ? hostMatches.get(index) ?? null : null;
     // Never fall back to a caller-pasted success envelope if an explicit
     // host-audit reference is absent, incomplete, stale, or mismatched.
     // A host-linked command is still suspect when the enclosing MCP result
@@ -116,8 +127,8 @@ export async function codexifyEvidence({
         "NO_STRUCTURED_CODEXIFY_RECEIPT:") + receipt.id,
     );
     return {
-      id: receipt.id,
-      command: receipt.command,
+      id: receipt.id as string,
+      command: receipt.command as string,
       exit_code: code,
       source: code === null ? "self_report" : "tool_output",
       evidence_excerpt: code === null

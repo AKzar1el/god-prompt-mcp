@@ -79,7 +79,7 @@ test("default published-style stdio stays at nine tools without opt-in", async (
 test("opt-in main stdio reuses checkpoint logic while preserving nine existing tools", async (t) => {
   const client = await connect(t, "dist/stdio.js", { GODPROMPT_CODEXIFY_CHECKPOINT: "1" });
   assert.equal(client.initialized.serverInfo.name, "god-prompt-mcp");
-  assert.equal(client.initialized.serverInfo.version, "1.1.1-checkpoint-preview.6");
+  assert.equal(client.initialized.serverInfo.version, "1.1.1-checkpoint-preview.7");
   assert.match(client.initialized.instructions, /review_codexify_checkpoint/);
   assert.match(client.initialized.instructions, /rollout_checkpoint_required/);
   assert.match(client.initialized.instructions, /rollout_update/);

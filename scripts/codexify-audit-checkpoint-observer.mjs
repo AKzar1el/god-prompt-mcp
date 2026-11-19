@@ -72,7 +72,9 @@ if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
   let submitted = 0;
   let reviewErrors = 0;
   let invalidRecords = 0;
-  const outputs = [];
+  let holds = 0;
+  let rechecks = 0;
+  const recentStages = [];
   function capMemory() {
     while (calls.size > 4096) calls.delete(calls.keys().next().value);
     while (fired.size > 8192) fired.delete(fired.values().next().value);
@@ -90,7 +92,10 @@ if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
       ...summary,
     };
     await appendFile(reportFile, JSON.stringify(event) + "\n", { mode: 0o600 });
-    outputs.push(event);
+    if (event.status === "HOLD") holds++;
+    if (event.status === "RECHECK") rechecks++;
+    recentStages.push(event.stage);
+    if (recentStages.length > 32) recentStages.shift();
     submitted++;
   }
 
@@ -98,21 +103,40 @@ if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
     if (!event || event.schema_version !== 2 ||
         typeof event.run_id !== "string" ||
         !Number.isSafeInteger(event.call_id)) return;
+    const scoped = event.conversation_id === conversation &&
+      event.project_id === project;
+    // A shared host audit contains unrelated agents' events. Never allow
+    // them to consume the bounded per-conversation call cache.
+    if ((event.event === "tool_start" || event.event === "tool_finish") &&
+        !scoped) return;
+    // Only contracted command executions and milestone tools need tracking.
+    // Other tools (including thousands of read-only discovery calls) must not
+    // evict a long-running verification from the bounded cache.
+    if (event.event === "tool_start" &&
+        event.tool !== "exec_command" && !toolsByStage.has(event.tool)) return;
     const key = event.run_id + ":" + event.call_id;
     let call = calls.get(key);
-    if (!call) { call = {}; calls.set(key, call); }
-    if (event.event === "tool_start" &&
-        event.conversation_id === conversation && event.project_id === project) {
+    if (!call) {
+      // Worker exits have no conversation/project scope; only accept them
+      // after a matching scoped tool_start was already observed.
+      if (event.event !== "tool_start") return;
+      call = {};
+      calls.set(key, call);
+    }
+    if (event.event === "tool_start") {
       call.start = event;
     }
-    if (event.event === "tool_finish" &&
-        event.conversation_id === conversation && event.project_id === project) {
+    if (event.event === "tool_finish") {
       call.finish = event;
       const stage = toolsByStage.get(event.tool);
       if (stage && call.start?.tool === event.tool &&
           event.status === "ok" && !fired.has(key + ":stage")) {
         fired.add(key + ":stage");
         await emit(stage, event.tool);
+      }
+      if (event.tool !== "exec_command") {
+        calls.delete(key); // Completed milestones need no retained payload.
+        return;
       }
     }
     if (event.event === "tool_worker_exit" && event.worker_kind === "exec") {
@@ -126,7 +150,7 @@ if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
         finish.conversation_id !== conversation || finish.project_id !== project) return;
     const match = contract.verification_commands.find((check) =>
       check.command === start.command_preview);
-    if (!match) return;
+    if (!match) { calls.delete(key); return; }
     fired.add(key + ":verification");
     checks.set(match.id, {
       id: match.id, command: match.command,
@@ -137,6 +161,7 @@ if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
       },
     });
     await emit("verification", "exec_command");
+    calls.delete(key);
   }
 
   async function readNewEvents() {
@@ -179,9 +204,8 @@ if (!auditFile || !contractFile || !reportFile || !conversation || !project ||
   // Only safe summaries leave the observer. No original audit or contract.
   process.stdout.write(JSON.stringify({
     mode: watch ? "watch" : "once", observed_checkpoints: submitted,
-    stages: outputs.map((item) => item.stage),
-    holds: outputs.filter((item) => item.status === "HOLD").length,
-    rechecks: outputs.filter((item) => item.status === "RECHECK").length,
+    stages: recentStages,
+    holds, rechecks,
     review_errors: reviewErrors, invalid_records: invalidRecords,
   }) + "\n");
   if (reviewErrors) process.exitCode = 1;

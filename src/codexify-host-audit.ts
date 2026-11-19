@@ -48,8 +48,9 @@ function recent(timestamp: unknown): boolean {
   return Number.isFinite(parsed) && age >= -5 * 60_000 && age <= MAX_RECORD_AGE_MS;
 }
 
-async function auditTail(path: string, runId: string, callId: number): Promise<RecordValue[]> {
+async function auditTail(path: string, targets: AuditRef[]): Promise<RecordValue[]> {
   if (!isAbsolute(path) || !path.endsWith(".jsonl")) return [];
+  if (targets.length === 0) return [];
   try {
     const info = await lstat(path);
     if (!info.isFile() || info.isSymbolicLink()) return [];
@@ -65,10 +66,15 @@ async function auditTail(path: string, runId: string, callId: number): Promise<R
         read += item.bytesRead;
       }
       const buffer = data.subarray(0, read);
-      // A Codexify run ID is shared by *all* calls in one server process.
-      // Search for the specific numeric call ID instead, then validate the
-      // run ID and exact event metadata after parsing just those lines.
-      const needle = Buffer.from('"call_id":' + callId, "utf8");
+      // For a single check, use its exact call ID. For multiple checks, scan
+      // all call-ID tokens once, parsing only the requested IDs. This avoids
+      // rereading an 8 MiB audit tail up to 30 times per checkpoint.
+      const single = targets.length === 1;
+      const needle = Buffer.from('"call_id":' +
+        (single ? String(targets[0].call_id) : ""), "utf8");
+      const callIds = new Set(targets.map((target) => target.call_id));
+      const keys = new Set(targets.map((target) =>
+        target.run_id + ":" + target.call_id));
       const events: RecordValue[] = [];
       let found = buffer.indexOf(needle);
       while (found >= 0) {
@@ -77,15 +83,29 @@ async function auditTail(path: string, runId: string, callId: number): Promise<R
         const end = buffer.indexOf(0x0a, found);
         if (end < 0) break; // A partial final record cannot verify anything.
         const next = end + 1;
-        const nextChar = buffer[found + needle.length];
+        let callId = single ? targets[0].call_id : 0;
+        let cursor = found + needle.length;
+        if (!single) {
+          let digits = 0;
+          while (cursor < end && buffer[cursor] >= 0x30 &&
+                 buffer[cursor] <= 0x39 && digits < 16) {
+            callId = callId * 10 + buffer[cursor] - 0x30;
+            cursor++;
+            digits++;
+          }
+          if (digits === 0 || !Number.isSafeInteger(callId)) callId = -1;
+        }
+        const nextChar = buffer[cursor];
         if ((nextChar === 0x2c || nextChar === 0x7d) &&
+            callIds.has(callId) &&
             (precedingNewline >= 0 || offset === 0) &&
             end - start <= MAX_LINE_BYTES) {
           const line = buffer.toString("utf8", start, end).trimEnd();
           try {
             const parsed = object(JSON.parse(line));
-            if (parsed?.schema_version === 2 && parsed.run_id === runId &&
-                parsed.call_id === callId && recent(parsed.timestamp) &&
+            if (parsed?.schema_version === 2 &&
+                keys.has(String(parsed.run_id) + ":" + parsed.call_id) &&
+                recent(parsed.timestamp) &&
                 ["tool_start", "tool_finish", "tool_worker_exit"].includes(String(parsed.event))) {
               events.push(parsed);
             }
@@ -102,36 +122,26 @@ async function auditTail(path: string, runId: string, callId: number): Promise<R
   }
 }
 
-export async function correlateCodexifyAudit({
-  path, ref: rawRef, expected_command, conversation_id, project_id, not_before,
-}: {
-  path: string;
-  ref: unknown;
-  expected_command: string;
-  conversation_id: string;
-  project_id: string;
-  not_before?: string;
-}): Promise<{ exit_code: number; source: "host_audit_correlated" } | null> {
-  const ref = validRef(rawRef);
-  const since = not_before === undefined ? null : Date.parse(not_before);
-  if (!ref || !conversation_id || !project_id ||
-      ref.conversation_id !== conversation_id ||
-      ref.project_id !== project_id ||
-      (not_before !== undefined &&
-        (typeof not_before !== "string" || !Number.isFinite(since))) ||
-      typeof expected_command !== "string" || expected_command.length > 400) return null;
-  const events = (await auditTail(path, ref.run_id, ref.call_id)).filter((item) =>
-    item.run_id === ref.run_id && item.call_id === ref.call_id);
-  const starts = events.filter((item) => item.event === "tool_start");
-  const finishes = events.filter((item) => item.event === "tool_finish");
-  const exits = events.filter((item) => item.event === "tool_worker_exit");
-  if (starts.length !== 1 || finishes.length !== 1 || exits.length !== 1) return null;
-  const start = starts[0], finish = finishes[0], workerExit = exits[0];
+type HostAuditResult = { exit_code: number; source: "host_audit_correlated" };
+
+function verifyLifecycle(
+  events: RecordValue[], ref: AuditRef, expected_command: string,
+  since: number | null,
+): HostAuditResult | null {
+  // A valid execution is a *sequence*, not three unrelated records that
+  // happen to share a call ID. Reject reordered/duplicated lifecycles.
+  if (events.length !== 3 ||
+      events[0].event !== "tool_start" ||
+      events[1].event !== "tool_worker_exit" ||
+      events[2].event !== "tool_finish") return null;
+  const [start, workerExit, finish] = events;
   const sameScope = (item: RecordValue) =>
     item.transport_session_id === ref.transport_session_id &&
     item.conversation_id === ref.conversation_id &&
     item.project_id === ref.project_id;
   if (!sameScope(start) || !sameScope(finish) ||
+      Date.parse(String(start.timestamp)) > Date.parse(String(workerExit.timestamp)) ||
+      Date.parse(String(workerExit.timestamp)) > Date.parse(String(finish.timestamp)) ||
       (since !== null && Date.parse(String(start.timestamp)) < since) ||
       start.tool !== "exec_command" || finish.tool !== "exec_command" ||
       start.resolved_tool !== "exec_command" ||
@@ -144,4 +154,54 @@ export async function correlateCodexifyAudit({
       !Number.isInteger(workerExit.exit_code) ||
       Number(workerExit.exit_code) < 0) return null;
   return { exit_code: Number(workerExit.exit_code), source: "host_audit_correlated" };
+}
+
+export async function correlateCodexifyAuditBatch({
+  path, checks, conversation_id, project_id, not_before,
+}: {
+  path: string;
+  checks: Array<{ ref: unknown; expected_command: string }>;
+  conversation_id: string;
+  project_id: string;
+  not_before?: string;
+}): Promise<Array<HostAuditResult | null>> {
+  if (!Array.isArray(checks) || checks.length > 100) return [];
+  const since = not_before === undefined ? null : Date.parse(not_before);
+  const validSince = not_before === undefined ||
+    (typeof not_before === "string" && Number.isFinite(since));
+  const prepared = checks.map(({ ref: rawRef, expected_command }) => {
+    const ref = validRef(rawRef);
+    return ref && validSince && conversation_id && project_id &&
+      ref.conversation_id === conversation_id &&
+      ref.project_id === project_id &&
+      typeof expected_command === "string" && expected_command.length <= 400
+      ? { ref, expected_command } : null;
+  });
+  const needed = prepared.filter((item): item is {
+    ref: AuditRef; expected_command: string;
+  } => item !== null).map(({ ref }) => ref);
+  const events = await auditTail(path, needed);
+  return prepared.map((item) => {
+    if (!item) return null;
+    const relevant = events.filter((event) =>
+      event.run_id === item.ref.run_id && event.call_id === item.ref.call_id);
+    return verifyLifecycle(relevant, item.ref, item.expected_command, since);
+  });
+}
+
+export async function correlateCodexifyAudit({
+  path, ref, expected_command, conversation_id, project_id, not_before,
+}: {
+  path: string;
+  ref: unknown;
+  expected_command: string;
+  conversation_id: string;
+  project_id: string;
+  not_before?: string;
+}): Promise<HostAuditResult | null> {
+  const results = await correlateCodexifyAuditBatch({
+    path, conversation_id, project_id, not_before,
+    checks: [{ ref, expected_command }],
+  });
+  return results[0] ?? null;
 }

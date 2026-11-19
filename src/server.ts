@@ -53,7 +53,8 @@ const TASK_TYPES = {
     triggers: [
       "audit", "review", "check", "analyze", "inspect", "assess",
       "evaluate", "verify", "validate", "test", "investigate", "compare",
-      "examine", "determine", "trace", "look into", "find out",
+      "examine", "determine", "identify", "trace", "look into",
+      "find out", "find why", "find the root cause",
     ],
     protocol: "Evidence-based investigation",
     description: "Auditing and reviewing existing systems",
@@ -208,6 +209,18 @@ function requestedFollowupBuildVerb(text: string): string | null {
   return debugging && supportingWork ? null : match[1];
 }
 
+function requestedPrimaryBuildVerb(text: string): string | null {
+  // Implementing a tool often requires tests and audits of that tool;
+  // incidental QA keywords do not turn the build request into ANALYZE.
+  const direct = /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(build|implement)\b/.exec(text);
+  if (!direct || /\b(?:and|then)\s+(?:fix|debug|diagnose|troubleshoot)\b/.test(text)) {
+    return null;
+  }
+  // Preserve specialized automation routing for CI/workflow/pipeline builds.
+  return TASK_TYPES.AUTOMATE.triggers.some((signal) => hasTrigger(text, signal))
+    ? null : direct[1];
+}
+
 function signalStrength(trigger: string): number {
   if (trigger.includes(" ")) return 3;
   if (ACTION_SIGNALS.has(trigger)) return 1;
@@ -282,6 +295,8 @@ function classifyTask(description: string): {
   const primaryPlanningIntent = hasPrimaryPlanningIntent(normalized);
   const shippingVerb = requestedShippingVerb(normalized);
   const followupBuildVerb = requestedFollowupBuildVerb(normalized);
+  const primaryBuildVerb = shippingVerb === null
+    ? requestedPrimaryBuildVerb(normalized) : null;
   const nominalRelease = RELEASE_ARTIFACT.test(normalized);
   const writingRequested = /^(?:(?:please|can you|could you|would you|help me(?: to)?)\s+)*(?:write|draft|prepare|edit|translate|create)\b/.test(normalized);
 
@@ -316,7 +331,8 @@ function classifyTask(description: string): {
         strength: (type === "PLAN" && primaryPlanningIntent &&
           PLAN_DELIVERABLE_SIGNALS.has(trigger)) ||
           (type === "SHIP" && trigger === shippingVerb) ||
-          (type === "BUILD" && trigger === followupBuildVerb)
+          (type === "BUILD" && (trigger === followupBuildVerb ||
+            trigger === primaryBuildVerb))
           ? 3 : signalStrength(trigger),
         index: triggerIndex(normalized, trigger),
       }));

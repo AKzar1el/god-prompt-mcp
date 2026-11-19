@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createWorkContract } from "../dist/work-contract.js";
 import { codexifyEvidence } from "../dist/codexify-evidence.js";
-import { correlateCodexifyAudit } from "../dist/codexify-host-audit.js";
+import { correlateCodexifyAudit, correlateCodexifyAuditBatch } from "../dist/codexify-host-audit.js";
 import { evaluateCheckpoint } from "../dist/codexify-checkpoint.js";
 
 const REF = Object.freeze({
@@ -50,6 +50,51 @@ test("correlates a real host-shaped start, process exit and tool finish without 
   const matched = await correlateCodexifyAudit(request(file));
   assert.deepEqual(matched, { exit_code: 0, source: "host_audit_correlated" });
   assert.doesNotMatch(JSON.stringify(matched), /node --version|command_preview/i);
+});
+
+test("does not treat an embedded repeated call_id as another host event", async (t) => {
+  const source = events();
+  source[0].arguments_summary = { call_id: REF.call_id };
+  source[2].output_summary = { nested: { call_id: REF.call_id } };
+  const file = await fixture(t, source);
+  assert.deepEqual(await correlateCodexifyAudit(request(file)), {
+    exit_code: 0, source: "host_audit_correlated",
+  });
+});
+
+test("batch audit correlation validates each command independently from one host log", async (t) => {
+  const source = [49, 50, 51].flatMap((call_id) => events().map((item) => ({
+    ...item, call_id,
+    ...(item.event === "tool_start"
+      ? { command_preview: "node --version -" + call_id } : {}),
+  })));
+  const file = await fixture(t, source);
+  const checks = [
+    ...[49, 50, 51].map((call_id) => ({
+      ref: { ...REF, call_id },
+      expected_command: "node --version -" + call_id,
+    })),
+    { ref: { ...REF, call_id: 51 }, expected_command: "npm publish" },
+    { ref: { ...REF, call_id: 999 }, expected_command: "node --version -999" },
+  ];
+  const results = await correlateCodexifyAuditBatch({
+    path: file, checks,
+    conversation_id: REF.conversation_id, project_id: REF.project_id,
+  });
+  assert.deepEqual(results.map((entry) => entry?.exit_code ?? null),
+    [0, 0, 0, null, null]);
+});
+
+test("rejects an out-of-order or reversed host execution lifecycle", async (t) => {
+  const [start, exit, finish] = events();
+  const wrongFileOrder = await fixture(t, [finish, exit, start]);
+  assert.equal(await correlateCodexifyAudit(request(wrongFileOrder)), null);
+  const wrongTimestamps = await fixture(t, [
+    { ...start, timestamp: new Date(Date.now() - 1000).toISOString() },
+    { ...exit, timestamp: new Date(Date.now() - 3000).toISOString() },
+    { ...finish, timestamp: new Date(Date.now() - 2000).toISOString() },
+  ]);
+  assert.equal(await correlateCodexifyAudit(request(wrongTimestamps)), null);
 });
 
 test("host correlation refuses missing, wrong-session, cross-chat and replayed evidence", async (t) => {

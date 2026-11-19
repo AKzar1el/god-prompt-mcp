@@ -29,7 +29,7 @@ function toolEvents(tool, id, options = {}) {
     : [start, finish];
 }
 
-test("observer sees scoped host events and triggers plan, verification and handoff without model calls", async (t) => {
+test("observer preserves a scoped verification under 4,100 unrelated host events", async (t) => {
   const dir = await mkdtemp(join(tmpdir(), "godprompt-observer-"));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const audit = join(dir, "audit.jsonl");
@@ -75,16 +75,31 @@ test("observer sees scoped host events and triggers plan, verification and hando
     catch { await new Promise((resolve) => setTimeout(resolve, 100)); }
   }
   assert.equal(ready, true, "Observer must be ready before appending host events");
+  const [checkStart, checkExit, checkFinish] = toolEvents("exec_command", 2);
+  // A shared Codexify audit receives many other agents' tool events. None
+  // may evict a pending verification belonging to this conversation.
+  const unrelated = Array.from({ length: 4100 }, (_, i) => ({
+    schema_version: 2, event: "tool_worker_exit", run_id: run, call_id: i + 10000,
+  }));
+  const unrelatedScoped = Array.from({ length: 4100 }, (_, i) => ({
+    ...scope, event: "tool_start", call_id: i + 20000,
+    tool: "get_version", resolved_tool: "get_version",
+  }));
   await appendFile(audit, [
     ...toolEvents("update_plan", 1),
-    ...toolEvents("exec_command", 2),
+    checkStart, ...unrelated, ...unrelatedScoped, checkExit, checkFinish,
     ...toolEvents("goal_finish", 3),
+    ...Array.from({ length: 40 }, (_, i) => toolEvents("update_plan", i + 4)).flat(),
   ].map((row) => JSON.stringify(row)).join("\n") + "\n");
   const [code] = await once(child, "exit");
   assert.equal(code, 0, stderr);
   const report = (await readFile(out, "utf8")).trim().split("\n").map(JSON.parse);
-  assert.deepEqual(report.map((entry) => entry.stage),
+  assert.deepEqual(report.slice(0, 3).map((entry) => entry.stage),
     ["plan", "verification", "handoff"]);
+  assert.equal(report.length, 43, "all milestone reports must still be persisted");
+  const summary = JSON.parse(stdout.trim());
+  assert.equal(summary.observed_checkpoints, 43);
+  assert.equal(summary.stages.length, 32, "memory-only stage history must be bounded");
   assert.equal(report[0].status, "CONTINUE_WITH_PENDING_ITEMS");
   assert.equal(report[1].counts.supplied_checks, 1);
   assert.equal(report[2].status, "HOLD");
