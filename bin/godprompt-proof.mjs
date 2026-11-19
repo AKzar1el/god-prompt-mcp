@@ -543,15 +543,30 @@ export async function localWorkflow(project, {
     warning: "Version tracks a deterministic preview, not an approved rule set. Repeated self-reports are not independent evidence, and no policy is automatically applied.",
   };
 }
+const PROOF_USAGE = "Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics|workflow [--name value ...]";
+const PROOF_HELP = [
+  "GodPrompt proof bridge (optional local CLI; Node.js 22+)",
+  PROOF_USAGE,
+  "",
+  "Evidence commands:",
+  "  github          Read pinned GitHub check runs (HTTPS GET only)",
+  "  github-snapshot Review a caller-supplied GitHub export offline",
+  "  codexify        Review a caller-supplied Codexify command export offline",
+  "",
+  "Local feedback commands:",
+  "  learn-review    Save generic HOLD lessons from a reviewed report",
+  "  learn           Save a generic, explicitly supplied local lesson",
+  "  lessons         Read project-scoped local lessons",
+  "  metrics         Read local feedback summary",
+  "  workflow        Preview a read-only workflow from local feedback",
+  "",
+  "Run --help or <command> --help to see this overview.",
+  "Evidence and feedback are caller-supplied, not independent proof or completion authority.",
+  "Only the github command makes network requests; learn and learn-review can append local feedback.",
+].join("\n");
 function parseOptions(argv) {
   const command = argv[0];
   const opts = {};
-  for (let i = 1; i < argv.length; i += 2) {
-    if (!argv[i]?.startsWith("--") || i + 1 >= argv.length) fail("Expected --name value option pairs");
-    const key = argv[i].slice(2);
-    if (!/^[a-z-]+$/.test(key) || Object.hasOwn(opts, key)) fail("Invalid or duplicate flag");
-    opts[key] = argv[i + 1];
-  }
   const allowed = {
     github: ["repo", "sha", "contract", "map", "pr"],
     "github-snapshot": ["repo", "sha", "contract", "map", "snapshot", "pr"],
@@ -562,12 +577,23 @@ function parseOptions(argv) {
     metrics: ["project", "days"],
     workflow: ["project", "type", "risk", "min-reports", "format"],
   };
-  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics|workflow [--name value ...]");
+  if ((argv.length === 1 && ["help", "--help", "-h"].includes(command)) ||
+      (argv.length === 2 && allowed[command] && argv[1] === "--help")) {
+    return { command: "help", opts };
+  }
+  for (let i = 1; i < argv.length; i += 2) {
+    if (!argv[i]?.startsWith("--") || i + 1 >= argv.length) fail("Expected --name value option pairs");
+    const key = argv[i].slice(2);
+    if (!/^[a-z-]+$/.test(key) || Object.hasOwn(opts, key)) fail("Invalid or duplicate flag");
+    opts[key] = argv[i + 1];
+  }
+  if (!allowed[command]) fail(PROOF_USAGE);
   for (const key of Object.keys(opts)) if (!allowed[command].includes(key)) fail("Unknown option --" + key);
   return { command, opts };
 }
 export async function cli(argv = process.argv.slice(2)) {
   const { command, opts } = parseOptions(argv);
+  if (command === "help") return PROOF_HELP;
   if (command === "github") {
     if (!opts.repo || !opts.sha || !opts.contract) fail("github requires --repo --sha --contract");
     return githubEvidence({
