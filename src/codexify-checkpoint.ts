@@ -43,6 +43,7 @@ const GUIDANCE: Record<string, string> = Object.freeze({
   VERIFICATION_FAILED: "Fix the failure, then re-run the contracted verification.",
   SELF_REPORTED_CHECK: "Provide actual structured tool output instead of a self-report.",
   EVIDENCE_EXCERPT_MISSING: "Capture a bounded, redacted summary of the verification output.",
+  HOST_AUDIT_MISSING_OR_MISMATCH: "Check local host audit availability, exact command, conversation/project scope and tool exit event. Never replace it with a pasted success claim.",
   ACCEPTANCE_NOT_MET: "Check each acceptance criterion and record its result.",
   ACCEPTANCE_EVIDENCE_MISSING: "Link the acceptance claim to supplied check or observation evidence.",
   REVIEW_REQUIRED: "Obtain separately authorized human review for high-risk work.",
@@ -65,7 +66,8 @@ export type CheckpointInput = z.input<typeof inputSchema>;
 export const CODEXIFY_CHECKPOINT_INSTRUCTIONS =
   "LOCAL OPT-IN ONLY: use create_work_contract before authorized edits, then deliberately call review_codexify_checkpoint at plan, after implementation, after verification, and before handoff. " +
   "Also treat a Codexify rollout_checkpoint_required notice as a reminder trigger: fulfill the host-required rollout_update first, then review the current contract and available redacted evidence with review_codexify_checkpoint before resuming substantive work. Never fabricate missing receipts or a missing contract. " +
-  "RECHECK means reconcile and repeat; HOLD means do not report ready. Missing evidence may be pending only before its due stage. The tool is advisory, not a host interrupt or an approval mechanism. Never infer permission to merge, deploy, spend, publish or claim independently verified completion.";
+  "For optional host audit correlation, a locally configured audit source and conversation/project scope must match the host's start, worker-exit and finish events; caller-pasted success cannot replace a missing audit match. " +
+  "The separate opt-in audit observer can initiate advisory reviews on host activity, but cannot interrupt or authorize actions. RECHECK means reconcile and repeat; HOLD means do not report ready. Missing evidence may be pending only before its due stage. The tool is advisory, not a host interrupt or an approval mechanism. Never infer permission to merge, deploy, spend, publish or claim independently verified completion.";
 
 type Hint = { code: string; next_action: string };
 type CheckpointResult = {
@@ -169,7 +171,13 @@ export async function evaluateCheckpoint(raw: unknown): Promise<CheckpointResult
   const defer = input.stage === "plan" || input.stage === "implementation"
     ? DEFERRED_BEFORE_CHECKS
     : input.stage === "verification" ? DEFERRED_UNTIL_HANDOFF : new Set<string>();
-  const recheck = uniqueHints(review.issues.filter(({ code }) => !defer.has(code)));
+  const hostAuditIssues = bundle.gaps.some((gap) =>
+    gap.startsWith("HOST_AUDIT_MISSING_OR_MISMATCH:"))
+    ? [{ code: "HOST_AUDIT_MISSING_OR_MISMATCH" }] : [];
+  const recheck = uniqueHints([
+    ...review.issues.filter(({ code }) => !defer.has(code)),
+    ...hostAuditIssues,
+  ]);
   const pending = uniqueHints(review.issues.filter(({ code }) => defer.has(code)));
   const status = recheck.length
     ? (input.stage === "handoff" ? "HOLD" : "RECHECK")
@@ -204,7 +212,7 @@ export async function evaluateCheckpoint(raw: unknown): Promise<CheckpointResult
 export function registerCodexifyCheckpointTool(server: McpServer): void {
   server.registerTool("review_codexify_checkpoint", {
     title: "Review Codexify task checkpoint",
-    description: "Local opt-in, read-only milestone review. At plan, implementation, verification and handoff, check reported contract, scope, tool errors, verification and acceptance. RECHECK/HOLD is not an execution permission or independent proof.",
+    description: "Local opt-in, read-only milestone review. At plan, implementation, verification and handoff, check reported contract, scope, tool errors, verification and acceptance. Optional checks[].host_audit_ref can correlate exact execution events against an owner-configured local Codexify audit file and pinned conversation/project scope, failing closed on missing matches. This is not an execution permission, signed attestation or independent proof.",
     // The SDK echoes Zod validation errors, including unexpected field names.
     // Preserve the detailed public schema, but hand invalid input to our
     // redacted error handler instead of letting the SDK echo private data.

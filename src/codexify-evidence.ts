@@ -83,20 +83,50 @@ export async function codexifyEvidence({
     }
     const response = record(receipt.response);
     const result = record(response?.upstream_result);
-    const code = receipt.tool === "mcp__God_v5__exec_command" &&
+    const hostAuditRequested = Object.hasOwn(receipt, "host_audit_ref");
+    const hostAudit = hostAuditRequested
+      ? await (async () => {
+          const path = process.env.GODPROMPT_CODEXIFY_AUDIT_FILE;
+          const conversation_id = process.env.GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID;
+          const project_id = process.env.GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID;
+          if (!path || !conversation_id || !project_id) return null;
+          const { correlateCodexifyAudit } = await import("./codexify-host-audit.js");
+          return correlateCodexifyAudit({
+            path, conversation_id, project_id,
+            not_before: process.env.GODPROMPT_CODEXIFY_AUDIT_NOT_BEFORE,
+            ref: receipt.host_audit_ref, expected_command: receipt.command as string,
+          });
+        })()
+      : null;
+    // Never fall back to a caller-pasted success envelope if an explicit
+    // host-audit reference is absent, incomplete, stale, or mismatched.
+    // A host-linked command is still suspect when the enclosing MCP result
+    // explicitly reports an error (or names a different tool). Fail closed
+    // rather than letting a valid audit ID mask contradictory input.
+    const hostReceiptError = hasToolError(receipt, response, result) ||
+      (receipt.tool !== undefined && receipt.tool !== "mcp__God_v5__exec_command");
+    const code = hostAuditRequested
+      ? hostReceiptError ? null : hostAudit?.exit_code ?? null :
+      receipt.tool === "mcp__God_v5__exec_command" &&
       !hasToolError(receipt, response, result) &&
       Number.isInteger(result?.exit_code) && Number(result?.exit_code) >= 0
       ? Number(result?.exit_code) : null;
-    if (code === null) gaps.push("NO_STRUCTURED_CODEXIFY_RECEIPT:" + receipt.id);
+    if (code === null) gaps.push(
+      (hostAuditRequested ? "HOST_AUDIT_MISSING_OR_MISMATCH:" :
+        "NO_STRUCTURED_CODEXIFY_RECEIPT:") + receipt.id,
+    );
     return {
       id: receipt.id,
       command: receipt.command,
       exit_code: code,
       source: code === null ? "self_report" : "tool_output",
       evidence_excerpt: code === null
-        ? "No successful structured Codexify exec_command envelope; self-report only."
-        : "Codexify exec_command exported envelope: exit_code=" + code +
-          "; result_sha256=" + await digestShort(result!) + "; raw output withheld.",
+        ? "No matching local host audit or successful Codexify command envelope."
+        : hostAuditRequested
+          ? "Local Codexify audit-correlated command: exit_code=" + code +
+            "; exact command and scoped host events matched; raw output withheld."
+          : "Codexify exec_command exported envelope: exit_code=" + code +
+            "; result_sha256=" + await digestShort(result!) + "; raw output withheld.",
     };
   }));
 
