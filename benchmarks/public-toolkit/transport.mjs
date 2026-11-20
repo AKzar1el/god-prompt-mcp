@@ -13,7 +13,9 @@ const meta={"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcont
 const parse=(r)=>{
   if(r?.error||r?.result?.isError)throw Error("MCP tool returned error");
   const o=r.result??r;
-  return o.structuredContent??JSON.parse((o.content??[]).find(x=>x.type==="text")?.text??"null");
+  if(o.structuredContent!==undefined)return o.structuredContent;
+  const raw=(o.content??[]).find(x=>x.type==="text")?.text??"";
+  try{return JSON.parse(raw)}catch{return raw;}
 };
 async function host(method,name,args={}){
   const headers={"content-type":"application/json","accept":"application/json, text/event-stream","mcp-protocol-version":"2026-07-28","mcp-method":method};
@@ -92,9 +94,13 @@ try{
     if(!same)errors.push("semantic parity mismatch "+tool);
     time.push({kind:"stdio",tool,elapsed_ms:stdio.elapsed_ms},{kind:"hosted",tool,elapsed_ms:remote.elapsed_ms});
   }
-  for(let i=0;i<2;i++)for(const tool of [...tools].sort(()=>rnd()-.5)){
-    const fixture=cases.find(x=>x.tool===tool),r=await host("tools/call",tool,fixture.input);
-    parse(r.payload);time.push({kind:"hosted",tool,elapsed_ms:r.elapsed_ms});
+  for(let i=0;i<2;i++){
+    const order=[...tools];
+    for(let j=order.length-1;j>0;j--){const k=Math.floor(rnd()*(j+1));[order[j],order[k]]=[order[k],order[j]];}
+    for(const tool of order){
+      const fixture=cases.find(x=>x.tool===tool),r=await host("tools/call",tool,fixture.input);
+      parse(r.payload);time.push({kind:"hosted",tool,elapsed_ms:r.elapsed_ms});
+    }
   }
   const bad=[
     ["review_code_change",{diff:"short"}],
