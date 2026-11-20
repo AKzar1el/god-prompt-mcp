@@ -70,7 +70,14 @@ type ReleaseInput = {
 
 export function assessReleaseReadiness(input: ReleaseInput) {
   const blockers: Array<{ code: string; message: string }> = [];
+  const seenChecks = new Set<string>();
   for (const check of input.checks) {
+    const name = check.name.trim().toLowerCase();
+    if (seenChecks.has(name)) blockers.push({
+      code: "DUPLICATE_CHECK_NAME",
+      message: "Repeated check names do not count as independent verification evidence.",
+    });
+    seenChecks.add(name);
     if (check.status !== "passed") blockers.push({
       code: check.status === "failed" ? "FAILED_CHECK" : "UNRUN_CHECK",
       message: `Required check ${check.name} is ${check.status}.`,
