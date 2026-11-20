@@ -21,7 +21,7 @@ test("portable MCP and Codex compatibility manifest describe one shared remote s
   const plugin = await json("plugin.json");
   const compat = await json(".codex-plugin/plugin.json");
   const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(pkg.version, "1.3.0");
+  assert.equal(pkg.version, "1.4.0");
   assert.equal(portable.$schema, "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json");
   assert.deepEqual(Object.keys(portable.mcpServers), [name]);
   assert.deepEqual(Object.keys(codex.mcpServers), [name]);

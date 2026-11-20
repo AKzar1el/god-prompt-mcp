@@ -64,6 +64,7 @@ test("P5 original microtask suite contains twelve independently failing baseline
       env:{...process.env,NODE_TEST_CONTEXT:undefined},
     });
     assert.equal(r.status,1,"Fixture must fail before an agent repairs "+task.task_id+": "+r.stderr);
-    assert.ok(r.stdout.includes("not ok"),task.task_id+" must execute a real failing test");
+    assert.ok(r.stdout.includes(task.task_id) && /(?:not ok|✖|\u2716)/.test(r.stdout),
+      task.task_id+" must execute a real failing test on Node 22 and Node 24");
   }
 });
