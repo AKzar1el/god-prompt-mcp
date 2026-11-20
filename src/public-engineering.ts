@@ -142,8 +142,18 @@ export function reviewCodeChange(diff: string) {
         }
         reviewedLines++;
         if (findings.length >= MAX_FINDINGS) continue;
+        const added = change.content.slice(1).trimStart();
+        const commentOnly = /^(?:\/\/|\/\*|\*|#|<!--)/.test(added);
+        if (/^\.github\/workflows\/(?:publish|release|deploy)[^/]*\.ya?ml$/i.test(path)
+          && /github\.event_name\s*!=\s*[\x27\x22]pull_request[\x27\x22]/i.test(added)) {
+          findings.push({ code: "WEAKENED_RELEASE_GATE", severity: "high",
+            message: "A release workflow gate appears broadened beyond manual dispatch; inspect publication permissions and intended triggers.",
+            file: path, line: change.ln });
+          continue;
+        }
         for (const signal of PATCH_SIGNALS) {
-          if (signal.matcher.test(change.content.slice(1))) {
+          if (commentOnly && signal.code !== "UNFINISHED_MARKER") continue;
+          if (signal.matcher.test(added)) {
             findings.push({ code: signal.code, severity: signal.severity, message: signal.message, file: path, line: change.ln });
             break;
           }
@@ -154,7 +164,7 @@ export function reviewCodeChange(diff: string) {
     if (changeOverflow) break;
   }
 
-  if (productionPatch && !testPatch && findings.length < MAX_FINDINGS) {
+  if (productionPatch && !testPatch && changedLines > 1 && findings.length < MAX_FINDINGS) {
     findings.push({
       code: "NO_TEST_CHANGES_IN_PATCH",
       severity: "low",
@@ -252,11 +262,23 @@ export function auditRequirements(specification: string) {
   const { requirements, truncated } = normalizeRequirements(specification);
   const findings: Finding[] = [];
   const exact = new Map<string, string>();
+  const quantified = new Map<string, { polarity: number; id: string }>();
   for (const req of requirements) {
     const key = req.text.replace(/\s+/g, " ").toLowerCase();
     const prior = exact.get(key);
     if (prior) findings.push({ code: "DUPLICATE_REQUIREMENT", severity: "medium", message: `Same text also appears in ${prior}.`, requirement_id: req.id });
     else exact.set(key, req.id);
+    const quantifiedClause = /^(every|all|no)\s+(.+)$/i.exec(key.replace(/[.!?]+$/, ""));
+    if (quantifiedClause) {
+      const polarity = quantifiedClause[1] === "no" ? -1 : 1;
+      const previous = quantified.get(quantifiedClause[2]);
+      if (previous && previous.polarity !== polarity) findings.push({
+        code: "CONTRADICTORY_REQUIREMENTS", severity: "medium",
+        message: "Obvious universal-versus-none obligations conflict with " + previous.id + "; clarify which behavior applies.",
+        requirement_id: req.id,
+      });
+      else if (!previous) quantified.set(quantifiedClause[2], {polarity, id: req.id});
+    }
     if (!req.acceptance.length && !req.scenarios.length) findings.push({
       code: "MISSING_ACCEPTANCE_EVIDENCE",
       severity: "medium",
@@ -269,7 +291,7 @@ export function auditRequirements(specification: string) {
       message: "Qualitative language needs a concrete, observable acceptance threshold.",
       requirement_id: req.id,
     });
-    if (/\b(?:shall|must|should)\b/i.test(req.text) && /\b(?:may|maybe|optional|if possible)\b/i.test(req.text)) findings.push({
+    if (/\b(?:shall|must|should)\b/i.test(req.text) && /\b(?:may|maybe|optional|optionally|if possible)\b/i.test(req.text)) findings.push({
       code: "MIXED_OBLIGATION",
       severity: "low",
       message: "Check whether mandatory and optional behavior were intentionally mixed.",
