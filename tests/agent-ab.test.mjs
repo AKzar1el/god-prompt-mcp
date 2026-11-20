@@ -50,3 +50,19 @@ test("A/B runner rejects small or unpinned suites",()=>{
   assert.throws(()=>planComparison({suite_id:"small",tasks:suite.tasks.slice(0,9)}),/10-100/);
   assert.throws(()=>planComparison({suite_id:"bad",tasks:[...suite.tasks,{task_id:"../etc/passwd",revision:"rev",test_command:"test"}]}),/Every task/);
 });
+
+test("P5 original microtask suite contains twelve independently failing baseline graders",async()=>{
+  const { readFile }=await import("node:fs/promises");
+  const { spawnSync }=await import("node:child_process");
+  const { fileURLToPath }=await import("node:url");
+  const suite=JSON.parse(await readFile(new URL("../benchmarks/agent-ab/suite.json",import.meta.url),"utf8"));
+  const path=fileURLToPath(new URL("../benchmarks/agent-ab/microtasks/checks.test.mjs",import.meta.url));
+  assert.equal(suite.tasks.length,12);
+  for(const task of suite.tasks){
+    const r=spawnSync(process.execPath,["--test","--test-name-pattern="+task.task_id,path],{
+      encoding:"utf8",timeout:10000,windowsHide:true,maxBuffer:512*1024,
+    });
+    assert.equal(r.status,1,"Fixture must fail before an agent repairs "+task.task_id+": "+r.stderr);
+    assert.ok(r.stdout.includes("not ok"),task.task_id+" must execute a real failing test");
+  }
+});
