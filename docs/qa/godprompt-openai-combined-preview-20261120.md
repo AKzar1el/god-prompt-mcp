@@ -19,7 +19,7 @@ Portable OpenAI plugin at `distribution/openai/` now adds exactly one remote MCP
 2. Ten new positive, four negative and four edge cases test activation, tool selection and missing-evidence behavior at fixture level. Static tests are **not** equivalent to an AI model behavioral evaluation.
 3. `tests/openai-combined-preview.test.mjs` checks both formats, exact shared endpoint, auth, version agreement, tool routing, privacy/fallback language, absence of local command installers, and conflict-resistant packaging.
 4. `scripts/verify-openai-remote.mjs` makes actual read-only `tools/list` and `audit_agent_trajectory` calls against the live hosted endpoint; expects 22 read-only tools and refuses to claim verification from tool output.
-5. The CI preview workflow performs Node 22 build and tests, calls the actual endpoint, packages a deterministic ZIP of the existing `distribution/openai/` tree (including dotfiles) and uploads as a short-lived review artifact. No API keys required. The regular repo workflows also test Node 22/24.
+5. The CI preview workflow performs Node 22 build and tests, calls the actual endpoint, packages a deterministic ZIP of the existing `distribution/openai/` tree (including dotfiles) plus a separately validated standalone `skill.zip`, and uploads both as short-lived review artifacts. No API keys required. The regular repo workflows also test Node 22/24.
 6. A fresh ChatGPT/plugin runtime session and activation behavior with the actual model/installer must still be tested before marketplace publication; file checks alone cannot prove it. Do not mark published solely from a green CI run.
 
 ## Source references
@@ -30,6 +30,6 @@ Portable OpenAI plugin at `distribution/openai/` now adds exactly one remote MCP
 
 ## Release boundary
 
-This branch is an UNPUBLISHED preview. It does not mutate the already published Skill-only OpenAI plugin, submit a directory update, register a new remote server, restart Codexify, publish Docker/GHCR, or trigger release automation. The CI ZIP is for review only.
+PR #236 merged the combined plugin **source** into main, but this remains an UNPUBLISHED MARKETPLACE PREVIEW. Merging source did not mutate the already published Skill-only OpenAI listing, submit a directory update, register another remote server, restart Codexify, or publish Docker/GHCR. The passing CI ZIP and validated standalone Skill ZIP are for review and local use only.
 
 After approval and real model activation quality checks, update the OpenAI listing through its normal portal separately. Keep Docker/GHCR pinned version publication as the final milestone.
