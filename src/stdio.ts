@@ -13,6 +13,9 @@ import { registerTailoredGuidanceTool } from "./tailored-guidance.js";
 import { registerDecisionSupportTools } from "./decision-support.js";
 import { registerTrajectoryTool } from "./agent-trajectory.js";
 import { registerImpactTool } from "./change-impact.js";
+import { registerMcpContractAuditTool } from "./mcp-contract-audit.js";
+import { registerInstructionAuditTool } from "./instruction-audit.js";
+import { registerAdversarialPlanningTool } from "./adversarial-planning.js";
 import {
   registerCodexifyCheckpointTool,
   CODEXIFY_CHECKPOINT_INSTRUCTIONS,
@@ -42,6 +45,9 @@ function createServer(): McpServer {
   registerDecisionSupportTools(server);
   registerTrajectoryTool(server);
   registerImpactTool(server);
+  registerMcpContractAuditTool(server);
+  registerInstructionAuditTool(server);
+  registerAdversarialPlanningTool(server);
   if (enabled) registerCodexifyCheckpointTool(server);
   registerGodPromptSkillExtension(server);
   return server;
