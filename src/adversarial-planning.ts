@@ -6,8 +6,8 @@ const fieldSchema=z.object({
   id:z.string().regex(/^[A-Za-z0-9_.-]{1,64}$/),
   type:z.enum(["string","number","boolean","array","object"]),
   required:z.boolean().default(true),
-  min:z.number().finite().safe().optional(),
-  max:z.number().finite().safe().optional(),
+  min:z.number().finite().optional(),
+  max:z.number().finite().optional(),
   invariant:z.enum(["none","idempotent","monotonic","order_independent"]).default("none"),
   untrusted:z.boolean().default(false),
 }).strict();
