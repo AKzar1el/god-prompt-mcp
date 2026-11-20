@@ -136,3 +136,16 @@ test("missing paired cost and duration measurements are not invented", () => {
   assert.equal(compared.measured_duration_pairs, 0);
   assert.equal(compared.measured_cost_pairs, 0);
 });
+
+
+test("benchmark release readiness rejects repeated check names despite all reporting pass", () => {
+  const result = assessReleaseReadiness({
+    target: "staging",
+    checks: [{name:"build",status:"passed"},{name:" Build ",status:"passed"}],
+    source_revision:"aaa123456789",
+    artifact_revision:"aaa123456789",
+  });
+  assert.equal(result.status,"BLOCKED");
+  assert.ok(result.blockers.some((item)=>item.code==="DUPLICATE_CHECK_NAME"));
+  assert.equal(result.deployment_authorized,false);
+});
