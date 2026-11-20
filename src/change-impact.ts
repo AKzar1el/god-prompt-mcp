@@ -102,11 +102,22 @@ export function traceChangeImpact(input: Normalized) {
   };
 }
 
+export const ImpactOutputSchema=z.object({
+  status:z.enum(["RECHECK_IMPACT_EVIDENCE","REPORTED_COVERAGE_ONLY"]),
+  affected_files:z.array(z.object({path:z.string(),depth:z.number().int(),via:z.string().nullable()}).strict()),
+  impacted_requirement_ids:z.array(z.string()),
+  recommended_tests:z.array(z.object({id:z.string(),covers:z.array(z.string()),reported_status:z.enum(["passed","failed","not_run","missing"])}).strict()),
+  uncovered_targets:z.array(z.string()),
+  issues:z.array(z.object({code:z.string(),severity:z.enum(["high","medium","low"]),reference:z.string()}).strict()),
+  truncated:z.boolean(),independently_verified:z.literal(false),tests_executed:z.literal(0),warning:z.string(),
+}).strict();
+
 export function registerImpactTool(server: McpServer): void {
   server.registerTool("trace_change_impact", {
     title: "Trace changed-code impact and test coverage",
     description: "Rank affected files and select test cases with explicit dependency and requirement-to-test mappings. All graph and receipt evidence must be supplied by caller; no repository or command execution.",
     inputSchema: ImpactSchema.shape,
+    outputSchema:ImpactOutputSchema.shape,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async (args) => {
     const output = traceChangeImpact(ImpactSchema.parse(args));

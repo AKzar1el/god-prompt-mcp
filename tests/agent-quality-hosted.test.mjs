@@ -21,6 +21,7 @@ test("P4 hosted Worker exposes five read-only bounded tools",async()=>{
     assert.equal(t.annotations.readOnlyHint,true);
     assert.equal(t.annotations.destructiveHint,false);
     assert.ok(t.inputSchema);
+    assert.ok(t.outputSchema, name + ' must advertise structured result contract');
   }
   assert.equal(tools.length,22);
 });

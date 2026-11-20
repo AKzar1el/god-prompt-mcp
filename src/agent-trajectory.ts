@@ -80,11 +80,20 @@ export function auditAgentTrajectory(events: TrajectoryEvent[]) {
   };
 }
 
+export const TrajectoryOutputSchema=z.object({
+  status:z.enum(["RECHECK","NO_DETERMINISTIC_SIGNALS"]),
+  findings:z.array(z.object({code:z.string(),severity:z.enum(["high","medium","low"]),event_index:z.number().int(),recommendation:z.string()}).strict()),
+  truncated:z.boolean(),events_reviewed:z.number().int(),reported_writes:z.number().int(),
+  reported_successful_verifications:z.number().int(),reported_completions:z.number().int(),
+  independently_verified:z.literal(false),completion_authorized:z.literal(false),warning:z.string(),
+}).strict();
+
 export function registerTrajectoryTool(server: McpServer): void {
   server.registerTool("audit_agent_trajectory", {
     title: "Audit reported agent trajectory",
     description: "Read-only review of bounded, sanitized event metadata for repeated failures, scope drift, stale verification and premature completion. No raw logs or independent execution evidence; cannot authorize an agent.",
     inputSchema: TrajectoryInputSchema.shape,
+    outputSchema:TrajectoryOutputSchema.shape,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async ({ events }) => {
     const output = auditAgentTrajectory(events);

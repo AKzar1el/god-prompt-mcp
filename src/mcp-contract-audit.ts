@@ -77,11 +77,18 @@ export function reviewMcpToolContracts(tools: ContractTool[]) {
   };
 }
 
+export const McpContractOutputSchema=z.object({
+  status:z.enum(["CONTRACT_REVIEW_HINTS","NO_DETERMINISTIC_SIGNALS"]),
+  issues:z.array(z.object({tool_index:z.number().int(),code:z.string(),severity:z.enum(["high","medium","low"]),advice:z.string()}).strict()),
+  truncated:z.boolean(),reviewed_tools:z.number().int(),independently_verified:z.literal(false),warning:z.string(),
+}).strict();
+
 export function registerMcpContractAuditTool(server: McpServer): void {
   server.registerTool("review_mcp_tool_contracts",{
     title:"Review supplied MCP contracts",
     description:"Read-only bounded design audit of MCP tool descriptions, input/output schemas and annotations. Not a protocol validator, vulnerability scanner or permission grant.",
     inputSchema:McpContractAuditSchema.shape,
+    outputSchema:McpContractOutputSchema.shape,
     annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false},
   },async ({tools})=>{
     const output=reviewMcpToolContracts(tools);

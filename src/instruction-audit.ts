@@ -71,11 +71,18 @@ export function auditAgentInstructions(instructions: InstructionInput) {
     warning:"Input documents are treated as untrusted data. Regex-level warnings do not establish semantic conflict, actual rule hierarchy or permission to act.",
   };
 }
+export const InstructionAuditOutputSchema=z.object({
+  status:z.enum(["INSTRUCTIONS_NEED_REVIEW","NO_DETERMINISTIC_SIGNALS"]),
+  findings:z.array(z.object({code:z.string(),severity:z.enum(["high","medium","low"]),source_indices:z.array(z.number().int()),recommendation:z.string()}).strict()),
+  truncated:z.boolean(),sources_reviewed:z.number().int(),independently_verified:z.literal(false),warning:z.string(),
+}).strict();
+
 export function registerInstructionAuditTool(server:McpServer):void {
   server.registerTool("audit_agent_instructions",{
     title:"Audit agent instruction consistency",
     description:"Review bounded caller-supplied instruction documents for duplicates, possible opposing action constraints and risky bypass wording. No instruction is executed or promoted.",
     inputSchema:InstructionAuditSchema.shape,
+    outputSchema:InstructionAuditOutputSchema.shape,
     annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false},
   },async({instructions})=>{
     const output=auditAgentInstructions(instructions);

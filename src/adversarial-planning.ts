@@ -69,11 +69,24 @@ export function designAdversarialTests(fields:Field[],maxCases:number) {
     warning:"These are deterministic test design suggestions. Actual samples, oracles, execution, security findings and invariants need independent verification.",
   };
 }
+export const AdversarialOutputSchema=z.object({
+  status:z.enum(["INVALID_OR_AMBIGUOUS_CONTRACT","PARTIAL_ADVERSARIAL_PLAN","DRAFT_ADVERSARIAL_PLAN"]),
+  cases:z.array(z.object({
+    id:z.string(),field_id:z.string(),
+    category:z.enum(["negative","boundary","property","metamorphic","trust_boundary"]),
+    variation:z.string(),expected:z.string(),status:z.literal("PROPOSED_NOT_RUN"),
+  }).strict()),
+  issues:z.array(z.object({code:z.string(),field_id:z.string()}).strict()),
+  total_fields:z.number().int(),truncated:z.boolean(),tests_executed:z.literal(0),
+  independently_verified:z.literal(false),warning:z.string(),
+}).strict();
+
 export function registerAdversarialPlanningTool(server:McpServer):void {
   server.registerTool("design_adversarial_tests",{
     title:"Design adversarial and property test cases",
     description:"Generate bounded negative, boundary, metamorphic, property and trust-boundary test ideas from explicit caller-supplied field contracts. Never runs or generates executable tests.",
     inputSchema:AdversarialPlanSchema.shape,
+    outputSchema:AdversarialOutputSchema.shape,
     annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false},
   },async(args)=>{
     const input=AdversarialPlanSchema.parse(args);
