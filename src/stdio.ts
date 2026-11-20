@@ -16,6 +16,7 @@ import { registerImpactTool } from "./change-impact.js";
 import { registerMcpContractAuditTool } from "./mcp-contract-audit.js";
 import { registerInstructionAuditTool } from "./instruction-audit.js";
 import { registerAdversarialPlanningTool } from "./adversarial-planning.js";
+import { registerQualityView } from "./quality-view.js";
 import {
   registerCodexifyCheckpointTool,
   CODEXIFY_CHECKPOINT_INSTRUCTIONS,
@@ -48,6 +49,7 @@ function createServer(): McpServer {
   registerMcpContractAuditTool(server);
   registerInstructionAuditTool(server);
   registerAdversarialPlanningTool(server);
+  registerQualityView(server);
   if (enabled) registerCodexifyCheckpointTool(server);
   registerGodPromptSkillExtension(server);
   return server;

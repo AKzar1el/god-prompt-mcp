@@ -31,3 +31,13 @@ The remote Cloudflare Worker receives input supplied to a tool call. Redact befo
 ## Portable vs Codex metadata
 
 The portable plugin root `mcp.json` names `god-prompt-mcp` with `streamable-http`; the Codex compatibility file `.mcp.json` references the **same** URL and logical server using its documented `http` transport label. They are two packaging representations, **not** two independent MCP services. One client should load its supported manifest, not both.
+
+## P5 local context, evidence and visual fallback
+
+The optional local npm command `godprompt-repo-map <authorized-root> <changed-relative-paths...>` returns a bounded static map of JavaScript/TypeScript relative imports, exported symbol names, and candidate test imports. It does not execute code or supply a true AST, dynamic call graph, or verified coverage. Reject/skip symlinks and aliases; inspect the local report before selectively supplying safe dependency edges to `trace_change_impact`.
+
+`godprompt-proof pack --contract contract.json --repo owner/name --sha <40-char-sha> --map mapping.json [--snapshot connector.json] [--codexify export.json]` uses the existing local proof adapters. It collects pinned GitHub check evidence and optional Codexify receipts with conflict detection, but does **not** authenticate approvals, sign receipts or prove completion; do not automatically upload bundled private evidence. These CLI tools require a deliberately installed local Node package and are never invoked by the remote Worker.
+
+`audit_agent_trajectory` accepts sanitized optional per-event token counts and an optional budget. Its repetition, write-streak and final-verification findings are heuristics, not authoritative activity monitoring. The optional MCP Apps view for trajectory/impact results is read-only, has a local-only sandbox, and must never replace accessible text and structured outputs. If unsupported or missing, consume normal MCP results without attempting to install a UI runtime.
+
+Do not interpret static benchmark scores or the twelve intentionally failing microtask graders as measured model improvements. Controlled real coding-agent runs and independently graded task completions are necessary for performance claims.
