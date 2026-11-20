@@ -87,7 +87,7 @@ The hosted endpoint exposes the read-only GodPrompt tools included in its **curr
 
 ### Agent Skills over MCP (SEP-2640)
 
-On MCP 2026-07-28, both the hosted and stdio servers advertise the Final `io.modelcontextprotocol/skills` extension from SEP-2640. Supporting clients can discover the same relevance-scoped `god-prompt` Agent Skill with `skills/list` / `skills/get`, then fetch `SKILL.md` and its three reference files through `resources/read`. The skill manifest includes SHA-256 digests and exact byte sizes so clients can verify what they import. Clients that do not implement this extension continue to use the seven existing GodPrompt tools normally.
+On MCP 2026-07-28, both the hosted and stdio servers advertise the Final `io.modelcontextprotocol/skills` extension from SEP-2640. Supporting clients can discover the same relevance-scoped `god-prompt` Agent Skill with `skills/list` / `skills/get`, then fetch `SKILL.md` and its three reference files through `resources/read`. The skill manifest includes SHA-256 digests and exact byte sizes so clients can verify what they import. Clients that do not implement this extension continue to use the 22 public GodPrompt tools normally.
 
 This transports GodPrompt's existing skill package; it does not force the skill into every request or change the host's own approval, verification, or activation policy. See the [MCP Skills extension specification](https://modelcontextprotocol.io/extensions/skills/overview).
 
@@ -319,7 +319,7 @@ Warp can use GodPrompt as both an Agent Skill and a local MCP server. Install th
 npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent warp --copy -y
 ```
 
-Warp discovers project skills from `.agents/skills/` and `.warp/skills/`. For MCP tools, add a CLI-based MCP server in Warp with command `npx` and arguments `-y`, `god-prompt-mcp`; Warp's Oz CLI can also receive MCP configuration through `oz agent run --mcp`. The skill supplies the reusable workflow while MCP exposes GodPrompt's seventeen public tools in v1.2.1. Node.js 22+ is required for the MCP server.
+Warp discovers project skills from `.agents/skills/` and `.warp/skills/`. For MCP tools, add a CLI-based MCP server in Warp with command `npx` and arguments `-y`, `god-prompt-mcp`; Warp's Oz CLI can also receive MCP configuration through `oz agent run --mcp`. The skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### Goose
 
@@ -335,7 +335,7 @@ Goose discovers the copied skill under `.goose/skills/god-prompt/`. To expose Go
 goose session --with-extension "npx -y god-prompt-mcp@1.3.0"
 ```
 
-Goose currently treats Agent Skills and MCP extensions as separate native surfaces, so this path does not depend on Agent Plugins support. The skill supplies the reusable workflow while MCP exposes GodPrompt's seventeen public tools in v1.2.1. Node.js 22+ is required for the MCP server.
+Goose currently treats Agent Skills and MCP extensions as separate native surfaces, so this path does not depend on Agent Plugins support. The skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### Zed
 
@@ -380,7 +380,7 @@ The add command writes the project MCP configuration for you. If you prefer to c
 
 OpenCode 1.x used the same server entry directly under `mcp`; the v2 schema shown above nests named servers under `mcp.servers`.
 
-The Agent Skill provides the reusable workflow; MCP adds the seven progressive-disclosure tools. Node.js 22+ is required for the MCP server.
+The Agent Skill provides the reusable workflow; MCP adds the 22 public read-only tools available in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### TraeCode
 
@@ -403,7 +403,7 @@ The Trae target installs the skill under `.trae/skills/god-prompt/`, where TraeC
 }
 ```
 
-TraeCode also supports the portable `.agents/skills/` convention when **Enable .agents Skills Directory** is turned on in its import settings. Treat project MCP configuration as executable workspace configuration and enable it only in repositories you trust. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seventeen public tools in v1.2.1. Node.js 22+ is required for the MCP server.
+TraeCode also supports the portable `.agents/skills/` convention when **Enable .agents Skills Directory** is turned on in its import settings. Treat project MCP configuration as executable workspace configuration and enable it only in repositories you trust. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### OpenClaw
 
@@ -420,7 +420,7 @@ openclaw mcp add god-prompt --command npx --arg -y --arg god-prompt-mcp@1.3.0
 openclaw mcp probe god-prompt
 ```
 
-`mcp probe` opens a live MCP connection and reports the discovered capabilities, making it a direct verification step after registration. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seventeen public tools in v1.2.1. Node.js 22+ is required for the MCP server.
+`mcp probe` opens a live MCP connection and reports the discovered capabilities, making it a direct verification step after registration. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### Qoder
 
@@ -443,7 +443,7 @@ The Qoder target installs the skill under `.qoder/skills/god-prompt/`, where Qod
 }
 ```
 
-Qoder requires approval before using project-level MCP servers by default. After adding or changing the server, start a new session or run `/mcp reload`, then use `/mcp` to verify the connection. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's seventeen public tools in v1.2.1. Node.js 22+ is required for the MCP server.
+Qoder requires approval before using project-level MCP servers by default. After adding or changing the server, start a new session or run `/mcp reload`, then use `/mcp` to verify the connection. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### Qwen Code
 
@@ -466,7 +466,7 @@ This installs GodPrompt under `.qwen/skills/god-prompt/`, where Qwen Code can di
 }
 ```
 
-Restart Qwen Code after changing MCP configuration, then open `/mcp` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's seventeen public tools in v1.2.1. Node.js 22+ is required for the MCP server.
+Restart Qwen Code after changing MCP configuration, then open `/mcp` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### Kimi Code
 
@@ -515,7 +515,7 @@ If you only want the portable skill, place the complete skill directory at `.age
 devin mcp add god-prompt -- npx -y god-prompt-mcp
 ```
 
-Run `devin mcp list` to verify the direct server registration. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's seventeen public tools in v1.2.1. Node.js 22+ is required for the MCP server.
+Run `devin mcp list` to verify the direct server registration. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
 
 ### Cursor
 
