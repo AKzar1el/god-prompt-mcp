@@ -1,0 +1,102 @@
+name: Verify combined OpenAI Skill and MCP preview
+
+on:
+  pull_request:
+    paths:
+      - distribution/openai/**
+      - tests/openai-combined-preview.test.mjs
+      - tests/openai-directory.test.mjs
+      - scripts/verify-openai-remote.mjs
+      - .github/workflows/verify-openai-plugin.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Validate packaging, routing and hosted MCP
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Build and verify the updated distribution metadata
+        run: |
+          npm run build
+          node --test tests/openai-directory.test.mjs tests/openai-combined-preview.test.mjs
+      - name: Verify actual hosted read-only tools, not only local source
+        run: node scripts/verify-openai-remote.mjs
+      - name: Package unpublished plugin ZIP without external dependencies
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          root = Path("distribution/openai")
+          required = (
+            "plugin.json", "mcp.json", ".mcp.json", ".codex-plugin/plugin.json",
+            "skills/god-prompt/SKILL.md",
+            "skills/god-prompt/agents/openai.yaml",
+            "skills/god-prompt/references/tool-routing.md",
+            "review-tests.json", "review-tool-tests.json",
+          )
+          for path in required:
+              assert (root / path).is_file(), path
+          out = Path("out/godprompt-openai-combined-preview.zip")
+          out.parent.mkdir(parents=True, exist_ok=True)
+          with ZipFile(out, "w", ZIP_DEFLATED) as zipfile:
+              for path in sorted(root.rglob("*")):
+                  if path.is_file():
+                      rel = path.relative_to(root)
+                      assert ".." not in rel.parts and not any(part.lower() in ("hooks","node_modules") for part in rel.parts)
+                      zipfile.write(path, Path("god-prompt") / rel)
+          with ZipFile(out) as zipfile:
+              names = zipfile.namelist()
+              assert zipfile.testzip() is None
+              for path in required:
+                  assert "god-prompt/" + path in names, path
+              assert len(names) == len(set(names))
+          print("Validated unpublished combined Skill+MCP ZIP", out, out.stat().st_size)
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: godprompt-openai-combined-preview
+          path: out/godprompt-openai-combined-preview.zip
+          if-no-files-found: error
+          retention-days: 3
+      - name: Validate and package standalone GodPrompt Skill ZIP
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          skill = Path("distribution/openai/skills/god-prompt")
+          entry = skill / "SKILL.md"
+          metadata = skill / "agents/openai.yaml"
+          assert entry.is_file() and metadata.is_file()
+          content = entry.read_text("utf-8")
+          assert content.startswith("---\nname: god-prompt\n")
+          assert content.count("\n---\n") >= 1
+          root = Path("out/skill.zip")
+          root.parent.mkdir(parents=True, exist_ok=True)
+          with ZipFile(root,"w",ZIP_DEFLATED) as bundle:
+              for file in sorted(skill.rglob("*")):
+                  if file.is_file():
+                      bundle.write(file, Path("god-prompt") / file.relative_to(skill))
+          with ZipFile(root) as bundle:
+              assert bundle.testzip() is None
+              names = bundle.namelist()
+              for mandatory in ("SKILL.md","agents/openai.yaml","references/tool-routing.md"):
+                  assert "god-prompt/" + mandatory in names
+          print("Validated standalone Skill package", root, root.stat().st_size)
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: godprompt-skill-preview
+          path: out/skill.zip
+          if-no-files-found: error
+          retention-days: 3

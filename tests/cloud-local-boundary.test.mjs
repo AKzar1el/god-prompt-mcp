@@ -25,7 +25,7 @@ test("local CLI is opt-in, separately packaged, and does not add cloud storage",
   const stdio = await read("src/stdio.ts");
   assert.equal(pkg.bin["godprompt-proof"], "bin/godprompt-proof.mjs");
   assert.ok(pkg.files.includes("bin/godprompt-proof.mjs"));
-  assert.deepEqual(Object.keys(pkg.dependencies).sort(), ["@modelcontextprotocol/server", "zod"]);
+  assert.deepEqual(Object.keys(pkg.dependencies).sort(), ["@modelcontextprotocol/server", "parse-diff", "zod"]);
   assert.ok(!("kv_namespaces" in wrangler));
   assert.ok(!("d1_databases" in wrangler));
   assert.ok(!("r2_buckets" in wrangler));

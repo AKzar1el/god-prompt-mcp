@@ -23,7 +23,7 @@ const reviewTests = JSON.parse(
 );
 const mcpbIgnore = await readFile(new URL("../.mcpbignore", import.meta.url), "utf8");
 
-test("keeps the OpenAI review package portable and skill-only", () => {
+test("keeps the OpenAI review package portable and combined", () => {
   assert.equal(plugin.$schema, "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json");
   assert.equal(plugin.name, "god-prompt");
   assert.equal(plugin.version, packageJson.version);
@@ -39,7 +39,7 @@ test("keeps the scoped package compatible with OpenAI Agents API plugin loading"
   assert.equal(codexPlugin.version, packageJson.version);
   assert.equal(codexPlugin.description, plugin.description);
   assert.equal(codexPlugin.skills, "./skills/");
-  assert.equal(codexPlugin.mcpServers, undefined);
+  assert.equal(codexPlugin.mcpServers, "./.mcp.json");
 });
 
 test("documents current ChatGPT hosted MCP setup with a legacy fallback", async () => {

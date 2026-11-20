@@ -236,7 +236,7 @@ test("GitHub connector snapshot works fully offline and never claims source auth
 });
 test("Codexify adapter accepts structured exec_command output and omits raw private logs", async () => {
   const prepared = await contract();
-  const bundle = codexifyEvidence({
+  const bundle = await codexifyEvidence({
     contract: prepared,
     exportData: {
       changed_files: ["src/parser.ts", "tests/parser.test.ts"],
@@ -261,7 +261,7 @@ test("Codexify adapter accepts structured exec_command output and omits raw priv
 });
 test("Codexify adapter refuses to launder a claimed exit code into tool evidence", async () => {
   const prepared = await contract();
-  const bundle = codexifyEvidence({
+  const bundle = await codexifyEvidence({
     contract: prepared,
     exportData: {
       changed_files: [],
@@ -281,7 +281,7 @@ test("Codexify adapter refuses to launder a claimed exit code into tool evidence
 });
 test("Codexify MCP tool errors stay on HOLD even when text embeds an exit code", async () => {
   const prepared = await contract();
-  const bundle = codexifyEvidence({
+  const bundle = await codexifyEvidence({
     contract: prepared,
     exportData: {
       changed_files: [],
