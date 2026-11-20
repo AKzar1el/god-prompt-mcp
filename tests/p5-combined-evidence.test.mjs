@@ -22,7 +22,7 @@ async function fixture(){
 test("P5 combined local collector reuses pinned GitHub/CodeXify receipts without claim of authorization",async()=>{
  const v=await fixture();
  const result=await combinedEvidence({repo:"AKzar1el/sample",sha:SHA,
-   mapping:{"VC-01":"verify (22)"},...v});
+   mapping:{"VC-01":"verify (22)"},contract:v.contract,snapshot:v.snapshot,codexifyExport:v.exportData});
  assert.equal(result.adapter,"combined_github_codexify");
  assert.equal(result.observed_sources,2);
  assert.deepEqual(result.review_input.changed_files,["src/parser.ts","tests/parser.test.ts"]);
@@ -36,7 +36,7 @@ test("P5 combined local collector invalidates contradictory host evidence",async
  const v=await fixture();
  v.exportData.checks[0].response.upstream_result.exit_code=1;
  const r=await combinedEvidence({repo:"AKzar1el/sample",sha:SHA,
-   mapping:{"VC-01":"verify (22)"},...v});
+   mapping:{"VC-01":"verify (22)"},contract:v.contract,snapshot:v.snapshot,codexifyExport:v.exportData});
  assert.equal(r.receipt_conflicts,1);
  assert.equal(r.review_input.checks[0].exit_code,null);
  assert.equal(r.review_input.checks[0].source,"self_report");
@@ -46,11 +46,11 @@ test("P5 combined collector detects incomplete and inconsistent inputs without n
  const v=await fixture();
  v.snapshot.commit.sha="b".repeat(40);
  await assert.rejects(()=>combinedEvidence({repo:"AKzar1el/sample",sha:SHA,
-   mapping:{"VC-01":"verify (22)"},...v}),/SHA/);
+   mapping:{"VC-01":"verify (22)"},contract:v.contract,snapshot:v.snapshot,codexifyExport:v.exportData}),/SHA/);
  const w=await fixture();
  w.exportData.checks[0].command="npm run deploy";
  const r=await combinedEvidence({repo:"AKzar1el/sample",sha:SHA,
-   mapping:{"VC-01":"verify (22)"},...w});
+   mapping:{"VC-01":"verify (22)"},contract:w.contract,snapshot:w.snapshot,codexifyExport:w.exportData});
  assert.equal(r.receipt_conflicts,1);
  assert.equal(r.review_input.checks[0].exit_code,null);
 });

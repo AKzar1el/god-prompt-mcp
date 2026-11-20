@@ -1,5 +1,6 @@
 /** Read-only, deterministic review of caller-supplied agent events. No host log access. */
 import { McpServer } from "@modelcontextprotocol/server";
+import { QUALITY_UI_URI } from "./quality-view.js";
 import * as z from "zod/v4";
 
 export const TrajectoryEventSchema = z.object({
@@ -130,6 +131,7 @@ export function registerTrajectoryTool(server: McpServer): void {
     inputSchema: TrajectoryInputSchema.shape,
     outputSchema:TrajectoryOutputSchema.shape,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    _meta: { ui: { resourceUri: QUALITY_UI_URI } },
   }, async ({ events, budget_tokens }) => {
     const output = auditAgentTrajectory(events, budget_tokens);
     return { structuredContent: output, content: [{ type: "text", text: JSON.stringify(output) }] };

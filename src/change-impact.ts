@@ -1,5 +1,6 @@
 /** Read-only dependency impact and evidence coverage from caller-supplied relationships. */
 import { McpServer } from "@modelcontextprotocol/server";
+import { QUALITY_UI_URI } from "./quality-view.js";
 import * as z from "zod/v4";
 
 const file = z.string().trim().min(1).max(240).regex(/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[A-Za-z0-9_.\/-]+$/);
@@ -119,6 +120,7 @@ export function registerImpactTool(server: McpServer): void {
     inputSchema: ImpactSchema.shape,
     outputSchema:ImpactOutputSchema.shape,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    _meta: { ui: { resourceUri: QUALITY_UI_URI } },
   }, async (args) => {
     const output = traceChangeImpact(ImpactSchema.parse(args));
     return {structuredContent:output,content:[{type:"text",text:JSON.stringify(output)}]};
