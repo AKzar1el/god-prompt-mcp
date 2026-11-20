@@ -85,10 +85,41 @@ whether Preview 10 is active. Do not disrupt parallel agents.
   sources and did not include GodPrompt. This remains an unverified live
   activation; successful standalone execution is not shared integration.
 - `codexify` 2.4.0 CLI exposes service restart, but no documented
-  GodPrompt-only/source-scoped reload. The next activation step is an
-  explicitly coordinated **Codexify background service restart** after
-  parallel work is idle, then immediately inspect the refreshed source
-  list and run real checkpoint calls through Codexify.
+  GodPrompt-only/source-scoped reload. Live source recovery needs a
+  supported targeted reload or an explicitly coordinated service change;
+  do not repeatedly ask the owner to restart without diagnosing failures.
 
 No shared service was restarted, no configuration was mutated, and no
 release or remote Git operation was performed during this check.
+
+## Startup failure: root-cause evidence (02:36 Europe/Ljubljana)
+
+- Existing service log `~/.codexify/logs/codexify.log.1` records service
+  launch at **2026-11-19 23:12:51 UTC** (00:12:51 Ljubljana time).
+  Codexify discovered the GodPrompt config key at startup, but at
+  **23:15:40 UTC** reported:
+  `skipping MCP server 'god-prompt-mcp': timed out after 30s waiting for
+  'god-prompt-mcp' to initialise`. The startup source table lists it as
+  **FAILED**; later private source listings omit it. This is a concrete
+  startup failure, not evidence that the tool was never configured.
+- The **90-second** timeout currently shown in `~/.codex/config.toml` was
+  saved at **00:40 Ljubljana time**, after the failed service startup.
+  Do **not** claim Codexify ignored 90 seconds in that earlier startup;
+  only the earlier 30-second effective setting is evidenced by the log.
+- In three fresh stand-alone launches of the exact Preview 10 MCP
+  executable, the entire `initialize` plus `tools/list` took **2.202s**,
+  **1.634s**, and **1.207s** respectively. This rules out a consistent
+  >30-second startup defect in the installed package, but not occasional
+  contention, blocking or delayed protocol initialization in Codexify.
+- Separate Codexify PR **#11**, `feat(mcp): targeted transactional
+  upstream hot reload without global restart`, contains code and tests
+  for failed-source recovery. A factual reproduction and regression
+  request was posted to the PR conversation; that branch was **not**
+  modified, merged or deployed during this investigation.
+
+Current conclusion: the shared process retains an MCP catalog from a
+startup where GodPrompt failed initialization, while the installed
+Preview 10 candidate itself passes direct protocol tests. Recovery
+should reinitialize **only this source**, honor configured timeouts, and
+preserve unrelated live MCP sessions. Until supported source recovery
+is active, do not claim shared Codexify Preview 10 is verified.
