@@ -7,7 +7,7 @@ test("P4.2 walks reverse dependency edges and chooses tests by impact", () => {
     changed_files:["src/api.ts"],
     dependencies:[{consumer:"src/service.ts",dependency:"src/api.ts"},{consumer:"src/ui.ts",dependency:"src/service.ts"}],
     requirements:[{id:"REQ-1",files:["src/ui.ts"]}],
-    tests:[{id:"unit-api",covers_files:["src/api.ts"]},{id:"e2e-ui",covers_requirements:["REQ-1"]}],
+    tests:[{id:"unit-api",covers_files:["src/api.ts"]},{id:"e2e-ui",covers_requirements:["REQ-1"],covers_files:["src/service.ts","src/ui.ts"]}],
     receipts:[{test_id:"unit-api",status:"passed"},{test_id:"e2e-ui",status:"passed"}],
   });
   const result = traceChangeImpact(input);

@@ -51,7 +51,7 @@ export function traceChangeImpact(input: Normalized) {
   const impacted = input.requirements.filter(r => r.files.some(path => affected.has(path)));
   const targets = new Set([
     ...impacted.map(r => "requirement:" + r.id),
-    ...input.changed_files.map(path => "file:" + path),
+    ...[...affected.keys()].map(path => "file:" + path),
   ]);
   const selected: Array<{id:string;covers:string[];reported_status:string}> = [];
   const used = new Set<string>();
