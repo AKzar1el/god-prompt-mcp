@@ -8,6 +8,9 @@ import {
 } from "./server.js";
 import { registerGodPromptSkillExtension } from "./skills.js";
 import { registerWorkContractTools, WORK_CONTRACT_INSTRUCTIONS } from "./work-contract.js";
+import { registerPublicEngineeringTools } from "./public-engineering.js";
+import { registerTailoredGuidanceTool } from "./tailored-guidance.js";
+import { registerDecisionSupportTools } from "./decision-support.js";
 import {
   registerCodexifyCheckpointTool,
   CODEXIFY_CHECKPOINT_INSTRUCTIONS,
@@ -32,6 +35,9 @@ function createServer(): McpServer {
   const server = new McpServer(identity, { instructions });
   registerGodPromptTools(server);
   registerWorkContractTools(server);
+  registerPublicEngineeringTools(server);
+  registerTailoredGuidanceTool(server);
+  registerDecisionSupportTools(server);
   if (enabled) registerCodexifyCheckpointTool(server);
   registerGodPromptSkillExtension(server);
   return server;

@@ -9,14 +9,22 @@ const packageJson = JSON.parse(
 );
 
 const EXPECTED_TOOLS = [
+  "assess_release_readiness",
+  "audit_requirements",
+  "build_test_matrix",
   "classify_task",
+  "compare_evaluation_runs",
+  "create_context_handoff",
   "create_work_contract",
+  "diagnose_failure",
   "get_anti_patterns",
   "get_core_skill",
   "get_gates",
   "get_god_prompt",
   "get_protocols",
+  "get_tailored_guidance",
   "get_version",
+  "review_code_change",
   "review_work_evidence",
 ];
 
@@ -113,7 +121,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
 
   assert.equal(initialized.serverInfo.name, "god-prompt-mcp");
   assert.equal(initialized.serverInfo.version, packageJson.version);
-  assert.match(initialized.instructions, /Start with get_core_skill/i);
+  assert.match(initialized.instructions, /get_tailored_guidance to load only the needed phase/i);
   assert.match(initialized.instructions, /classify_task/i);
   assert.match(initialized.instructions, /All GodPrompt tools are read-only/i);
   assert.match(initialized.instructions, /create_work_contract/i);
@@ -613,7 +621,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.equal(workerResponse.status, 200);
   const workerInitializeText = await workerResponse.text();
   assert.match(workerInitializeText, /god-prompt-mcp/);
-  assert.match(workerInitializeText, /Start with get_core_skill/i);
+  assert.match(workerInitializeText, /get_tailored_guidance to load only the needed phase/i);
   assert.match(workerInitializeText, /All GodPrompt tools are read-only/i);
 
   const workerModernDiscover = new Request("https://example.test/mcp", {
@@ -652,7 +660,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     workerModern.result?._meta?.["io.modelcontextprotocol/serverInfo"]?.version,
     packageJson.version
   );
-  assert.match(workerModern.result?.instructions, /Start with get_core_skill/i);
+  assert.match(workerModern.result?.instructions, /get_tailored_guidance to load only the needed phase/i);
   assert.match(workerModern.result?.instructions, /classify_task/i);
   assert.match(workerModern.result?.instructions, /All GodPrompt tools are read-only/i);
   assert.match(workerModern.result?.instructions, /create_work_contract/i);
@@ -737,7 +745,7 @@ test("serves the MCP 2026-07-28 era over stdio", async (t) => {
     discovered._meta?.["io.modelcontextprotocol/serverInfo"]?.version,
     packageJson.version
   );
-  assert.match(discovered.instructions, /Start with get_core_skill/i);
+  assert.match(discovered.instructions, /get_tailored_guidance to load only the needed phase/i);
   assert.match(discovered.instructions, /classify_task/i);
   assert.match(discovered.instructions, /All GodPrompt tools are read-only/i);
   assert.match(discovered.instructions, /create_work_contract/i);
