@@ -10,6 +10,7 @@ import { registerWorkContractTools, WORK_CONTRACT_INSTRUCTIONS } from "./work-co
 import { registerPublicEngineeringTools } from "./public-engineering.js";
 import { registerTailoredGuidanceTool } from "./tailored-guidance.js";
 import { registerDecisionSupportTools } from "./decision-support.js";
+import { registerTrajectoryTool } from "./agent-trajectory.js";
 
 function createServer(): McpServer {
   const server = new McpServer(SERVER_INFO, {
@@ -21,6 +22,7 @@ function createServer(): McpServer {
   registerPublicEngineeringTools(server);
   registerTailoredGuidanceTool(server);
   registerDecisionSupportTools(server);
+  registerTrajectoryTool(server);
   registerGodPromptSkillExtension(server);
   return server;
 }
