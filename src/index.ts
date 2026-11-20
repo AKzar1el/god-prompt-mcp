@@ -12,6 +12,9 @@ import { registerTailoredGuidanceTool } from "./tailored-guidance.js";
 import { registerDecisionSupportTools } from "./decision-support.js";
 import { registerTrajectoryTool } from "./agent-trajectory.js";
 import { registerImpactTool } from "./change-impact.js";
+import { registerMcpContractAuditTool } from "./mcp-contract-audit.js";
+import { registerInstructionAuditTool } from "./instruction-audit.js";
+import { registerAdversarialPlanningTool } from "./adversarial-planning.js";
 
 function createServer(): McpServer {
   const server = new McpServer(SERVER_INFO, {
@@ -25,6 +28,9 @@ function createServer(): McpServer {
   registerDecisionSupportTools(server);
   registerTrajectoryTool(server);
   registerImpactTool(server);
+  registerMcpContractAuditTool(server);
+  registerInstructionAuditTool(server);
+  registerAdversarialPlanningTool(server);
   registerGodPromptSkillExtension(server);
   return server;
 }
