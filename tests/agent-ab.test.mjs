@@ -61,6 +61,7 @@ test("P5 original microtask suite contains twelve independently failing baseline
   for(const task of suite.tasks){
     const r=spawnSync(process.execPath,["--test","--test-name-pattern="+task.task_id,path],{
       encoding:"utf8",timeout:10000,windowsHide:true,maxBuffer:512*1024,
+      env:{...process.env,NODE_TEST_CONTEXT:undefined},
     });
     assert.equal(r.status,1,"Fixture must fail before an agent repairs "+task.task_id+": "+r.stderr);
     assert.ok(r.stdout.includes("not ok"),task.task_id+" must execute a real failing test");

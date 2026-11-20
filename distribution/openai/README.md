@@ -1,19 +1,12 @@
-# OpenAI Plugin Directory review package
+# OpenAI Plugin Directory — GodPrompt Skill + MCP preview
 
-This directory is a review-oriented, skill-only GodPrompt package for the OpenAI universal
-Plugin Directory. It intentionally does not replace the repository's broader portable skill.
-The public-directory variant narrows activation to identifiable software-engineering goals
-so normal general-purpose ChatGPT or Codex requests do not over-trigger GodPrompt.
+This folder is a review package for the scoped software-engineering GodPrompt Skill and **one existing public read-only remote MCP**. The Skill is activated for engineering tasks, selects a bounded advisory tool, and never infers authority from MCP output.
 
-The package is designed to be uploaded from `distribution/openai/` after ordinary developer
-authentication is available. `review-tests.json` contains the five positive and three
-negative cases required for review preparation. Actual public submission remains a human
-portal action and is not performed by repository automation.
+- `plugin.json`, `mcp.json`: portable ChatGPT plugin and the existing hosted GodPrompt MCP URL.
+- `.codex-plugin/plugin.json`, `.mcp.json`: the same MCP endpoint in a Codex-compatible manifest; clients must not register both formats simultaneously.
+- `skills/god-prompt/SKILL.md`, `agents/openai.yaml`, `references/tool-routing.md`: scoped Skill, single MCP dependency and efficient tool choice.
+- `review-tests.json` and `review-tool-tests.json`: positive, negative and adversarial activation fixtures; static fixtures do not prove live model behavior.
 
-The directory also includes `.codex-plugin/plugin.json` as the compatibility manifest used
-by current OpenAI Agents API plugin loading. It points only at the same scoped `skills/`
-package, so API use does not broaden the Plugin Directory trigger contract or add an MCP
-runtime dependency.
+P5 adds optional **local-only** `godprompt-repo-map` and `godprompt-proof pack` CLIs to the separately distributed npm package. Neither is present as a new public remote tool. The existing `trace_change_impact` and `audit_agent_trajectory` MCP tools consume sanitized caller-supplied summaries. Compatible clients may render an optional read-only evidence view; text and `structuredContent` remain authoritative fallback formats.
 
-Before submission, re-check the current OpenAI Plugin Directory documentation and confirm
-the portal still accepts a skill-only plugin with the same test fields and review policy.
+The GitHub workflow `verify-openai-plugin.yml` performs CI checks, hosted `tools/list`/`tools/call`, packages a preview plugin ZIP and a standalone Skill ZIP. It does not publish or update the public OpenAI Plugin Directory. Live installed-client activation, plugin portal review, and explicit publication remain separate quality gates.
