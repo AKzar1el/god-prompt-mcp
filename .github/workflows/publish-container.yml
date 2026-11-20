@@ -137,15 +137,23 @@ jobs:
             const listed = await request('tools/list', {});
             const names = (listed.result?.tools ?? []).map((tool) => tool.name).sort();
             const expected = [
+              'audit_requirements',
+              'assess_release_readiness',
+              'build_test_matrix',
               'classify_task',
+              'compare_evaluation_runs',
+              'create_context_handoff',
               'create_work_contract',
+              'diagnose_failure',
               'review_work_evidence',
               'get_anti_patterns',
               'get_core_skill',
               'get_gates',
               'get_god_prompt',
               'get_protocols',
+              'get_tailored_guidance',
               'get_version',
+              'review_code_change',
             ].sort();
             if (JSON.stringify(names) !== JSON.stringify(expected)) {
               throw new Error(`tool surface mismatch: ${JSON.stringify(names)}`);

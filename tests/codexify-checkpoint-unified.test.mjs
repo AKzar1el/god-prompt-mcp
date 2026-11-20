@@ -72,7 +72,7 @@ test("default published-style stdio stays at nine tools without opt-in", async (
   const client = await connect(t, "dist/stdio.js", { GODPROMPT_CODEXIFY_CHECKPOINT: "0" });
   assert.equal(client.initialized.serverInfo.version, "1.1.1");
   const listed = await client.send("tools/list");
-  assert.equal(listed.tools.length, 9);
+  assert.equal(listed.tools.length, 17);
   assert.equal(listed.tools.some((x) => x.name === TOOL), false);
 });
 
@@ -84,7 +84,7 @@ test("opt-in main stdio reuses checkpoint logic while preserving nine existing t
   assert.match(client.initialized.instructions, /rollout_checkpoint_required/);
   assert.match(client.initialized.instructions, /rollout_update/);
   const listed = await client.send("tools/list");
-  assert.equal(listed.tools.length, 10);
+  assert.equal(listed.tools.length, 18);
   assert.equal(listed.tools.filter((x) => x.name === TOOL).length, 1);
   const checkpointTool = listed.tools.find((x) => x.name === TOOL);
   assert.equal(checkpointTool.annotations.readOnlyHint, true);
@@ -371,7 +371,7 @@ test("public stateless HTTP MCP cannot expose the local tool, even when opt-in e
     assert.equal(response.status, 200);
     const payload = await response.json();
     const names = payload.result.tools.map((item) => item.name);
-    assert.equal(names.length, 9);
+    assert.equal(names.length, 17);
     assert.ok(!names.includes(TOOL));
   } finally {
     if (previous === undefined) delete process.env.GODPROMPT_CODEXIFY_CHECKPOINT;

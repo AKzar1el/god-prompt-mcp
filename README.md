@@ -27,8 +27,18 @@ To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.
 | `get_version` | Version info and server metadata |
 | `create_work_contract` | Create a portable, fingerprinted task contract with explicit scope, acceptance criteria and required verification commands |
 | `review_work_evidence` | Fail-closed review of reported changed paths, verification receipts, acceptance results and forbidden actions |
+| `review_code_change` | Inspect a supplied unified diff for file/line-anchored review signals; no repository access or semantic correctness claim (unreleased source) |
+| `audit_requirements` | Audit supplied requirements for missing acceptance scenarios, duplication and ambiguous criteria (unreleased source) |
+| `build_test_matrix` | Draft positive, negative, boundary and regression cases linked to supplied requirements; does not run tests (unreleased source) |
+| `get_tailored_guidance` | Retrieve bounded protocol/quality guidance for a task type and phase instead of loading complete reference files (unreleased source) |
+| `diagnose_failure` | Classify caller-supplied symptoms into testable hypotheses without echoing raw logs or asserting root cause (unreleased source) |
+| `assess_release_readiness` | Find blockers in reported CI, artifact provenance, rollback, migrations and approvals; never authorizes deployment (unreleased source) |
+| `create_context_handoff` | Produce bounded cross-chat/agent state with best-effort secret redaction and explicit verification limitations (unreleased source) |
+| `compare_evaluation_runs` | Compare caller-supplied paired cases and observed pass rates, durations and costs with sample-size warnings (unreleased source) |
 
 > **Version 1.1.1:** `create_work_contract` and `review_work_evidence` expand the seven original MCP tools to nine. Older hosted or version-pinned installations may still expose only the original seven until separately updated. Both tools remain stateless and read-only, and neither independently authenticates caller-supplied evidence. See the [task-contract workflow and security limitations](docs/task-contracts.md).
+
+**Development status:** The eight tools labeled *unreleased source* are on the public-engineering-toolkit development branch; their availability in source or CI does **not** mean the hosted MCP, npm release, GHCR image or OpenAI Plugin Directory has been updated. See [the implementation roadmap](docs/roadmaps/public-engineering-toolkit-20261120.md). The public remote and stdio releases should be checked separately when shipped.
 
 ### Optional local proof bridge (from v1.1.1)
 
@@ -42,7 +52,7 @@ GitHub can be read directly or from a **sanitized snapshot produced with an exis
 
 ## Progressive Disclosure
 
-For minimum context usage, start with `get_core_skill`, then load `get_protocols`, `get_gates`, or `get_anti_patterns` only when the task requires deeper guidance. Use `get_god_prompt` when you want everything in one shot.
+For minimum context usage in the **unreleased source toolkit**, route the task with `classify_task`, then call `get_tailored_guidance` for just its current phase. Load `get_core_skill` when the full core workflow is necessary, and `get_protocols`, `get_gates`, or `get_anti_patterns` only for deeper guidance. Existing released MCP installations can continue starting with `get_core_skill` until their tool catalogs are updated. Use `get_god_prompt` only when the complete single-file text is actually needed.
 
 ## Example queries
 
