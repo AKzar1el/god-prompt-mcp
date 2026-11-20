@@ -140,9 +140,24 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
   const escaped = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const matches = text.matchAll(new RegExp(`(^|[^a-z0-9])(${escaped})(?=$|[^a-z0-9])`, "g"));
   for (const match of matches) {
-    const prefix = text.slice(0, match.index + match[1].length).split(/[.!?;,]/).at(-1) ?? "";
-    // A forbidden downstream action is not a requested deployment action.
-    if (!/(?:\b(?:do not|don't|never|without|avoid|must not|should not|no)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,3})$/.test(prefix)) {
+    // Commas inside emphatic negations ("never, ever, deploy") do not end a clause.
+    const prefix = (text.slice(0, match.index + match[1].length).split(/[.!?;]/).at(-1) ?? "")
+      .replace(/,/g, " ");
+    // "Not only/just deploy" adds requirements; it does not forbid deployment.
+    // Negation can contain arbitrarily long modifiers before the action verb.
+    if (!/(?:\b(?:(?:(?:do|must|should)\s+not|(?:must|should)n't|don't|not)(?!\s+(?:only|just)\b)|never|without|avoid|no)\s+(?:(?!(?:but|then|however|instead)\b)[a-z0-9-]+\s+)*)$/.test(prefix)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function requestsShippingAfterInspection(text: string): boolean {
+  // An inspection of a "deploy workflow" or "release checklist" is not a request to ship.
+  const followup = /(?:[,;]\s*|\b(?:and|then|also|afterwards?|finally)\s+)(?:please\s+)?(?:deploy|release|push|merge|ship|publish|launch)\b/g;
+  const artifact = /^(?:workflows?|procedures?|checklists?|permissions?|polic(?:y|ies)|rules?|scripts?|configs?|configurations?|documentation|docs|notes|plans?|guides?|pipelines?|process(?:es)?|steps?|code|settings?)\b/;
+  for (const match of text.matchAll(followup)) {
+    if (!artifact.test(text.slice((match.index ?? 0) + match[0].length).trimStart())) {
       return true;
     }
   }
@@ -218,15 +233,23 @@ function classifyTask(description: string): {
   );
   const inspectionRequested = ["audit", "review", "check", "analyze", "inspect", "assess", "evaluate", "verify", "validate", "test"]
     .some((trigger) => hasTrigger(normalized, trigger));
+  // Polite questions are still inspection-first, not requests to ship named artifacts.
+  const inspectionFirst = /^(?:(?:please\s+)?(?:can|could|would|will)\s+you\s+(?:please\s+)?|please\s+)?(?:audit|review|check|analyze|inspect|assess|evaluate|verify|validate|test)\b/.test(normalized);
+  const explicitShipAfterReview = inspectionFirst && requestsShippingAfterInspection(normalized);
+  // Asking whether shipping is advisable is not an instruction to perform it.
+  const shippingAdviceQuestion = /^(?:should\s+(?:i|we|you)\b|(?:would|is)\s+it\s+(?:be\s+)?(?:safe|wise|a good idea)\s+to\b)/.test(normalized);
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
+    if (shippingAdviceQuestion && (type === "SHIP" || type === "BUILD")) continue;
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
     if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
       (type === "DEBUG" && !affirmativeDebug))) continue;
+    if (type === "SHIP" && inspectionFirst && !explicitShipAfterReview) continue;
     // CI, cron and workflow names are audit subjects, not requests to automate them.
-    if (type === "AUTOMATE" && inspectionRequested && !affirmativeBuild &&
+    if (type === "AUTOMATE" && inspectionRequested &&
+      (!affirmativeBuild || (inspectionFirst && explicitShipAfterReview)) &&
       !hasAffirmativeActionTrigger(normalized, "automate")) continue;
     // Mentions of bugs or errors must not override an explicit no-debug instruction.
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
