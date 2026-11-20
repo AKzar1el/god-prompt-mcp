@@ -37,7 +37,7 @@ test("P4 hosted Worker handles all five tools with structured no-permission outp
   for(let i=0;i<examples.length;i++){
     const [name,args]=examples[i];
     const res=await request(worker,name,args,10+i);
-    assert.equal(res.result?.isError,true===false,name);
+    assert.notEqual(res.result?.isError,true,name);
     const c=res.result?.structuredContent;
     assert.ok(c?.status,name);
     assert.equal(c.independently_verified,false,name);

@@ -68,15 +68,15 @@ function report(result) {
   return result.structuredContent ?? JSON.parse(result.content.find((c) => c.type === "text").text);
 }
 
-test("default published-style stdio stays at nine tools without opt-in", async (t) => {
+test("default stdio exposes 22 public tools without local checkpoint", async (t) => {
   const client = await connect(t, "dist/stdio.js", { GODPROMPT_CODEXIFY_CHECKPOINT: "0" });
   assert.equal(client.initialized.serverInfo.version, "1.2.1");
   const listed = await client.send("tools/list");
-  assert.equal(listed.tools.length, 17);
+  assert.equal(listed.tools.length, 22);
   assert.equal(listed.tools.some((x) => x.name === TOOL), false);
 });
 
-test("opt-in main stdio reuses checkpoint logic while preserving nine existing tools", async (t) => {
+test("opt-in stdio exposes 22 public tools plus local checkpoint", async (t) => {
   const client = await connect(t, "dist/stdio.js", { GODPROMPT_CODEXIFY_CHECKPOINT: "1" });
   assert.equal(client.initialized.serverInfo.name, "god-prompt-mcp");
   assert.equal(client.initialized.serverInfo.version, "1.2.1-checkpoint-preview.10");
@@ -84,7 +84,7 @@ test("opt-in main stdio reuses checkpoint logic while preserving nine existing t
   assert.match(client.initialized.instructions, /rollout_checkpoint_required/);
   assert.match(client.initialized.instructions, /rollout_update/);
   const listed = await client.send("tools/list");
-  assert.equal(listed.tools.length, 18);
+  assert.equal(listed.tools.length, 23);
   assert.equal(listed.tools.filter((x) => x.name === TOOL).length, 1);
   const checkpointTool = listed.tools.find((x) => x.name === TOOL);
   assert.equal(checkpointTool.annotations.readOnlyHint, true);
@@ -371,7 +371,7 @@ test("public stateless HTTP MCP cannot expose the local tool, even when opt-in e
     assert.equal(response.status, 200);
     const payload = await response.json();
     const names = payload.result.tools.map((item) => item.name);
-    assert.equal(names.length, 17);
+    assert.equal(names.length, 22);
     assert.ok(!names.includes(TOOL));
   } finally {
     if (previous === undefined) delete process.env.GODPROMPT_CODEXIFY_CHECKPOINT;
