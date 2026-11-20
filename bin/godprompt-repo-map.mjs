@@ -39,7 +39,15 @@ function symbols(text) {
 function resolveImport(consumer, spec, available) {
   const base=posix.normalize(posix.join(posix.dirname(consumer),spec));
   if(!safeRel(base))return null;
-  const variants=[base,...[...CODE_EXTS].map(ext=>base+ext),...["index.ts","index.tsx","index.js","index.mjs"].map(x=>base+"/"+x)];
+  // TypeScript NodeNext commonly imports './module.js' while source is './module.ts'.
+  // Prefer an exact runtime file if present; only fall back to matching TS source.
+  const extension=posix.extname(base);
+  const sourceExtensions={
+    ".js":[".ts",".tsx"],".jsx":[".tsx"],".mjs":[".mts"],".cjs":[".cts"],
+  };
+  const alternatives=(sourceExtensions[extension]??[]).map(ext=>base.slice(0,-extension.length)+ext);
+  const variants=[base,...alternatives,...[...CODE_EXTS].map(ext=>base+ext),
+    ...["index.ts","index.tsx","index.js","index.mjs"].map(x=>base+"/"+x)];
   return variants.find(x=>available.has(x))??null;
 }
 export async function mapRepository({root,changed_files=[],max_files=LIMIT_FILES}={}) {

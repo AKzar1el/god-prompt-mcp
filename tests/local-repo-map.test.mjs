@@ -57,3 +57,22 @@ test("P5 local map caps file scans and rejects invalid options",async()=>{
     await assert.rejects(()=>mapRepository({root,changed_files:["src/a.ts"],max_files:701}),/max_files/);
   });
 });
+
+test("post-reload: map TypeScript NodeNext .js/.mjs import specifiers to .ts/.mts source",async()=>{
+  await inRepo(async root=>{
+    await mkdir(join(root,"src"),{recursive:true});
+    await mkdir(join(root,"tests"),{recursive:true});
+    await writeFile(join(root,"src","calc.ts"),"export const calc = 1;");
+    await writeFile(join(root,"src","native.mts"),"export const native = 2;");
+    await writeFile(join(root,"src","index.ts"),"import {calc} from './calc.js';\n");
+    await writeFile(join(root,"src","native-entry.mts"),"import {native} from './native.mjs';\n");
+    await writeFile(join(root,"tests","calc.test.ts"),"import {calc} from '../src/calc.js';\n");
+    const result=await mapRepository({root,changed_files:["src/calc.ts","src/native.mts"]});
+    assert.ok(result.dependencies.some(x=>x.consumer==="src/index.ts"&&x.dependency==="src/calc.ts"));
+    assert.ok(result.dependencies.some(x=>x.consumer==="src/native-entry.mts"&&x.dependency==="src/native.mts"));
+    assert.ok(result.candidate_test_imports.some(x=>x.test_file==="tests/calc.test.ts"&&
+      x.imports_changed_files.includes("src/calc.ts")));
+    assert.equal(result.unresolved_relative_imports,0);
+    assert.equal(result.remote_transmission,false);
+  });
+});
