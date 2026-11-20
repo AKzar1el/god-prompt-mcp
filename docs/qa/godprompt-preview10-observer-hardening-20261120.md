@@ -65,5 +65,30 @@ and end-to-end agent productivity were not measured in this pass.
 Keep this commit isolated for code review; do not merge to main or
 publish/deploy without a separate release decision, CI/release gate
 verification and live MCP tool-catalog convergence check. A future
-approved source-scoped reload or normal source restart can establish
-whether Preview 10 is active, without resetting parallel agents.
+approved reload (if supported) or coordinated service restart can establish
+whether Preview 10 is active. Do not disrupt parallel agents.
+
+## Post-restart live-discovery check (02:31 Europe/Ljubljana)
+
+- User reported restarting, but both running `codexify.exe` background
+  processes had Windows start times of **00:12:51**. The active
+  `~/.codex/config.toml` was last modified at **00:40:00** the same day.
+  Thus the running background processes predate the latest MCP config.
+- The config's enabled `god-prompt-mcp` entry specifies
+  `C:\nvm4w\nodejs\node.exe`, the locally installed Preview 10
+  `dist/stdio.js`, and `GODPROMPT_CODEXIFY_CHECKPOINT=1`.
+- Running that **exact configured executable, entrypoint, and opt-in** as
+  a separate read-only local stdio smoke test succeeded: MCP identity
+  `1.1.1-checkpoint-preview.10`, **10 tools** including
+  `review_codexify_checkpoint`, and a real `classify_task` call.
+- The shared Codexify MCP source catalog still reported **13 connected**
+  sources and did not include GodPrompt. This remains an unverified live
+  activation; successful standalone execution is not shared integration.
+- `codexify` 2.4.0 CLI exposes service restart, but no documented
+  GodPrompt-only/source-scoped reload. The next activation step is an
+  explicitly coordinated **Codexify background service restart** after
+  parallel work is idle, then immediately inspect the refreshed source
+  list and run real checkpoint calls through Codexify.
+
+No shared service was restarted, no configuration was mutated, and no
+release or remote Git operation was performed during this check.
