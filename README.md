@@ -35,10 +35,17 @@ To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.
 | `assess_release_readiness` | Find blockers in reported CI, artifact provenance, rollback, migrations and approvals; never authorizes deployment (v1.2.0+) |
 | `create_context_handoff` | Produce bounded cross-chat/agent state with best-effort secret redaction and explicit verification limitations (v1.2.0+) |
 | `compare_evaluation_runs` | Compare caller-supplied paired cases and observed pass rates, durations and costs with sample-size warnings (v1.2.0+) |
+| `audit_agent_trajectory` | Review bounded, sanitized agent event metadata for repeated failures, scope drift, stale checks and unsupported completion claims (v1.3.0+) |
+| `trace_change_impact` | Use supplied dependencies, requirement mappings and test receipts to trace affected files and uncovered verification (v1.3.0+) |
+| `review_mcp_tool_contracts` | Flag possible MCP schema, annotation and behavioral contract inconsistencies without invoking tools (v1.3.0+) |
+| `audit_agent_instructions` | Inspect scoped caller-supplied instruction excerpts for duplicate rules, opposing constraints and suspicious bypasses (v1.3.0+) |
+| `design_adversarial_tests` | Suggest bounded negative, boundary, property, metamorphic and trust-boundary cases; never run tests (v1.3.0+) |
 
 > **Version 1.1.1:** `create_work_contract` and `review_work_evidence` expand the seven original MCP tools to nine. Older hosted or version-pinned installations may still expose only the original seven until separately updated. Both tools remain stateless and read-only, and neither independently authenticates caller-supplied evidence. See the [task-contract workflow and security limitations](docs/task-contracts.md).
 
 **Version 1.2.1:** All seventeen public MCP tools are available, including the eight engineering-quality functions introduced in v1.2.0. This patch refines code-review signal precision, requirement-conflict detection and duplicate CI-check blocking without adding permissions or storage. The Codexify checkpoint remains an optional **stdio-only** eighteenth tool. Install a versioned MCP package or inspect the hosted `tools/list` response to determine which functions your client actually receives. None of the tools independently execute tests, inspect external repositories or authorize deployment. See the [toolkit QA and limitations](docs/qa/godprompt-public-toolkit-20261120.md). The OpenAI marketplace distribution remains a separate, Skill-only integration until its eventual dedicated upgrade.
+
+**Version 1.3.0:** All **22 public read-only tools** are available from the published hosted MCP and npm stdio package. Five P4 diagnostics were added, with strict bounded output schemas and paired evaluation statistics. The optional local Codexify checkpoint is the 23rd tool **only when explicitly enabled** on local stdio. The remote MCP does not execute code, fetch repositories or approve changes. See [P4 evidence and release status](docs/roadmaps/godprompt-p4-agent-quality-20261120.md). The combined OpenAI Skill+MCP source package is ready for review, but the existing directory listing is still Skill-only; GHCR 1.3.0 publication is a separately manual step.
 
 ### Optional local proof bridge (from v1.1.1)
 
@@ -86,7 +93,7 @@ This transports GodPrompt's existing skill package; it does not force the skill 
 
 ### ChatGPT Plugin Directory (skill-only)
 
-For the lowest-friction ChatGPT path, install [GodPrompt from the first-party Plugin Directory](https://chatgpt.com/plugins/plugins_6ab2f1cc5d0081919d729fd1c2884f86). That published plugin carries the scoped `god-prompt` Agent Skill; use the custom MCP app setup below when you specifically want the seven callable GodPrompt tools.
+For the lowest-friction ChatGPT path, install [GodPrompt from the first-party Plugin Directory](https://chatgpt.com/plugins/plugins_6ab2f1cc5d0081919d729fd1c2884f86). That published plugin carries the scoped `god-prompt` Agent Skill; use the custom MCP app setup below when you specifically want the 22 callable public GodPrompt tools.
 
 ### ChatGPT (hosted remote MCP)
 
@@ -132,7 +139,7 @@ For MCP clients that can launch a local process, the [public GHCR image](https:/
 }
 ```
 
-Keep `-i` so the MCP client can exchange JSON-RPC over standard input/output; do not add `-t` (a TTY changes the stdio stream). The version tag selects the verified v1.1.1 image; update it deliberately for future releases rather than silently following the moving `latest` tag. The image is Linux/amd64 and runs as non-root user `10001:10001`. If Docker is unavailable, use the [hosted remote endpoint](#hosted-remote-no-nodejs-required) instead.
+Keep `-i` so the MCP client can exchange JSON-RPC over standard input/output; do not add `-t` (a TTY changes the stdio stream). The version tag selects the verified v1.1.1 image; update it deliberately for future releases rather than silently following the moving `latest` tag. The image is Linux/amd64 and runs as non-root user `10001:10001`. The newer v1.3.0 Docker source has passed image and stdio smoke testing, but the GHCR version tag requires a separate explicit manual publish and post-publish verification. See [the final GHCR checklist](docs/qa/godprompt-ghcr-v130-final-readiness-20261120.md); do not change the pinned example before that verification. If Docker is unavailable, use the [hosted remote endpoint](#hosted-remote-no-nodejs-required) instead.
 
 ### Glama
 
@@ -628,11 +635,11 @@ Project page: [GodPrompt — AI software-development system prompt](https://tomi
 
 Related MCP servers: [Google Search Console](https://github.com/AKzar1el/mcp-gsc) · [GEO Tracker](https://github.com/AKzar1el/mcp-geo) · [Web Validator](https://github.com/AKzar1el/mcp-web-validator) · [Google News & Trends](https://github.com/AKzar1el/mcp-trendpulse)
 
-### P4 research and implementation preview (unreleased branch only)
+### P4 shipped in v1.3.0
 
-Development branch P4 adds five more public-facing read-only tools to Worker and stdio source: audit_agent_trajectory, trace_change_impact, review_mcp_tool_contracts, audit_agent_instructions and design_adversarial_tests. These analyze only bounded caller-supplied metadata, schemas or constraints; they do not execute tools, read repositories, authenticate receipts, or authorize completion. P4 also proposes paired-evaluation uncertainty fields. This text documents an unreleased branch: the currently published 1.2.1 package and live Worker still expose the 17 released tools until a separate versioned release. See docs/roadmaps/godprompt-p4-agent-quality-20261120.md.
+The five P4 diagnostic tools listed above and the paired evaluation enhancements shipped in the versioned v1.3.0 source, npm and MCP Registry release. The reproducible 74-case legacy fixture corpus was retained, with additional independent synthetic holdout cases. All evidence remains advisory and unverified unless separately authenticated by the host. See [P4 release documentation](docs/roadmaps/godprompt-p4-agent-quality-20261120.md).
 
 
 ### Unpublished combined OpenAI Skill + MCP preview
 
-The next OpenAI plugin milestone is staged at `distribution/openai/` on the dedicated preview branch. It contains the existing scoped Skill plus a **single remote MCP** declaration for the current 22 public GodPrompt v1.3.0 tools. Two metadata formats (portable `mcp.json` and Codex compatibility `.mcp.json`) describe the same URL; they are not separate services. A dedicated GitHub workflow builds an **unpublished review ZIP** and validates the hosted tool list and a read-only call. The currently published OpenAI directory listing remains Skill-only until its separate reviewed update. See `docs/qa/godprompt-openai-combined-preview-20261120.md`.
+The reviewed combined OpenAI plugin source is now in `distribution/openai/` on `main`, while the published marketplace listing remains unchanged. It contains the existing scoped Skill plus a **single remote MCP** declaration for the current 22 public GodPrompt v1.3.0 tools. Two metadata formats (portable `mcp.json` and Codex compatibility `.mcp.json`) describe the same URL; they are not separate services. A dedicated GitHub workflow builds an **unpublished review ZIP** and validates the hosted tool list and a read-only call. The currently published OpenAI directory listing remains Skill-only until its separate reviewed update. See `docs/qa/godprompt-openai-combined-preview-20261120.md`.
