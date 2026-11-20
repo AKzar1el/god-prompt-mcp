@@ -137,6 +137,31 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(tool.annotations?.destructiveHint, false, `${tool.name} must be non-destructive`);
   }
 
+  // Some MCP bridges intentionally truncate replies above ~10k tokens.
+  // Preserve the no-argument legacy response, but permit bounded reads of
+  // every byte of the complete single-file prompt without losing its middle.
+  const legacyPromptResult = await request(child, pending, "god-prompt-legacy", "tools/call", {
+    name: "get_god_prompt",
+    arguments: {},
+  });
+  const legacyPrompt = toolText(legacyPromptResult);
+  assert.ok(legacyPrompt.length > 50_000, "Test fixture must exceed bridge output caps");
+  const pieces = [];
+  for (let start = 0; start < legacyPrompt.length; start += 8_192) {
+    const part = await request(child, pending, `god-prompt-part-${start}`, "tools/call", {
+      name: "get_god_prompt",
+      arguments: { start, maxChars: 8_192 },
+    });
+    assert.notEqual(part.isError, true, "Chunked GodPrompt retrieval must succeed");
+    const chunk = toolText(part);
+    assert.equal(chunk, legacyPrompt.slice(start, start + 8_192));
+    assert.equal(part.structuredContent?.start, start);
+    assert.equal(part.structuredContent?.end, Math.min(start + 8_192, legacyPrompt.length));
+    assert.equal(part.structuredContent?.totalChars, legacyPrompt.length);
+    pieces.push(chunk);
+  }
+  assert.equal(pieces.join(""), legacyPrompt, "Bounded MCP reads must reconstruct full prompt");
+
   const coreTool = listed.tools.find((tool) => tool.name === "get_core_skill");
   assert.ok(coreTool, "get_core_skill must be listed");
   assert.match(coreTool.description, /start of a task|context reset/i);

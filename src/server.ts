@@ -9,7 +9,7 @@ export const SERVER_INFO = {
 } as const;
 
 export const SERVER_INSTRUCTIONS =
-  "Start with get_core_skill for the lean GodPrompt protocol. Use classify_task to route a concrete task, then load get_protocols, get_gates, or get_anti_patterns only when that focused reference is needed. Use get_god_prompt only when the full single-file payload is preferable. All GodPrompt tools are read-only.";
+  "Start with get_core_skill for the lean GodPrompt protocol. Use classify_task to route a concrete task, then load get_protocols, get_gates, or get_anti_patterns only when that focused reference is needed. Use get_god_prompt only when the full single-file payload is preferable; request bounded start/maxChars chunks if the MCP bridge truncates large responses. All GodPrompt tools are read-only.";
 
 const READ_ONLY_ANNOTATIONS = {
   readOnlyHint: true,
@@ -381,17 +381,29 @@ export function registerGodPromptTools(server: McpServer): void {
     "get_god_prompt",
     {
       title: "Get full GodPrompt",
-      description: `Returns the complete GodPrompt.md — a single-file universal system prompt for AI software development (${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB, ~1145 lines). Use this when you want the full payload in one shot. For progressive disclosure (smaller context), use get_core_skill and the reference tools instead.`,
+      description: `Returns the complete GodPrompt.md — a single-file universal system prompt for AI software development (${Math.round(CONTENT.GOD_PROMPT.length / 1024)}KB, ~1145 lines). With no arguments, returns the original full text for backward compatibility. Bridges may truncate the middle of such a large response: pass start (initially 0) and maxChars (at most 8192) to retrieve bounded, lossless chunks; structuredContent.nextStart gives the next offset, or null at EOF. For progressive disclosure, use get_core_skill and references instead.`,
+      inputSchema: {
+        start: z.number().int().min(0).max(CONTENT.GOD_PROMPT.length).optional(),
+        maxChars: z.number().int().min(1).max(8_192).optional(),
+      },
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    async () => ({
-      content: [
-        {
-          type: "text",
-          text: CONTENT.GOD_PROMPT,
+    async ({ start, maxChars }) => {
+      if (start === undefined && maxChars === undefined) {
+        return { content: [{ type: "text" as const, text: CONTENT.GOD_PROMPT }] };
+      }
+      const first = start ?? 0;
+      const end = Math.min(first + (maxChars ?? 8_192), CONTENT.GOD_PROMPT.length);
+      return {
+        content: [{ type: "text" as const, text: CONTENT.GOD_PROMPT.slice(first, end) }],
+        structuredContent: {
+          start: first,
+          end,
+          totalChars: CONTENT.GOD_PROMPT.length,
+          nextStart: end < CONTENT.GOD_PROMPT.length ? end : null,
         },
-      ],
-    })
+      };
+    }
   );
 
   server.registerTool(
