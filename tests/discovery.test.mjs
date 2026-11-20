@@ -45,6 +45,11 @@ test("publishes ARD entries for the MCP server and portable Agent Skill", () => 
     "assess_release_readiness",
     "create_context_handoff",
     "compare_evaluation_runs",
+    "audit_agent_trajectory",
+    "trace_change_impact",
+    "review_mcp_tool_contracts",
+    "audit_agent_instructions",
+    "design_adversarial_tests",
     "get_version",
   ]);
 
