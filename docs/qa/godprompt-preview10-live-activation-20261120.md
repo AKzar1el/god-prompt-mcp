@@ -111,3 +111,26 @@ not an npm/Cloudflare release, a GitHub merge, or a global Codexify policy.
 - [ ] Codexify-wide per-task observer orchestration (not part of this pilot)
 - [ ] Automatic source-specific failure recovery (awaits upstream PR #11)
 - [ ] Global audit log retention (separate change, coordinated with agents)
+
+## Surgical retention follow-up (same day)
+
+- Capped **only the private observer's own** `reports.jsonl` to 1 MiB,
+  retaining at most one `.previous` file. The helper
+  `scripts/codexify-observer-report-retention.mjs` touches no Codexify
+  audit source or other agent files. Regression and existing observer
+  tests passed **6/6**; `git diff --check` passed.
+- Installed the tested observer and helper into its existing private
+  GodPrompt runtime, preserving a backup under
+  `%USERPROFILE%\.codexify\backups\godprompt-observer-retention-20261120114700`.
+  Restarted **only** `Codexify-GodPrompt-Observer` (not Codexify); the
+  task returned `Running`, exactly one observer Node process remained,
+  and its stderr file was empty. No npm or Cloudflare release.
+- The shared **active** Codexify audit file is approximately **931 MiB**
+  and the current Rust audit writer has an open append handle with no
+  native rotation. Externally truncating/renaming it could lose writes,
+  so it was **left untouched**. Codexify GitHub Issues are disabled
+  (HTTP 410); logged the separate, writer-owned bounded rotation design
+  and Windows regression requirements on Codexify PR #11 (comment
+  `7037556755`). This is **coordination**, not an implemented fix for
+  the large Codexify audit. It should not delay PR #11 or require a
+  whole-service restart now.

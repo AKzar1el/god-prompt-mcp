@@ -6,10 +6,11 @@
  * It does not interrupt Codexify, authenticate the log, or grant authority.
  * It never emits command previews, tool output, project paths or contract text.
  */
-import { appendFile, open, readFile, writeFile } from "node:fs/promises";
+import { open, readFile, writeFile } from "node:fs/promises";
 import { isAbsolute } from "node:path";
 import { StringDecoder } from "node:string_decoder";
 import { evaluateCheckpoint, cloudSafeCheckpointSummary } from "../dist/codexify-checkpoint.js";
+import { appendBoundedReport } from "./codexify-observer-report-retention.mjs";
 
 const MAX_READ = 512 * 1024;
 const MAX_LINE = 64 * 1024;
@@ -128,7 +129,7 @@ if (!validFlags) {
       trigger, source: "opt_in_host_audit_observer",
       ...summary,
     };
-    await appendFile(reportFile, JSON.stringify(event) + "\n", { mode: 0o600 });
+    await appendBoundedReport(reportFile, JSON.stringify(event) + "\n");
     if (event.status === "HOLD") holds++;
     if (event.status === "RECHECK") rechecks++;
     recentStages.push(event.stage);
