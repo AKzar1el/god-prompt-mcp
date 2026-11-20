@@ -37,3 +37,11 @@ test("P5 cyclic dependency fuzz terminates without inventing test coverage",()=>
  assert.equal(result.independently_verified,false);
  assert.ok(result.uncovered_targets.length>0);
 });
+
+test("P5 MCPB ignores benchmark grading fixtures and QA source metadata",async()=>{
+ const {readFile}=await import("node:fs/promises");
+ const ignore=await readFile(new URL("../.mcpbignore",import.meta.url),"utf8");
+ for(const dir of ["src/","tests/","scripts/","benchmarks/","docs/","distribution/"]){
+   assert.ok(ignore.split(/\r?\n/).includes(dir),dir+" must not enter the MCPB runtime");
+ }
+});
