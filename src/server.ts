@@ -5,11 +5,11 @@ import { CORE_SKILL } from "./skill-content.js";
 
 export const SERVER_INFO = {
   name: "god-prompt-mcp",
-  version: "1.2.1",
+  version: "1.3.0",
 } as const;
 
 export const SERVER_INSTRUCTIONS =
-  "For scoped engineering tasks, use classify_task to route the work and get_tailored_guidance to load only the needed phase. Use get_core_skill if the entire core protocol is needed, not on every request. Use review_code_change, audit_requirements and build_test_matrix for bounded caller-supplied evidence and draft test planning. Use diagnose_failure, assess_release_readiness, create_context_handoff and compare_evaluation_runs only for their respective supplied-evidence workflows. None of these tools run external checks, authenticate evidence, authorize release or independently verify work. Load get_protocols, get_gates, or get_anti_patterns only when focused guidance is insufficient. Use get_god_prompt only when the full single-file payload is preferable; request bounded start/maxChars chunks if an MCP bridge truncates large responses. All GodPrompt tools are read-only.";
+  "For scoped engineering tasks, use classify_task to route the work and get_tailored_guidance to load only the needed phase. Use get_core_skill if the entire core protocol is needed, not on every request. Use review_code_change, audit_requirements and build_test_matrix for bounded caller-supplied evidence and draft test planning. Use diagnose_failure, assess_release_readiness, create_context_handoff and compare_evaluation_runs only for their respective supplied-evidence workflows. Use audit_agent_trajectory, trace_change_impact, review_mcp_tool_contracts, audit_agent_instructions and design_adversarial_tests only with explicit caller-supplied bounded inputs; they produce unverified review hints or test ideas. None of these tools run external checks, authenticate evidence, authorize release or independently verify work. Load get_protocols, get_gates, or get_anti_patterns only when focused guidance is insufficient. Use get_god_prompt only when the full single-file payload is preferable; request bounded start/maxChars chunks if an MCP bridge truncates large responses. All GodPrompt tools are read-only.";
 
 const READ_ONLY_ANNOTATIONS = {
   readOnlyHint: true,
