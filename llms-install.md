@@ -39,10 +39,29 @@ For the Cline IDE extension, open **MCP Servers → Configure → Configure MCP 
 
 Keep `autoApprove` empty so the user can see when workflow guidance is requested.
 
+### Windows stdio launcher fallback
+
+If Cline reports `spawn npx ENOENT` or `spawn npx.cmd EINVAL`, its process launcher may not support the Windows npm batch shim. Keep a working `npx` configuration unchanged. For an affected Windows client that accepts a custom stdio command and arguments, try the same documented launcher workaround as in the main README:
+
+```json
+{
+  "mcpServers": {
+    "god-prompt": {
+      "command": "C:\\Windows\\System32\\cmd.exe",
+      "args": ["/d", "/s", "/c", "npx -y god-prompt-mcp"],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+This is a client-specific workaround, not a change to the MCP server. It is not claimed to be tested against every Cline version; verify connection and the live tool list after changing the launcher.
+
 ## Verify
 
 1. Confirm Cline shows `god-prompt` as connected.
-2. Confirm exactly seven tools are available:
+2. For the installed **v1.1.1** stdio package, confirm its nine tools are available:
    - `get_god_prompt`
    - `get_core_skill`
    - `get_protocols`
@@ -50,7 +69,9 @@ Keep `autoApprove` empty so the user can see when workflow guidance is requested
    - `get_anti_patterns`
    - `classify_task`
    - `get_version`
-3. Run a low-impact verification call such as `get_version` or ask Cline to classify a small software-development task.
+   - `create_work_contract`
+   - `review_work_evidence`
+3. Run a low-impact call to `get_version`, then optionally ask Cline to classify a small development task. Older or version-pinned installations may still expose the original seven tools; check the actual installed/deployed version before treating a difference as a connection failure. Do not assume future releases will retain a fixed count.
 
 ## Fallback: cloned checkout
 
