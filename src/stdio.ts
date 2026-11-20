@@ -12,6 +12,7 @@ import { registerPublicEngineeringTools } from "./public-engineering.js";
 import { registerTailoredGuidanceTool } from "./tailored-guidance.js";
 import { registerDecisionSupportTools } from "./decision-support.js";
 import { registerTrajectoryTool } from "./agent-trajectory.js";
+import { registerImpactTool } from "./change-impact.js";
 import {
   registerCodexifyCheckpointTool,
   CODEXIFY_CHECKPOINT_INSTRUCTIONS,
@@ -40,6 +41,7 @@ function createServer(): McpServer {
   registerTailoredGuidanceTool(server);
   registerDecisionSupportTools(server);
   registerTrajectoryTool(server);
+  registerImpactTool(server);
   if (enabled) registerCodexifyCheckpointTool(server);
   registerGodPromptSkillExtension(server);
   return server;
