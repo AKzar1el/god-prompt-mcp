@@ -163,6 +163,27 @@ function duplicateIDs(cases: EvalCase[]): string[] {
   return [...duplicates].sort();
 }
 
+/** Exact two-sided McNemar/binomial test on discordant paired outcomes. */
+function pairedMcNemarExact(improved: number, regressed: number): number | null {
+  const discordant = improved + regressed;
+  if (!discordant) return null;
+  const tail = Math.min(improved, regressed);
+  let choose = 1;
+  let sum = 0;
+  for (let k = 0; k <= tail; k++) {
+    if (k > 0) choose = choose * (discordant - k + 1) / k;
+    sum += choose;
+  }
+  return Math.min(1, 2 * sum / 2 ** discordant);
+}
+
+function median(values: number[]): number | null {
+  if (!values.length) return null;
+  const ordered = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(ordered.length / 2);
+  return ordered.length % 2 ? ordered[middle] : (ordered[middle - 1] + ordered[middle]) / 2;
+}
+
 export function compareEvaluationRuns(baseline: EvalCase[], candidate: EvalCase[]) {
   const duplicates = [...new Set([...duplicateIDs(baseline), ...duplicateIDs(candidate)])];
   const previous = new Map(baseline.map((item) => [item.case_id, item]));
@@ -192,6 +213,8 @@ export function compareEvaluationRuns(baseline: EvalCase[], candidate: EvalCase[
   let costPairs = 0;
   let baselineCost = 0;
   let candidateCost = 0;
+  const durationDifferences: number[] = [];
+  const costDifferences: number[] = [];
   for (const id of matching) {
     const old = previous.get(id)!;
     const now = current.get(id)!;
@@ -204,14 +227,26 @@ export function compareEvaluationRuns(baseline: EvalCase[], candidate: EvalCase[
       durationPairs++;
       baselineMs += old.duration_ms;
       candidateMs += now.duration_ms;
+      durationDifferences.push(now.duration_ms - old.duration_ms);
     }
     if (old.cost_usd !== undefined && now.cost_usd !== undefined) {
       costPairs++;
       baselineCost += old.cost_usd;
       candidateCost += now.cost_usd;
+      costDifferences.push(now.cost_usd - old.cost_usd);
     }
   }
   const ratio = (count: number) => Math.round((count / matching.length) * 10_000) / 100;
+  const round = (v: number) => Math.round(v * 100) / 100;
+  const pairedMean = (improved - regressed) / matching.length;
+  // Approximate normal interval on paired differences {-1,0,1}; expose only at n>=20.
+  const dispersion = (improved + regressed) / matching.length - pairedMean * pairedMean;
+  const se = matching.length > 1 ? Math.sqrt(Math.max(0, dispersion / (matching.length - 1))) : 0;
+  const pairedInterval = matching.length >= 20 ? {
+    lower_points: round(Math.max(-100, 100 * (pairedMean - 1.96 * se))),
+    upper_points: round(Math.min(100, 100 * (pairedMean + 1.96 * se))),
+    method: "approximate_normal_paired_difference_95_percent",
+  } : null;
   return {
     status: matching.length < 20 ? "LOW_SAMPLE_DIRECTIONAL" : "PAIRED_COMPARISON_UNVERIFIED",
     matched_cases: matching.length,
@@ -227,6 +262,10 @@ export function compareEvaluationRuns(baseline: EvalCase[], candidate: EvalCase[
     mean_duration_ms: durationPairs ? { baseline: Math.round(baselineMs / durationPairs), candidate: Math.round(candidateMs / durationPairs) } : null,
     measured_cost_pairs: costPairs,
     mean_cost_usd: costPairs ? { baseline: baselineCost / costPairs, candidate: candidateCost / costPairs } : null,
+    paired_delta_95_percent_ci: pairedInterval,
+    mcnemar_two_sided_exact_p: pairedMcNemarExact(improved, regressed),
+    median_duration_delta_ms: median(durationDifferences),
+    median_cost_delta_usd: median(costDifferences),
     independently_verified: false,
     warning: "Paired outcomes are caller-supplied and not independently verified. Small or selectively chosen samples do not establish statistically significant productivity gains.",
   };
