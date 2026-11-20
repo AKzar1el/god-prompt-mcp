@@ -69,3 +69,34 @@ jobs:
           path: out/godprompt-openai-combined-preview.zip
           if-no-files-found: error
           retention-days: 3
+      - name: Validate and package standalone GodPrompt Skill ZIP
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          skill = Path("distribution/openai/skills/god-prompt")
+          entry = skill / "SKILL.md"
+          metadata = skill / "agents/openai.yaml"
+          assert entry.is_file() and metadata.is_file()
+          content = entry.read_text("utf-8")
+          assert content.startswith("---\nname: god-prompt\n")
+          assert content.count("\n---\n") >= 1
+          root = Path("out/skill.zip")
+          root.parent.mkdir(parents=True, exist_ok=True)
+          with ZipFile(root,"w",ZIP_DEFLATED) as bundle:
+              for file in sorted(skill.rglob("*")):
+                  if file.is_file():
+                      bundle.write(file, Path("god-prompt") / file.relative_to(skill))
+          with ZipFile(root) as bundle:
+              assert bundle.testzip() is None
+              names = bundle.namelist()
+              for mandatory in ("SKILL.md","agents/openai.yaml","references/tool-routing.md"):
+                  assert "god-prompt/" + mandatory in names
+          print("Validated standalone Skill package", root, root.stat().st_size)
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: godprompt-skill-preview
+          path: out/skill.zip
+          if-no-files-found: error
+          retention-days: 3

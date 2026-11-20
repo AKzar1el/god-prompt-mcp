@@ -55,7 +55,7 @@
       "expectedBehavior": "Report descriptive paired statistics with limits and unverified evidence."
     },
     {
-      "id": "release-readiness",
+      "id": "release-readiness-report",
       "prompt": "Review whether these reported checks and revisions are adequate for a package release.",
       "tool": "assess_release_readiness",
       "expectedBehavior": "Report gaps, never authorize deployment."
