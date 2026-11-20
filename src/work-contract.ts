@@ -219,8 +219,27 @@ function mentionsForbiddenAction(reported: string, forbidden: string): boolean {
     push: ["push", "pushes", "pushed", "pushing"],
     spend: ["spend", "spends", "spent", "spending"],
     trade: ["trade", "trades", "traded", "trading"],
+    restart: ["restart", "restarts", "restarted", "restarting"],
+    stop: ["stop", "stops", "stopped", "stopping"],
+    shutdown: ["shutdown", "shut down", "shutting down"],
   };
-  const phrases = variants[restriction] ?? [restriction];
+  // Users often supply restrictions as natural-language instructions rather
+  // than just "deploy". Previously, "Do not deploy or publish" silently
+  // failed to flag "deployed to production". Extract *known* prohibited
+  // action verbs from an explicit negative instruction, but do not try to
+  // infer permissions or perform open-ended natural-language parsing.
+  const negated = /^(?:do not|don't|never|must not|avoid|no)\s+/.exec(restriction);
+  const forbiddenClause = negated
+    ? restriction.slice(negated[0].length)
+      .split(/\b(?:unless|until|without|because|when|if|before|after|while)\b/, 1)[0]
+    : "";
+  const tokens = new Set(forbiddenClause.match(/[a-z]+/g) ?? []);
+  const namedActions = negated
+    ? Object.entries(variants)
+      .filter(([, forms]) => forms.some((form) => tokens.has(form)))
+      .flatMap(([, forms]) => forms)
+    : [];
+  const phrases = namedActions.length > 0 ? namedActions : variants[restriction] ?? [restriction];
   return phrases.some((phrase) => {
     // Delimit tokens, so "deploy" does not match "undeployed".
     let index = operation.indexOf(phrase);
