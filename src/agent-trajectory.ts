@@ -1,0 +1,93 @@
+/** Read-only, deterministic review of caller-supplied agent events. No host log access. */
+import { McpServer } from "@modelcontextprotocol/server";
+import * as z from "zod/v4";
+
+export const TrajectoryEventSchema = z.object({
+  id: z.string().regex(/^[A-Za-z0-9_.-]{1,64}$/),
+  kind: z.enum(["tool_call", "tool_result", "verification", "completion", "decision"]),
+  operation: z.enum(["read", "write", "verify", "other"]).optional(),
+  tool: z.string().max(100).optional(),
+  status: z.enum(["ok", "failed", "skipped", "unknown"]).optional(),
+  scope: z.enum(["allowed", "outside", "unknown"]).optional(),
+  fingerprint: z.string().regex(/^[A-Za-z0-9_.:-]{1,80}$/).optional(),
+}).strict();
+
+export type TrajectoryEvent = z.infer<typeof TrajectoryEventSchema>;
+export const TrajectoryInputSchema = z.object({
+  events: z.array(TrajectoryEventSchema).min(1).max(150),
+}).strict();
+
+type Finding = { code: string; severity: "high" | "medium" | "low"; event_index: number; recommendation: string };
+const hint = (code: string, severity: Finding["severity"], event_index: number, recommendation: string): Finding =>
+  ({ code, severity, event_index, recommendation });
+
+export function auditAgentTrajectory(events: TrajectoryEvent[]) {
+  const findings: Finding[] = [];
+  const IDs = new Set<string>();
+  const failing = new Map<string, number>();
+  let writes = 0;
+  let verification = 0;
+  let lastWrite = -1;
+  let lastCheck = -1;
+  let completed = 0;
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i];
+    const position = i + 1;
+    if (IDs.has(event.id)) findings.push(hint("DUPLICATE_EVENT_ID", "medium", position,
+      "Provide unique event identifiers before trusting the trajectory."));
+    IDs.add(event.id);
+    if (event.operation === "write" && event.scope === "outside" &&
+        event.kind === "tool_result" && event.status === "ok") {
+      findings.push(hint("OUT_OF_SCOPE_WRITE_REPORTED", "high", position,
+        "Reconcile the successful reported write with the approved task scope."));
+    }
+    if (event.kind === "tool_result" && event.status === "failed") {
+      const key = (event.tool ?? "unnamed") + ":" + (event.fingerprint ?? "unspecified");
+      const count = (failing.get(key) ?? 0) + 1;
+      failing.set(key, count);
+      if (count === 3) findings.push(hint("REPEATED_FAILURE", "medium", position,
+        "Stop repeating this failing call unchanged; inspect the cause or adjust the plan."));
+    }
+    if (event.kind === "tool_result" && event.operation === "write" && event.status === "ok") {
+      writes++;
+      lastWrite = i;
+    }
+    if ((event.kind === "verification" || event.operation === "verify") && event.status === "ok") {
+      verification++;
+      lastCheck = i;
+    }
+    if (event.kind === "completion") {
+      completed++;
+      if (lastCheck < lastWrite || lastCheck < 0) findings.push(hint("PREMATURE_COMPLETION", "high", position,
+        "Obtain current verification evidence before claiming completion."));
+    }
+  }
+  if (writes > 0 && lastCheck < 0) findings.push(hint("MISSING_VERIFICATION", "high", events.length,
+    "Capture a real post-change check; event reports are not independently authenticated."));
+  else if (writes > 0 && lastCheck < lastWrite) findings.push(hint("STALE_VERIFICATION", "high", events.length,
+    "Rerun verification after the most recent write."));
+  return {
+    status: findings.length ? "RECHECK" : "NO_DETERMINISTIC_SIGNALS",
+    findings: findings.slice(0, 40),
+    truncated: findings.length > 40,
+    events_reviewed: events.length,
+    reported_writes: writes,
+    reported_successful_verifications: verification,
+    reported_completions: completed,
+    independently_verified: false,
+    completion_authorized: false,
+    warning: "Caller-supplied event metadata is unverified. No logs, commands or file contents were accessed or replayed.",
+  };
+}
+
+export function registerTrajectoryTool(server: McpServer): void {
+  server.registerTool("audit_agent_trajectory", {
+    title: "Audit reported agent trajectory",
+    description: "Read-only review of bounded, sanitized event metadata for repeated failures, scope drift, stale verification and premature completion. No raw logs or independent execution evidence; cannot authorize an agent.",
+    inputSchema: TrajectoryInputSchema.shape,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, async ({ events }) => {
+    const output = auditAgentTrajectory(events);
+    return { structuredContent: output, content: [{ type: "text", text: JSON.stringify(output) }] };
+  });
+}
