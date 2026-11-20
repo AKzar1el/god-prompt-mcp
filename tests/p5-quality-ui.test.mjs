@@ -7,7 +7,8 @@ async function req(worker,method,params,id){
   const response=await worker.fetch(new Request("https://example.test/mcp",{
     method:"POST",
     headers:{"content-type":"application/json","accept":"application/json, text/event-stream",
-      "mcp-protocol-version":"2026-07-28","mcp-method":method},
+      "mcp-protocol-version":"2026-07-28","mcp-method":method,
+      ...(method==="resources/read" && typeof params.uri==="string" ? {"mcp-name":params.uri} : {})},
     body:JSON.stringify({jsonrpc:"2.0",id,method,params:{...params,_meta:META}})
   }),{},{});
   assert.equal(response.status,200);

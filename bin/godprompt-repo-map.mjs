@@ -52,8 +52,12 @@ export async function mapRepository({root,changed_files=[],max_files=LIMIT_FILES
   let bytes=0,skipped=0,skipped_links=0,oversized=0;
   const files=[];
   const stack=[base];
+  let directoryCount=0;
   while(stack.length){
     const dir=stack.pop();
+    const directoryReal=await realpath(dir);
+    if(directoryReal!==base&&!directoryReal.startsWith(base+sep)){skipped_links++;continue;}
+    if(++directoryCount>1000){skipped++;break;}
     const entries=await readdir(dir,{withFileTypes:true});
     entries.sort((a,b)=>a.name.localeCompare(b.name));
     for(const entry of entries){

@@ -3,7 +3,10 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { QUALITY_UI_URI } from "./quality-view.js";
 import * as z from "zod/v4";
 
-const file = z.string().trim().min(1).max(240).regex(/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[A-Za-z0-9_.\/-]+$/);
+const file = z.string().trim().min(1).max(240).refine(value =>
+  /^[A-Za-z0-9_.\/-]+$/.test(value) && !value.startsWith("/") &&
+  value.split("/").every(segment => segment.length > 0 && segment !== "." && segment !== ".."),
+  "Supply a safe nonempty relative file path without traversal or empty segments.");
 const id = z.string().regex(/^[A-Za-z0-9_.-]{1,64}$/);
 const files = z.array(file).max(25);
 export const ImpactSchema = z.object({
