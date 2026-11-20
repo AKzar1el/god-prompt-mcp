@@ -160,3 +160,67 @@ test("OpenSpec-style requirement bodies and GIVEN/WHEN/THEN scenarios stay toget
   assert.equal(matrix.cases.length, 4);
   assert.match(matrix.cases[0].expected, /Scenario: Idle session expiration/);
 });
+
+
+test("benchmark review suppresses code execution mentioned only in comments", () => {
+  const patch = [
+    "diff --git a/src/docs.ts b/src/docs.ts",
+    "--- a/src/docs.ts",
+    "+++ b/src/docs.ts",
+    "@@ -1,1 +1,2 @@",
+    " // Explanation:",
+    "+// Example string mentions eval(input), but does not execute it.",
+  ].join("\n");
+  const result = reviewCodeChange(patch);
+  assert.ok(!result.findings.some((x) => x.code === "DYNAMIC_CODE_EXECUTION"));
+});
+
+test("benchmark review still reports TODO markers in added comments", () => {
+  const patch = [
+    "diff --git a/src/job.ts b/src/job.ts",
+    "--- a/src/job.ts",
+    "+++ b/src/job.ts",
+    "@@ -1,1 +1,2 @@",
+    " const active = true;",
+    "+// TODO: validate before production release",
+  ].join("\n");
+  const result = reviewCodeChange(patch);
+  assert.ok(result.findings.some((x) => x.code === "UNFINISHED_MARKER"));
+});
+
+test("benchmark review does not demand a test-file edit for a trivial safe one-liner", () => {
+  const patch = [
+    "diff --git a/src/math.ts b/src/math.ts",
+    "--- a/src/math.ts",
+    "+++ b/src/math.ts",
+    "@@ -1,1 +1,2 @@",
+    " const size = 1;",
+    "+const sum = 1 + 2;",
+  ].join("\n");
+  const result = reviewCodeChange(patch);
+  assert.ok(!result.findings.some((x) => x.code === "NO_TEST_CHANGES_IN_PATCH"));
+});
+
+test("benchmark review flags a broader release workflow gate without claiming a verified exploit", () => {
+  const patch = [
+    "diff --git a/.github/workflows/publish-container.yml b/.github/workflows/publish-container.yml",
+    "--- a/.github/workflows/publish-container.yml",
+    "+++ b/.github/workflows/publish-container.yml",
+    "@@ -1,1 +1,1 @@",
+    "-if: github.event_name == 'workflow_dispatch'",
+    "+if: github.event_name != 'pull_request'",
+  ].join("\n");
+  const result = reviewCodeChange(patch);
+  assert.ok(result.findings.some((x) => x.code === "WEAKENED_RELEASE_GATE"));
+  assert.equal(result.independently_verified, false);
+});
+
+test("benchmark requirements detect explicit opposing obligations and optional mandatory wording", () => {
+  const audit = auditRequirements([
+    "- Every user must have access to the report.",
+    "- No user must have access to the report.",
+    "- The feature must optionally offer exports.",
+  ].join("\n"));
+  assert.ok(audit.findings.some((x) => x.code === "CONTRADICTORY_REQUIREMENTS"));
+  assert.ok(audit.findings.some((x) => x.code === "MIXED_OBLIGATION"));
+});
