@@ -15,7 +15,7 @@ Date: 2026-11-20. Branch `feature/godprompt-p5-intelligence-evidence-20261120`. 
 
 Mandatory checks: Node 22 + Node 24 `npm test`, TypeScript typecheck, P5 security fuzz and output canaries, 74/74 frozen primary cases, deterministic local benchmark scaffolding, installed npm tarball allowlist, real hosted `tools/list`/MCP preview parity (22 tools), package/MCPB checks and Docker stdio smoke as nonroot UID 10001.
 
-Only GitHub CI with the exact candidate commit can establish these checks. The current v1.4.0 candidate's built normalized MCPB SHA-256 was measured as `a065b11193d4cda6852023a3d83d47e5959f787e3ef92334b3c4b60b70e0e2fe`; `server.json` must match this hash. New QA docs and tests do not belong inside the MCPB.
+Only GitHub CI with the exact candidate commit can establish these checks. The current v1.4.0 candidate's built normalized MCPB SHA-256 was measured as `9ec4ad32f0c3d890334fe59c82f04fb7716a3cb58ecbeaa60b0f5c7f11b0772c`; `server.json` must match this hash. New QA docs and tests do not belong inside the MCPB.
 
 ## Boundaries of reported value
 
@@ -34,3 +34,7 @@ Only GitHub CI with the exact candidate commit can establish these checks. The c
 - [Combined OpenAI preview validation](godprompt-openai-combined-preview-20261120.md)
 
 This document does **not** claim every gate passed or any publication happened. Add exact HEAD SHA and workflow run references when the final release checks finish.
+
+## P5 release-candidate CI evidence
+
+Exact pre-hash-fix candidate commit `35cc5c2021027e7c9aced79c04a68b88efab005a` passed Node 22/24 MCP tests (including 74/74 frozen scenarios), installed npm package, combined OpenAI Skill+MCP preview with live 22-tool call, Registry metadata and non-root Docker stdio smoke. The normalized MCPB build was deterministic, but intentionally failed the previous stale metadata hash; new artifact hash above was read from that build's log. The next exact-head CI must pass **all gates including hash** before release.
