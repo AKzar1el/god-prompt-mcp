@@ -11,6 +11,7 @@ import { registerPublicEngineeringTools } from "./public-engineering.js";
 import { registerTailoredGuidanceTool } from "./tailored-guidance.js";
 import { registerDecisionSupportTools } from "./decision-support.js";
 import { registerTrajectoryTool } from "./agent-trajectory.js";
+import { registerImpactTool } from "./change-impact.js";
 
 function createServer(): McpServer {
   const server = new McpServer(SERVER_INFO, {
@@ -23,6 +24,7 @@ function createServer(): McpServer {
   registerTailoredGuidanceTool(server);
   registerDecisionSupportTools(server);
   registerTrajectoryTool(server);
+  registerImpactTool(server);
   registerGodPromptSkillExtension(server);
   return server;
 }
