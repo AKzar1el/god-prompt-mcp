@@ -25,12 +25,14 @@
     "dist/skills.js",
     "dist/content.js",
     "bin/godprompt-proof.mjs",
+    "bin/godprompt-repo-map.mjs",
     "README.md",
     "LICENSE"
   ],
   "bin": {
     "god-prompt-mcp": "dist/stdio.js",
-    "godprompt-proof": "bin/godprompt-proof.mjs"
+    "godprompt-proof": "bin/godprompt-proof.mjs",
+    "godprompt-repo-map": "bin/godprompt-repo-map.mjs"
   },
   "repository": {
     "type": "git",

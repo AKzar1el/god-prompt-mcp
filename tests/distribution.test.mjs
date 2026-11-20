@@ -134,11 +134,13 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
     "dist/skills.js",
     "dist/content.js",
     "bin/godprompt-proof.mjs",
+    "bin/godprompt-repo-map.mjs",
     "README.md",
     "LICENSE",
   ]);
   assert.equal(packageJson.bin?.["god-prompt-mcp"], "dist/stdio.js");
   assert.equal(packageJson.bin?.["godprompt-proof"], "bin/godprompt-proof.mjs");
+  assert.equal(packageJson.bin?.["godprompt-repo-map"], "bin/godprompt-repo-map.mjs");
   assert.equal(packageJson.mcpName, serverJson.name);
   assert.equal(packageJson.scripts?.prepare, "npm run build");
   assert.equal(packageJson.scripts?.prepublishOnly, "npm test");
