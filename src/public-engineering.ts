@@ -127,6 +127,17 @@ export function reviewCodeChange(diff: string) {
           if (isTest && /\b(?:expect|assert(?:\.\w+)?|test|it)\s*\(/i.test(change.content) && findings.length < MAX_FINDINGS) {
             findings.push({ code: "REMOVED_TEST_ASSERTION", severity: "medium", message: "Removed test/assertion text: check that coverage was preserved.", file: path, line: change.ln });
           }
+          if (!isTest && /\b(?:if\s*\(|throw\s+|assert(?:\.\w+)?\s*\()/i.test(change.content)
+            && /\b(?:isAdmin|isAuthenticated|hasPermission|canAccess|authoriz\w*|auth\w*|permissions?|roles?|csrf|access|credentials?|session)\b/i.test(change.content)
+            && findings.length < MAX_FINDINGS) {
+            findings.push({
+              code: "REMOVED_SECURITY_GUARD",
+              severity: "medium",
+              message: "Removed a possible authorization or access-control guard. Verify replacement protection and regression coverage; removal alone is not proof of a vulnerability.",
+              file: path,
+              line: change.ln,
+            });
+          }
           continue;
         }
         reviewedLines++;
@@ -285,29 +296,47 @@ export function buildTestMatrix(specification: string, maxCases: number) {
     expected: string;
     status: "PROPOSED_NOT_RUN";
   }> = [];
-  const gaps: Array<{ requirement_id: string; reason: string }> = [];
-  for (const requirement of normalized.requirements) {
-    const acceptance = [...requirement.acceptance, ...requirement.scenarios];
-    if (!acceptance.length) gaps.push({ requirement_id: requirement.id, reason: "No expected outcome or acceptance scenario supplied." });
-    const candidates = [
-      { category: "positive" as const, objective: `Verify the stated behavior of ${requirement.id}.`, expected: acceptance[0] ?? "UNSPECIFIED: define an observable pass condition" },
-      { category: "negative" as const, objective: `Check invalid, missing or rejected inputs relevant to ${requirement.id}.`, expected: "UNSPECIFIED: define rejection/error contract" },
-      { category: "boundary" as const, objective: `Exercise limits, empties and state transitions relevant to ${requirement.id}.`, expected: "UNSPECIFIED: define applicable limits" },
-      { category: "regression" as const, objective: `Verify existing adjacent behavior is preserved when implementing ${requirement.id}.`, expected: "UNSPECIFIED: establish baseline evidence" },
-    ];
-    for (const candidate of candidates) {
+  // Inspect all requirements, even when the test budget is exhausted.
+  const gaps = normalized.requirements
+    .filter((requirement) => !requirement.acceptance.length && !requirement.scenarios.length)
+    .map((requirement) => ({ requirement_id: requirement.id, reason: "No expected outcome or acceptance scenario supplied." }));
+  const categories = ["positive", "negative", "boundary", "regression"] as const;
+  // Round-robin by category: cover each requirement at least once before
+  // spending a limited budget on more cases for the first requirement.
+  for (const category of categories) {
+    for (const requirement of normalized.requirements) {
       if (cases.length >= maxCases) break;
+      const objective = category === "positive"
+        ? `Verify the stated behavior of ${requirement.id}.`
+        : category === "negative"
+          ? `Check invalid, missing or rejected inputs relevant to ${requirement.id}.`
+          : category === "boundary"
+            ? `Exercise limits, empties and state transitions relevant to ${requirement.id}.`
+            : `Verify existing adjacent behavior is preserved when implementing ${requirement.id}.`;
+      const expected = category === "positive"
+        ? ([...requirement.acceptance, ...requirement.scenarios][0] ?? "UNSPECIFIED: define an observable pass condition")
+        : category === "negative"
+          ? "UNSPECIFIED: define rejection/error contract"
+          : category === "boundary"
+            ? "UNSPECIFIED: define applicable limits"
+            : "UNSPECIFIED: establish baseline evidence";
       cases.push({
         id: `TC-${String(cases.length + 1).padStart(3, "0")}`,
         requirement_id: requirement.id,
-        ...candidate,
+        category,
+        objective,
+        expected,
         status: "PROPOSED_NOT_RUN",
       });
     }
     if (cases.length >= maxCases) break;
   }
+  const truncated = normalized.truncated || cases.length < normalized.requirements.length * categories.length;
+  const uncovered_requirement_ids = normalized.requirements
+    .filter((requirement) => !cases.some((entry) => entry.requirement_id === requirement.id))
+    .map((requirement) => requirement.id);
   return {
-    status: normalized.requirements.length ? "DRAFT_TEST_PLAN" : "NO_REQUIREMENTS_FOUND",
+    status: !normalized.requirements.length ? "NO_REQUIREMENTS_FOUND" : truncated ? "PARTIAL_TEST_PLAN" : "DRAFT_TEST_PLAN",
     cases,
     requirements_seen: normalized.requirements.length,
     traceability: normalized.requirements.map((requirement) => ({
@@ -315,7 +344,8 @@ export function buildTestMatrix(specification: string, maxCases: number) {
       test_case_ids: cases.filter((entry) => entry.requirement_id === requirement.id).map((entry) => entry.id),
     })),
     gaps,
-    truncated: normalized.truncated || cases.length < normalized.requirements.length * 4,
+    uncovered_requirement_ids,
+    truncated,
     tests_executed: 0,
     warning: "Draft cases are suggestions only. The MCP has not generated executable tests, inspected code, run checks, or verified expected behavior.",
   };

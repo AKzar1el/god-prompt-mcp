@@ -56,6 +56,20 @@ test("patch review isolates a test deletion from a negative source line", () => 
   assert.ok(!review.findings.some((item) => item.code === "NO_TEST_CHANGES_IN_PATCH"));
 });
 
+test("patch review flags deletion of an authorization guard without claiming a proven vulnerability", () => {
+  const patch = [
+    "diff --git a/src/auth.ts b/src/auth.ts",
+    "--- a/src/auth.ts",
+    "+++ b/src/auth.ts",
+    "@@ -1,2 +1 @@",
+    '-if (!context.isAdmin) throw new Error("Forbidden");',
+    " return true;",
+  ].join("\n");
+  const result = reviewCodeChange(patch);
+  assert.ok(result.findings.some((item) => item.code === "REMOVED_SECURITY_GUARD" && item.line === 1));
+  assert.equal(result.independently_verified, false);
+});
+
 test("requirement audit identifies ambiguous outcomes and traceable missing acceptance", () => {
   const input = "## Login\n- The user login must be fast and secure.\n- The user login must be fast and secure.\n- A locked user must be rejected.\n  Acceptance: locked account returns 403.\n  Scenario: Given a locked account, When login is attempted, Then the request fails.";
   const result = auditRequirements(input);
@@ -81,7 +95,24 @@ test("requirement normalization is deterministic, bounded and shared with test m
   assert.equal(plan.truncated, true);
   assert.equal(plan.tests_executed, 0);
   assert.equal(plan.cases[0].status, "PROPOSED_NOT_RUN");
-  assert.deepEqual(plan.traceability[0].test_case_ids, ["TC-001", "TC-002", "TC-003", "TC-004"]);
+  assert.deepEqual(plan.traceability[0].test_case_ids, ["TC-001"]);
+  assert.deepEqual(plan.traceability[5].test_case_ids, ["TC-006"]);
+  assert.deepEqual(plan.traceability[6].test_case_ids, []);
+  assert.equal(plan.uncovered_requirement_ids.length, 29);
+  assert.equal(plan.status, "PARTIAL_TEST_PLAN");
+});
+
+test("a small test budget covers distinct requirements before adding optional scenarios", () => {
+  const specification = [
+    "- The service must authenticate users.",
+    "- The service must limit upload size.",
+    "- The service must reject repeated requests.",
+  ].join("\n");
+  const matrix = buildTestMatrix(specification, 4);
+  assert.deepEqual(matrix.cases.map((entry) => entry.requirement_id), ["R-01", "R-02", "R-03", "R-01"]);
+  assert.equal(matrix.traceability.length, 3);
+  assert.equal(matrix.gaps.length, 3, "truncated cases must not hide missing acceptance evidence for later requirements");
+  assert.equal(matrix.truncated, true);
 });
 
 test("test matrix preserves acceptance text without manufacturing success evidence", () => {

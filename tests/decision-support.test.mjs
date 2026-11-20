@@ -74,6 +74,22 @@ test("context handoff preserves scope while redacting credentials and email", ()
   assert.equal(result.independently_verified, false);
 });
 
+test("handoffs redact common API-key, Basic-auth and private-key material", () => {
+  const api = "api_key=fake-api-key-value-123456789";
+  const basic = "Authorization: Basic c3VwZXItc2VjcmV0LXZhbHVl";
+  const privateKey = "-----BEGIN PRIVATE KEY-----\\nFAKE_KEY_MATERIAL_123\\n-----END PRIVATE KEY-----".replaceAll("\\n", "\n");
+  const result = createContextHandoff({
+    goal: "Handoff sanitized integration notes",
+    decisions: [api, basic, privateKey],
+    completed: [], open_items: [], evidence: [],
+  });
+  for (const secret of ["fake-api-key-value-123456789", "c3VwZXItc2VjcmV0LXZhbHVl", "FAKE_KEY_MATERIAL_123"]) {
+    assert.ok(!result.handoff_text.includes(secret), "Sensitive material must not survive basic redaction");
+  }
+  assert.equal(result.redaction_applied, true);
+  assert.equal(result.independently_verified, false);
+});
+
 test("evaluation comparison uses exact paired case IDs rather than unrelated runs", () => {
   const baseline = [
     { case_id: "A", passed: false, duration_ms: 120, cost_usd: 0.2 },

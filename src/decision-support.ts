@@ -106,10 +106,13 @@ export function assessReleaseReadiness(input: ReleaseInput) {
 
 function redact(text: string): string {
   return text
+    .replace(/-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]{0,4000}?-----END [A-Z0-9 ]*PRIVATE KEY-----/gi, "[REDACTED_PRIVATE_KEY]")
     .replace(/\b(?:sk-proj-|ghp_|github_pat_)[A-Za-z0-9_-]{10,}\b/gi, "[REDACTED_CREDENTIAL]")
+    .replace(/\bsk-[A-Za-z0-9_-]{16,}\b/gi, "[REDACTED_CREDENTIAL]")
+    .replace(/\bAuthorization\s*:\s*(?:Basic|Bearer|Token)\s+[A-Za-z0-9+\/=._-]{8,}/gi, "Authorization: [REDACTED]")
     .replace(/\bBearer\s+[A-Za-z0-9._-]{10,}/gi, "Bearer [REDACTED]")
     .replace(/\b([\w.+%-]+)@([\w.-]+\.[a-z]{2,})\b/gi, "[REDACTED_EMAIL]")
-    .replace(/\b(password|secret|access_token|refresh_token)\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]");
+    .replace(/\b(password|secret|api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token|token)\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]");
 }
 
 type Handoff = {

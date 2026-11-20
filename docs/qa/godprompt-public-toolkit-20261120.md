@@ -76,3 +76,38 @@ https://github.com/sergeyt/parse-diff.
   publication, GHCR publication, Cloudflare Worker deployment, or Codexify
   restart was performed. Public deployment requires a separately approved
   release, endpoint verification and refreshed approved client schemas.
+
+## Independent PR #233 review and release decision (2026-11-20)
+
+- The first PR commit (`5152ca2`) passed all five GitHub CI workflows, but
+  targeted adversarial review found **three reproducible gaps** that the
+  original test suite did not cover:
+  1. `build_test_matrix` exhausted a small case budget on the first requirement
+     and did not report acceptance gaps for later requirements. It now allocates
+     proposed cases round-robin, reports uncovered requirement IDs and sets
+     `PARTIAL_TEST_PLAN` for truncated output.
+  2. `create_context_handoff` could echo common `api_key=...`, Basic-auth and
+     PEM private-key shapes. Added best-effort redaction patterns and privacy
+     regression cases; never treat redaction as a security guarantee.
+  3. `review_code_change` detected removed test assertions but not removed
+     authorization guards. It now emits an **unverified** risk signal for
+     recognizable deleted access-control guards, not a vulnerability claim.
+- The three new regressions **failed before** the fixes and passed afterwards;
+  the initial targeted run after the fixes passed **19/19**. A hosted MCP
+  regression also covers the budget-fairness behavior.
+- **Final independent local gate:** complete Node 22 build and **224/224 full
+  tests passed**, no failures/skips. Updated npm dry-run verified **16/16
+  intended package files** (0 unexpected/missing, no local scripts, 104,032
+  packed bytes). Updated Wrangler 4.135.0 `deploy --dry-run` succeeded
+  (882.34 KiB / gzip 203.65 KiB), **without deploying anything**.
+- Live read-only MCP `tools/list` on
+  `https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp` returned **9 existing
+  public tools**, none of the eight new ones. A Cloudflare bot posted a build
+  success for the draft branch, but that is **not** proof of a production route
+  update. Cloudflare's Git-integrated Workers Builds can deploy `main`
+  automatically, independently of the GitHub Actions GHCR publishing guard.
+- **Decision:** Do not merge while the repository still labels these new public
+  functions as npm version `1.1.1` and while the `main` -> Cloudflare release
+  behavior has not been independently reconciled. Finish same-head CI, then
+  prepare a deliberate versioned rollout and consumer tests. Keep the combined
+  OpenAI Skill/MCP marketplace package as the **last** stage.

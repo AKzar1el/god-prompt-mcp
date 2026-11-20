@@ -52,6 +52,16 @@ test("hosted Worker exposes all four public tools without Codexify or local host
   const matrix = await post(worker, "tools/call", { name: "build_test_matrix", arguments: { specification, max_cases: 8 } }, 4);
   assert.equal(matrix.result?.structuredContent?.cases.length, 8);
   assert.equal(matrix.result?.structuredContent?.tests_executed, 0);
+  const limitedMatrix = await post(worker, "tools/call", {
+    name: "build_test_matrix",
+    arguments: {
+      specification: "- The service must authenticate users.\n- The service must limit uploads.\n- The service must reject repeated requests.",
+      max_cases: 4,
+    },
+  }, "limited-matrix");
+  assert.equal(limitedMatrix.result?.structuredContent?.status, "PARTIAL_TEST_PLAN");
+  assert.equal(limitedMatrix.result?.structuredContent?.traceability.filter((item) => item.test_case_ids.length > 0).length, 3);
+  assert.equal(limitedMatrix.result?.structuredContent?.gaps.length, 3);
   const guidance = await post(worker, "tools/call", { name: "get_tailored_guidance", arguments: { task_type: "BUILD", phase: "verify", max_chars: 600 } }, 5);
   assert.ok(guidance.result?.structuredContent?.content.length > 100);
   assert.ok(guidance.result?.structuredContent?.content.length <= 600);
