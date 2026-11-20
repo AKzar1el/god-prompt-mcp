@@ -31,7 +31,7 @@ const EXPECTED_TOOLS = [
   "review_mcp_tool_contracts",
   "review_work_evidence",
   "trace_change_impact",
-];
+].sort();
 
 const REQUEST_TIMEOUT_MS = 15000;
 
