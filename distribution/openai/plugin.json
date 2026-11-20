@@ -18,7 +18,9 @@
         "capabilities": [
           "Implement with explicit scope and verification",
           "Debug systematically from evidence",
-          "Review code and agent work before completion"
+          "Review code and agent work before completion",
+          "Trace engineering change impact and verification evidence",
+          "Review MCP contracts and agent trajectories"
         ],
         "websiteURL": "https://tomiseregi.si/projects/god-prompt",
         "supportURL": "https://tomiseregi.si/contact",

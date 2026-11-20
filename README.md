@@ -631,3 +631,8 @@ Related MCP servers: [Google Search Console](https://github.com/AKzar1el/mcp-gsc
 ### P4 research and implementation preview (unreleased branch only)
 
 Development branch P4 adds five more public-facing read-only tools to Worker and stdio source: audit_agent_trajectory, trace_change_impact, review_mcp_tool_contracts, audit_agent_instructions and design_adversarial_tests. These analyze only bounded caller-supplied metadata, schemas or constraints; they do not execute tools, read repositories, authenticate receipts, or authorize completion. P4 also proposes paired-evaluation uncertainty fields. This text documents an unreleased branch: the currently published 1.2.1 package and live Worker still expose the 17 released tools until a separate versioned release. See docs/roadmaps/godprompt-p4-agent-quality-20261120.md.
+
+
+### Unpublished combined OpenAI Skill + MCP preview
+
+The next OpenAI plugin milestone is staged at `distribution/openai/` on the dedicated preview branch. It contains the existing scoped Skill plus a **single remote MCP** declaration for the current 22 public GodPrompt v1.3.0 tools. Two metadata formats (portable `mcp.json` and Codex compatibility `.mcp.json`) describe the same URL; they are not separate services. A dedicated GitHub workflow builds an **unpublished review ZIP** and validates the hosted tool list and a read-only call. The currently published OpenAI directory listing remains Skill-only until its separate reviewed update. See `docs/qa/godprompt-openai-combined-preview-20261120.md`.

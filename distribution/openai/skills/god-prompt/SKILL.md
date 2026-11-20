@@ -15,6 +15,12 @@ Apply this workflow only after the request matches the software-engineering scop
 skill description or the user explicitly invokes GodPrompt. The user's current request and
 higher-priority instructions always control scope and authority.
 
+## Optional OpenAI Skill + remote MCP workflow
+
+For a software-engineering request, use the bundled, read-only `god-prompt-mcp` **only when it can improve the task with caller-supplied evidence**. See [the compact MCP tool router](references/tool-routing.md) for a goal-to-tool mapping; load it only when a tool call is warranted. The bundled `agents/openai.yaml` declares the single remote MCP dependency. Do not register a second server or assume tool availability solely from a manifest.
+
+Prefer the smallest relevant tool and `get_tailored_guidance` over loading the entire GodPrompt payload. The MCP never reads repositories, runs tests, authenticates evidence, stores secrets or approves an action; all outputs are unverified advisory signals. Use pre-existing authorized host tools for actual inspection, edits, tests and approvals. When the remote MCP is unavailable, state that limitation and use safe instruction-level guidance; never fabricate MCP results.
+
 ## 1. Understand the requested outcome
 
 - Identify the concrete engineering outcome, repository or artifact in scope, and any
