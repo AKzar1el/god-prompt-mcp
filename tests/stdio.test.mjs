@@ -10,6 +10,8 @@ const packageJson = JSON.parse(
 
 const EXPECTED_TOOLS = [
   "assess_release_readiness",
+  "audit_agent_instructions",
+  "audit_agent_trajectory",
   "audit_requirements",
   "build_test_matrix",
   "classify_task",
@@ -17,6 +19,7 @@ const EXPECTED_TOOLS = [
   "create_context_handoff",
   "create_work_contract",
   "diagnose_failure",
+  "design_adversarial_tests",
   "get_anti_patterns",
   "get_core_skill",
   "get_gates",
@@ -25,7 +28,9 @@ const EXPECTED_TOOLS = [
   "get_tailored_guidance",
   "get_version",
   "review_code_change",
+  "review_mcp_tool_contracts",
   "review_work_evidence",
+  "trace_change_impact",
 ];
 
 const REQUEST_TIMEOUT_MS = 15000;
