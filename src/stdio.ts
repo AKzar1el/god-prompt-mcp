@@ -11,6 +11,7 @@ import { registerWorkContractTools, WORK_CONTRACT_INSTRUCTIONS } from "./work-co
 import { registerPublicEngineeringTools } from "./public-engineering.js";
 import { registerTailoredGuidanceTool } from "./tailored-guidance.js";
 import { registerDecisionSupportTools } from "./decision-support.js";
+import { registerTrajectoryTool } from "./agent-trajectory.js";
 import {
   registerCodexifyCheckpointTool,
   CODEXIFY_CHECKPOINT_INSTRUCTIONS,
@@ -38,6 +39,7 @@ function createServer(): McpServer {
   registerPublicEngineeringTools(server);
   registerTailoredGuidanceTool(server);
   registerDecisionSupportTools(server);
+  registerTrajectoryTool(server);
   if (enabled) registerCodexifyCheckpointTool(server);
   registerGodPromptSkillExtension(server);
   return server;
