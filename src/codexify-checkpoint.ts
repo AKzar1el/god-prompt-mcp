@@ -66,6 +66,7 @@ export type CheckpointInput = z.input<typeof inputSchema>;
 export const CODEXIFY_CHECKPOINT_INSTRUCTIONS =
   "LOCAL OPT-IN ONLY: use create_work_contract before authorized edits, then deliberately call review_codexify_checkpoint at plan, after implementation, after verification, and before handoff. " +
   "Also treat a Codexify rollout_checkpoint_required notice as a reminder trigger: fulfill the host-required rollout_update first, then review the current contract and available redacted evidence with review_codexify_checkpoint before resuming substantive work. Never fabricate missing receipts or a missing contract. " +
+  "For codexify_export.checks, pass real Codexify host envelopes: {id, command, tool:'mcp__God_v5__exec_command', response:{upstream_result:{exit_code:0}}}; never copy flat review_work_evidence receipts into this adapter. " +
   "For optional host audit correlation, a locally configured audit source and conversation/project scope must match the host's start, worker-exit and finish events; caller-pasted success cannot replace a missing audit match. " +
   "The separate opt-in audit observer can initiate advisory reviews on host activity, but cannot interrupt or authorize actions. RECHECK means reconcile and repeat; HOLD means do not report ready. Missing evidence may be pending only before its due stage. The tool is advisory, not a host interrupt or an approval mechanism. Never infer permission to merge, deploy, spend, publish or claim independently verified completion.";
 
@@ -212,7 +213,7 @@ export async function evaluateCheckpoint(raw: unknown): Promise<CheckpointResult
 export function registerCodexifyCheckpointTool(server: McpServer): void {
   server.registerTool("review_codexify_checkpoint", {
     title: "Review Codexify task checkpoint",
-    description: "Local opt-in, read-only milestone review. At plan, implementation, verification and handoff, check reported contract, scope, tool errors, verification and acceptance. Optional checks[].host_audit_ref can correlate exact execution events against an owner-configured local Codexify audit file and pinned conversation/project scope, failing closed on missing matches. This is not an execution permission, signed attestation or independent proof.",
+    description: "Local opt-in, read-only milestone review. At plan, implementation, verification and handoff, check reported contract, scope, tool errors, verification and acceptance. Unlike review_work_evidence, codexify_export.checks[] requires a real host envelope: {id:'VC-01', command:'the exact contracted command', tool:'mcp__God_v5__exec_command', response:{upstream_result:{exit_code:0,output:'...'}}}. The response.upstream_result.exit_code is read from the actual Codexify call; a flat exit_code/source/evidence_excerpt receipt is NOT sufficient. Optional checks[].host_audit_ref can correlate exact execution events against an owner-configured local Codexify audit file and pinned conversation/project scope, failing closed on missing matches. This is not an execution permission, signed attestation or independent proof.",
     // The SDK echoes Zod validation errors, including unexpected field names.
     // Preserve the detailed public schema, but hand invalid input to our
     // redacted error handler instead of letting the SDK echo private data.

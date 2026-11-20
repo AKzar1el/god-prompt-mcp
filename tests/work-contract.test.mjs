@@ -168,6 +168,36 @@ test("audited forbidden actions block reported variants and whole phrase mention
   assert.equal(benign.status, "REPORTED_READY_FOR_INDEPENDENT_REVIEW");
 });
 
+test("natural-language forbidden sentences cannot hide deployed, published or restarted operations", async () => {
+  const examples = [
+    { forbidden: "Do not deploy or publish", operation: "deployed app to production" },
+    { forbidden: "Do not deploy or publish", operation: "published an npm package" },
+    { forbidden: "Never restart Codexify", operation: "restarted Codexify" },
+    { forbidden: "Do not deploy without approval", operation: "deploy to staging" },
+  ];
+  for (const { forbidden, operation } of examples) {
+    const contract = (await createWorkContract({
+      ...setup,
+      forbidden_actions: [forbidden],
+    })).contract;
+    const reviewed = await reviewWorkEvidence({
+      ...passingEvidence(contract),
+      operations_performed: [operation],
+    });
+    assert.equal(reviewed.status, "HOLD", `${forbidden}: ${operation}`);
+    assert.ok(reviewed.issues.some(({ code }) => code === "PROHIBITED_ACTION_REPORTED"), `${forbidden}: ${operation}`);
+  }
+  const contract = (await createWorkContract({
+    ...setup,
+    forbidden_actions: ["Do not deploy or publish"],
+  })).contract;
+  const benign = await reviewWorkEvidence({
+    ...passingEvidence(contract),
+    operations_performed: ["read deployment documentation", "reviewed permissions"],
+  });
+  assert.equal(benign.status, "REPORTED_READY_FOR_INDEPENDENT_REVIEW");
+});
+
 test("unexpected verification and acceptance receipts cannot silently pass review", async () => {
   const contract = await definedContract();
   const base = passingEvidence(contract);

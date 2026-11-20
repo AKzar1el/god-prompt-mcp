@@ -92,6 +92,10 @@ test("real stdio MCP handshake exposes one isolated checkpoint tool", async (t) 
   const tools = await client.request("tools/list");
   assert.deepEqual(tools.tools.map((x) => x.name), ["review_codexify_checkpoint"]);
   assert.equal(tools.tools[0].annotations.readOnlyHint, true);
+  // E2E usability: callers must not accidentally reuse the flat receipt
+  // shape accepted by review_work_evidence, which yields false-looking HOLDs.
+  assert.match(tools.tools[0].description, /mcp__God_v5__exec_command/);
+  assert.match(tools.tools[0].description, /response\.upstream_result\.exit_code/);
 });
 
 test("real stdio MCP returns RECHECK for missing verification and safe summary", async (t) => {
