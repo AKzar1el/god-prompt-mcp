@@ -3,7 +3,7 @@
     "command": "npx",
     "args": [
       "-y",
-      "god-prompt-mcp@1.2.0"
+      "god-prompt-mcp@1.2.1"
     ],
     "includeTools": [
       "get_god_prompt",
