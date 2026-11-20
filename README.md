@@ -627,3 +627,7 @@ The generator reads the current source layout: `GodPrompt.md`, `SKILL.md`, and t
 Project page: [GodPrompt — AI software-development system prompt](https://tomiseregi.si/projects/god-prompt) · [GodPrompt source](https://github.com/AKzar1el/god-prompt)
 
 Related MCP servers: [Google Search Console](https://github.com/AKzar1el/mcp-gsc) · [GEO Tracker](https://github.com/AKzar1el/mcp-geo) · [Web Validator](https://github.com/AKzar1el/mcp-web-validator) · [Google News & Trends](https://github.com/AKzar1el/mcp-trendpulse)
+
+### P4 research and implementation preview (unreleased branch only)
+
+Development branch P4 adds five more public-facing read-only tools to Worker and stdio source: audit_agent_trajectory, trace_change_impact, review_mcp_tool_contracts, audit_agent_instructions and design_adversarial_tests. These analyze only bounded caller-supplied metadata, schemas or constraints; they do not execute tools, read repositories, authenticate receipts, or authorize completion. P4 also proposes paired-evaluation uncertainty fields. This text documents an unreleased branch: the currently published 1.2.1 package and live Worker still expose the 17 released tools until a separate versioned release. See docs/roadmaps/godprompt-p4-agent-quality-20261120.md.
