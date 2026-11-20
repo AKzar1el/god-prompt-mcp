@@ -213,14 +213,14 @@ test("invalid explicit observer duration must not silently enable an endless wat
   }
 });
 
-test("watcher preserves newly written checks after truncation, rotation, or temporary log absence", async (t) => {
+test("watcher preserves new checks after truncation, rotation, log absence, or growing rewrite", async (t) => {
   const contract = (await createWorkContract({
     task: "Follow one scoped verification after host audit truncation or rotation",
     task_type: "ANALYZE", risk_level: "low",
     allowed_paths: ["src/"], forbidden_actions: ["deploy"],
     success_criteria: ["Node command was checked"], verification_commands: ["node --version"],
   })).contract;
-  for (const mode of ["truncate", "rotate", "rotate-gap"]) {
+  for (const mode of ["truncate", "rotate", "rotate-gap", "overwrite-grow"]) {
     const dir = await mkdtemp(join(tmpdir(), "godprompt-rotated-audit-"));
     t.after(() => rm(dir, { recursive: true, force: true }));
     const audit = join(dir, "audit.jsonl");
@@ -228,8 +228,8 @@ test("watcher preserves newly written checks after truncation, rotation, or temp
     const reportFile = join(dir, "reviews.jsonl");
     const readyFile = join(dir, "watcher.ready");
     await writeFile(contractFile, JSON.stringify(contract));
-    // One case shrinks the file; the other replaces it with a new inode
-    // larger than the old cursor. Both used to skip the first new events.
+    // A shrink, replacement inode, or same-inode rewrite growing beyond the
+    // old cursor must all retain the first new event, not silently skip it.
     await writeFile(audit, JSON.stringify({
       schema_version: 2, event: "audit_started", padding: "x".repeat(
         mode === "truncate" ? 5000 : 8),
@@ -281,4 +281,73 @@ test("watcher preserves newly written checks after truncation, rotation, or temp
     assert.equal(reviews[0].counts.supplied_checks, 1);
     assert.equal(reviews[0].completion_authorized, false);
   }
+});
+
+test("observer preserves UTF-8 JSONL split across its bounded read window", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "godprompt-utf8-audit-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const audit = join(dir, "audit.jsonl");
+  const contractFile = join(dir, "contract.json");
+  const reportFile = join(dir, "reviews.jsonl");
+  const readyFile = join(dir, "watcher.ready");
+  const unicode = "\u2603";
+  const command = `node -e "console.log('${unicode}')"`;
+  const contract = (await createWorkContract({
+    task: "Verify a UTF-8 command against an observed host audit",
+    task_type: "ANALYZE", risk_level: "low",
+    allowed_paths: ["src/"], forbidden_actions: ["deploy"],
+    success_criteria: ["Unicode command checked"], verification_commands: [command],
+  })).contract;
+  await writeFile(contractFile, JSON.stringify(contract));
+  await writeFile(audit, "");
+  const child = spawn(process.execPath, [
+    "scripts/codexify-audit-checkpoint-observer.mjs",
+    "--watch", "--duration-ms", "3500",
+  ], {
+    stdio: ["ignore", "pipe", "pipe"], windowsHide: true,
+    env: {
+      ...process.env,
+      GODPROMPT_CODEXIFY_AUDIT_FILE: audit,
+      GODPROMPT_CODEXIFY_AUDIT_CONVERSATION_ID: conversation,
+      GODPROMPT_CODEXIFY_AUDIT_PROJECT_ID: project,
+      GODPROMPT_CODEXIFY_CONTRACT_FILE: contractFile,
+      GODPROMPT_CODEXIFY_CHECKPOINT_REPORT_FILE: reportFile,
+      GODPROMPT_CODEXIFY_OBSERVER_READY_FILE: readyFile,
+    },
+  });
+  t.after(() => { if (child.exitCode === null) child.kill(); });
+  const exitPromise = once(child, "exit");
+  let stdout = "", stderr = "";
+  child.stdout.on("data", (chunk) => { stdout += chunk; });
+  child.stderr.on("data", (chunk) => { stderr += chunk; });
+  let ready = false;
+  for (let i = 0; i < 100; i++) {
+    try { await stat(readyFile); ready = true; break; }
+    catch { await new Promise((resolve) => setTimeout(resolve, 100)); }
+  }
+  assert.equal(ready, true);
+  const events = toolEvents("exec_command", 187);
+  events[0].command_preview = command;
+  const start = JSON.stringify(events[0]) + "\n";
+  // Place the first byte of the multibyte character at offset MAX_READ-1.
+  // The second read must finish decoding it before JSON parsing or matching.
+  let remaining = 512 * 1024 - 1 - Buffer.byteLength(start.slice(0, start.indexOf(unicode)));
+  assert.ok(remaining > 0);
+  let padding = "";
+  while (remaining > 0) {
+    const size = Math.min(remaining - 1, 60 * 1024);
+    padding += "x".repeat(size) + "\n";
+    remaining -= size + 1;
+  }
+  const payload = padding + events.map(JSON.stringify).join("\n") + "\n";
+  assert.equal(Buffer.from(payload).indexOf(Buffer.from(unicode)), 512 * 1024 - 1);
+  await appendFile(audit, payload);
+  const [code] = await exitPromise;
+  assert.equal(code, 0, stderr);
+  const summary = JSON.parse(stdout.trim());
+  assert.equal(summary.observed_checkpoints, 1);
+  const report = JSON.parse((await readFile(reportFile, "utf8")).trim());
+  assert.equal(report.stage, "verification");
+  assert.equal(report.counts.supplied_checks, 1);
+  assert.equal(report.completion_authorized, false);
 });

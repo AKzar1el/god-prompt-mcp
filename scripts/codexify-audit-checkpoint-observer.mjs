@@ -6,13 +6,23 @@
  * It does not interrupt Codexify, authenticate the log, or grant authority.
  * It never emits command previews, tool output, project paths or contract text.
  */
-import { appendFile, open, readFile, stat, writeFile } from "node:fs/promises";
+import { appendFile, open, readFile, writeFile } from "node:fs/promises";
 import { isAbsolute } from "node:path";
+import { StringDecoder } from "node:string_decoder";
 import { evaluateCheckpoint, cloudSafeCheckpointSummary } from "../dist/codexify-checkpoint.js";
 
 const MAX_READ = 512 * 1024;
 const MAX_LINE = 64 * 1024;
 const POLL_MS = 400;
+const CURSOR_ANCHOR_BYTES = 128;
+
+async function cursorAnchor(handle, cursor) {
+  const length = Math.min(cursor, CURSOR_ANCHOR_BYTES);
+  if (!length) return Buffer.alloc(0);
+  const bytes = Buffer.allocUnsafe(length);
+  const { bytesRead } = await handle.read(bytes, 0, length, cursor - length);
+  return bytesRead === length ? bytes : null;
+}
 const toolsByStage = new Map([
   ["update_plan", "plan"],
   ["rollout_update", "plan"],
@@ -69,15 +79,26 @@ if (!validFlags) {
   const calls = new Map();
   const fired = new Set();
   let pending = "";
-  const originalStat = await stat(auditFile);
-  const original = originalStat.size;
+  let decoder = new StringDecoder("utf8");
+  const initialHandle = await open(auditFile, "r");
+  let originalStat, original, cursor, anchor;
+  try {
+    originalStat = await initialHandle.stat();
+    original = originalStat.size;
+    // Never replay historical events on watch startup, but retain a small
+    // byte anchor to detect same-inode rewrites that grow past that cursor.
+    cursor = watch ? original : Math.max(0, original - MAX_READ);
+    anchor = await cursorAnchor(initialHandle, cursor);
+    if (anchor === null) throw new Error("Audit file changed during observer startup");
+  } finally {
+    await initialHandle.close();
+  }
   let fileIdentity = {
     dev: originalStat.dev, ino: originalStat.ino,
     birthtimeMs: originalStat.birthtimeMs,
   };
   // Never replay historical events when starting the watcher. The --once
   // mode scans the last bounded segment for a deterministic pilot replay.
-  let cursor = watch ? original : Math.max(0, original - MAX_READ);
   let first = !watch && cursor > 0;
   const readyFile = env.GODPROMPT_CODEXIFY_OBSERVER_READY_FILE;
   if (watch && readyFile) {
@@ -186,9 +207,9 @@ if (!validFlags) {
   }
 
   async function readNewEvents() {
-    let info;
+    let handle;
     try {
-      info = await stat(auditFile);
+      handle = await open(auditFile, "r");
     } catch (error) {
       // File rotation may briefly remove the audit path between closing the
       // old log and creating its replacement. Preserve the old cursor and
@@ -196,35 +217,45 @@ if (!validFlags) {
       if (error?.code === "ENOENT") return;
       throw error;
     }
-    const size = info.size;
-    // Host audit rotation can replace the file with a *larger* new inode;
-    // truncation can produce a smaller file. In either case, reading from the
-    // old cursor silently discards the first scoped events. Reset to offset 0
-    // and clear partial-line state, but do not replay the historical file
-    // when the watcher first starts.
-    if (size < cursor ||
+    try {
+      // Stat the *opened file*, not the pathname: a rotation between stat
+      // and open must not pair the old inode's cursor with the new file.
+      const info = await handle.stat();
+      const size = info.size;
+      let reset = size < cursor ||
         info.dev !== fileIdentity.dev || info.ino !== fileIdentity.ino ||
-        info.birthtimeMs !== fileIdentity.birthtimeMs) {
-      cursor = 0;
-      pending = "";
-      first = false;
-    }
-    fileIdentity = { dev: info.dev, ino: info.ino, birthtimeMs: info.birthtimeMs };
-    const amount = Math.min(size - cursor, MAX_READ);
-    if (amount === 0) return;
-    let handle;
-    try {
-      handle = await open(auditFile, "r");
-    } catch (error) {
-      // A second rotation can happen after stat and before open.
-      if (error?.code === "ENOENT") return;
-      throw error;
-    }
-    try {
+        info.birthtimeMs !== fileIdentity.birthtimeMs;
+      if (!reset && anchor.length) {
+        const observed = await cursorAnchor(handle, cursor);
+        reset = observed === null || !observed.equals(anchor);
+      }
+      if (reset) {
+        cursor = 0;
+        pending = "";
+        decoder = new StringDecoder("utf8");
+        first = false;
+        anchor = Buffer.alloc(0);
+      }
+      fileIdentity = { dev: info.dev, ino: info.ino, birthtimeMs: info.birthtimeMs };
+      const amount = Math.min(size - cursor, MAX_READ);
+      if (amount === 0) return;
       const bytes = Buffer.allocUnsafe(amount);
       const read = await handle.read(bytes, 0, amount, cursor);
       cursor += read.bytesRead;
-      const text = pending + bytes.toString("utf8", 0, read.bytesRead);
+      const nextAnchor = await cursorAnchor(handle, cursor);
+      if (nextAnchor === null) {
+        // The file changed during the read. Recheck from the beginning on
+        // the next poll rather than accepting a discontinuous byte stream.
+        cursor = 0;
+        pending = "";
+        decoder = new StringDecoder("utf8");
+        first = false;
+        anchor = Buffer.alloc(0);
+        return;
+      }
+      anchor = nextAnchor;
+      // Preserve multibyte code points split across MAX_READ boundaries.
+      const text = pending + decoder.write(bytes.subarray(0, read.bytesRead));
       const lines = text.split(/\r?\n/);
       pending = lines.pop() ?? "";
       if (first) { lines.shift(); first = false; }
