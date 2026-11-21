@@ -8,6 +8,19 @@ const PHASES = ["plan", "execute", "verify", "handoff"] as const;
 type TaskType = (typeof TYPES)[number];
 type Phase = (typeof PHASES)[number];
 
+/** Small goal-to-tool hints; never automatic tool invocation or permission. */
+const TOOL_HINTS: Record<TaskType, Record<Phase, readonly string[]>> = {
+  BUILD:{plan:["audit_requirements","build_test_matrix","create_work_contract"],execute:["review_code_change","trace_change_impact"],verify:["review_work_evidence","design_adversarial_tests"],handoff:["create_context_handoff"]},
+  DEBUG:{plan:["diagnose_failure","create_work_contract"],execute:["review_code_change","audit_agent_trajectory"],verify:["review_work_evidence","trace_change_impact"],handoff:["create_context_handoff"]},
+  REFACTOR:{plan:["create_work_contract","trace_change_impact"],execute:["review_code_change","audit_agent_trajectory"],verify:["review_work_evidence","build_test_matrix"],handoff:["create_context_handoff"]},
+  CONTENT:{plan:["audit_requirements"],execute:["review_code_change"],verify:["review_work_evidence"],handoff:["create_context_handoff"]},
+  DESIGN:{plan:["audit_requirements","build_test_matrix"],execute:["review_code_change"],verify:["design_adversarial_tests","review_work_evidence"],handoff:["create_context_handoff"]},
+  SHIP:{plan:["assess_release_readiness","create_work_contract"],execute:["trace_change_impact"],verify:["assess_release_readiness","review_work_evidence"],handoff:["create_context_handoff"]},
+  ANALYZE:{plan:["audit_requirements","diagnose_failure"],execute:["audit_agent_trajectory","review_mcp_tool_contracts"],verify:["review_work_evidence"],handoff:["create_context_handoff"]},
+  AUTOMATE:{plan:["audit_requirements","review_mcp_tool_contracts"],execute:["audit_agent_trajectory"],verify:["build_test_matrix","review_work_evidence"],handoff:["create_context_handoff"]},
+  PLAN:{plan:["audit_requirements"],execute:["build_test_matrix"],verify:["audit_requirements"],handoff:["create_context_handoff"]},
+};
+
 function headingSection(content: string, heading: string): string {
   const lines = content.split("\n");
   const start = lines.findIndex((line) => line.trim() === `## ${heading}`);
@@ -51,6 +64,8 @@ export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0,
     next_start: start + selected.length < text.length ? start + selected.length : null,
     total_chars: text.length,
     truncated: start + selected.length < text.length,
+    suggested_tools: start===0 ? [...TOOL_HINTS[taskType][phase]] : [],
+    tool_selection_rule: start===0 ? "Only use a suggested tool when the caller supplies appropriate bounded evidence; tools are optional, not automatically invoked." : null,
     warning: "Guidance only: the MCP did not inspect a codebase, execute checks, or verify results. Load additional chunks when truncated.",
   };
 }

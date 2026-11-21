@@ -1,0 +1,125 @@
+{
+  "suite_id": "godprompt-agent-ab-microtasks-v1",
+  "tasks": [
+    {
+      "task_id": "clamp-bounds",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=clamp-bounds benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Correct clamp behavior when a value falls outside or inside numeric bounds",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "stable-unique",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=stable-unique benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Remove duplicates without changing first-seen order",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "parse-integer",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=parse-integer benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Reject malformed numeric tokens instead of accepting partial parseInt results",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "percent-encode",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=percent-encode benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Encode query parameter values without allowing query delimiters through",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "paginate-last-page",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=paginate-last-page benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Respect page offsets and return the correct final partial page",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "utc-day-key",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=utc-day-key benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Use the UTC calendar date instead of local-time or incorrect date components",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "relative-path",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=relative-path benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Reject directory traversal and absolute paths in a relative-path validator",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "csv-quoted-comma",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=csv-quoted-comma benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Parse commas inside quoted CSV fields without splitting them",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "retry-cap",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=retry-cap benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Cap exponential backoff at the declared upper bound",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "merge-no-mutate",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=merge-no-mutate benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Return combined config without mutating the original defaults object",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "sort-numeric",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=sort-numeric benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Sort numbers by numeric value instead of lexicographic order",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    },
+    {
+      "task_id": "group-prototype",
+      "revision": "microtask-v1",
+      "test_command": "node --test --test-name-pattern=group-prototype benchmarks/agent-ab/microtasks/checks.test.mjs",
+      "description": "Count arbitrary keys including __proto__ without prototype collisions",
+      "allowed_paths": [
+        "benchmarks/agent-ab/microtasks/broken.mjs"
+      ],
+      "time_budget_minutes": 8
+    }
+  ]
+}

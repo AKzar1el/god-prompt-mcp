@@ -40,8 +40,11 @@ export function auditAgentInstructions(instructions: InstructionInput) {
         source_indices:[seen.get(normalized)!,ix],
         recommendation:"Deduplicate overlapping agent rules or reference the canonical policy."});
       else seen.set(normalized,ix);
+      const overrideEarlier = /\b(?:ignore|disregard|override)\s+(?:all\s+)?(?:prior|previous|earlier)\s+(?:(?:system|developer|project|safety|user)\s+)?instructions?\b/i.test(line);
+      const prohibitOverride = /\b(?:do\s+not|don't|never|must\s+not|should\s+not)\s+(?:ignore|disregard|override)\b/i.test(line);
       if (/\b(?:skip|bypass|ignore)\s+(?:all\s+)?(?:tests|verification|approvals?)\b/i.test(line) ||
-          /\b(?:do anything|without any approval)\b/i.test(line)) {
+          /\b(?:do anything|without any approval)\b/i.test(line) ||
+          (overrideEarlier && !prohibitOverride)) {
         hints.push({code:"RISKY_OVERRIDING_INSTRUCTION",severity:"high",source_indices:[ix],
           recommendation:"Reconcile any blanket bypass with project safety and approval requirements."});
       }

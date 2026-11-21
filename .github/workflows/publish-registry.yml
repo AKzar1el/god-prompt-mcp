@@ -114,7 +114,7 @@ jobs:
           grep -Fx 'dist/stdio.js' "${RUNNER_TEMP}/mcpb-files.txt"
           grep -Fx 'assets/logo-400.png' "${RUNNER_TEMP}/mcpb-files.txt"
           grep -q '^node_modules/' "${RUNNER_TEMP}/mcpb-files.txt"
-          if grep -Eq '^(src|tests|\.github)/' "${RUNNER_TEMP}/mcpb-files.txt"; then
+          if grep -Eq '^(src|tests|benchmarks|docs|\.github)/' "${RUNNER_TEMP}/mcpb-files.txt"; then
             echo '::error::Development-only files leaked into the MCPB bundle.'
             exit 1
           fi

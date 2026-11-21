@@ -215,6 +215,60 @@ export async function githubSnapshotEvidence({ repo, sha, contract, mapping = {}
   bundle.gaps.push("CONNECTOR_SNAPSHOT_PROVENANCE_NOT_AUTHENTICATED");
   return bundle;
 }
+/**
+ * One opt-in evidence collection call. Reuses the existing pinned GitHub and
+ * Codexify adapters; does not execute commands, merge scopes or authenticate text.
+ */
+export async function combinedEvidence({
+  repo, sha, contract, mapping={}, pr=null, codexifyExport=null, snapshot=null, fetchImpl=fetch,
+}) {
+  const valid=validateWorkContractEnvelope(contract);
+  if(!repo || !sha) fail("Combined evidence requires a pinned GitHub repository and commit");
+  const github=snapshot
+    ? await githubSnapshotEvidence({repo,sha,contract:valid,mapping,pr,snapshot})
+    : await githubEvidence({repo,sha,contract:valid,mapping,pr,fetchImpl});
+  const codex=codexifyExport===null ? null :
+    await codexifyEvidence({contract:valid,exportData:codexifyExport});
+  const gaps=[...github.gaps.map(x=>"github:"+x),...(codex?.gaps??[]).map(x=>"codexify:"+x)];
+  const files=[...new Set([...(github.review_input.changed_files??[]),
+    ...(codex?.review_input?.changed_files??[])])].sort();
+  if(files.length>150) fail("Combined changed file list exceeds review safety limit");
+  const grouped=new Map();
+  for(const source of [{key:"github",checks:github.review_input.checks},
+                        ...(codex?[{key:"codexify",checks:codex.review_input.checks}]:[])]) {
+    for(const check of source.checks) {
+      if(!grouped.has(check.id))grouped.set(check.id,[]);
+      grouped.get(check.id).push({...check,provider:source.key});
+    }
+  }
+  const checks=[];
+  for(const expected of valid.verification_commands) {
+    const options=grouped.get(expected.id)??[];
+    if(!options.length){gaps.push("CHECK_NOT_OBSERVED:"+expected.id);continue;}
+    if(options.some(x=>x.command!==expected.command)||options.some(x=>x.exit_code!==options[0].exit_code)){
+      checks.push({id:expected.id,command:expected.command,exit_code:null,
+        source:"self_report",evidence_excerpt:"Multiple sources disagree on command or exit status; reconcile original receipts."});
+      gaps.push("CHECK_EVIDENCE_CONFLICT:"+expected.id);
+      continue;
+    }
+    const best=options.find(x=>x.source==="tool_output")??options[0];
+    checks.push({id:expected.id,command:expected.command,exit_code:best.exit_code,
+      source:best.source,evidence_excerpt:"Concordant "+options.map(x=>x.provider).join("+")+
+        " receipt; matched contract VC ID. Original outputs and execution must still be verified independently."});
+    if(best.source!=="tool_output")gaps.push("CHECK_NOT_STRUCTURED:"+expected.id);
+  }
+  return {
+    ...makeBundle("combined_github_codexify",valid,files,checks,gaps,{
+      provider:"combined_local_collectors",
+      github:github.provenance,
+      codexify:codex ? codex.provenance : null,
+      commit_sha:sha,
+    }),
+    observed_sources:codex ? 2 : 1,
+    receipt_conflicts:gaps.filter(x=>x.startsWith("CHECK_EVIDENCE_CONFLICT:")).length,
+  };
+}
+
 function filePath(env = process.env) {
   if (env.GODPROMPT_FEEDBACK_FILE) {
     if (!isAbsolute(env.GODPROMPT_FEEDBACK_FILE)) fail("GODPROMPT_FEEDBACK_FILE must be an absolute path");
@@ -493,7 +547,7 @@ export async function localWorkflow(project, {
     warning: "Version tracks a deterministic preview, not an approved rule set. Repeated self-reports are not independent evidence, and no policy is automatically applied.",
   };
 }
-const PROOF_USAGE = "Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics|workflow [--name value ...]";
+const PROOF_USAGE = "Usage: godprompt-proof github|github-snapshot|codexify|pack|learn|learn-review|lessons|metrics|workflow [--name value ...]";
 const PROOF_HELP = [
   "GodPrompt proof bridge (optional local CLI; Node.js 22+)",
   PROOF_USAGE,
@@ -502,6 +556,7 @@ const PROOF_HELP = [
   "  github          Read pinned GitHub check runs (HTTPS GET only)",
   "  github-snapshot Review a caller-supplied GitHub export offline",
   "  codexify        Review a caller-supplied Codexify command export offline",
+  "  pack            Create an offline caller-supplied proof bundle",
   "",
   "Local feedback commands:",
   "  learn-review    Save generic HOLD lessons from a reviewed report",
@@ -521,6 +576,7 @@ function parseOptions(argv) {
     github: ["repo", "sha", "contract", "map", "pr"],
     "github-snapshot": ["repo", "sha", "contract", "map", "snapshot", "pr"],
     codexify: ["contract", "export"],
+    pack: ["contract","repo","sha","map","pr","snapshot","codexify"],
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
     "learn-review": ["project", "review"],
@@ -570,6 +626,16 @@ export async function cli(argv = process.argv.slice(2)) {
     return codexifyEvidence({
       contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       exportData: await readSmallJson(opts.export),
+    });
+  }
+  if(command==="pack"){
+    if(!opts.contract||!opts.repo||!opts.sha)fail("pack requires --contract --repo --sha");
+    return combinedEvidence({
+      contract:validateWorkContractEnvelope(await readSmallJson(opts.contract)),
+      repo:opts.repo,sha:opts.sha,pr:opts.pr?Number(opts.pr):null,
+      mapping:opts.map?await readSmallJson(opts.map):{},
+      snapshot:opts.snapshot?await readSmallJson(opts.snapshot):null,
+      codexifyExport:opts.codexify?await readSmallJson(opts.codexify):null,
     });
   }
   if (command === "learn-review") {

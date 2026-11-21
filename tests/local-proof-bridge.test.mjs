@@ -13,11 +13,12 @@ import {
 const SHA = "a".repeat(40);
 test("offline proof CLI help is discoverable and exits successfully", () => {
   const script = fileURLToPath(new URL("../bin/godprompt-proof.mjs", import.meta.url));
-  for (const args of [["--help"], ["github", "--help"], ["-h"]]) {
+  for (const args of [["--help"], ["github", "--help"], ["pack", "--help"], ["-h"]]) {
     const result = spawnSync(process.execPath, [script, ...args], { encoding: "utf8", timeout: 10000 });
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /github-snapshot/);
     assert.match(result.stdout, /codexify/);
+    assert.match(result.stdout, /pack/);
     assert.match(result.stdout, /local feedback/i);
     assert.equal(result.stderr, "");
   }

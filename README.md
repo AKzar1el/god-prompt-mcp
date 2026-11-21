@@ -47,6 +47,8 @@ To buy the review, use the [US$49 one-time GitHub Sponsors tier](https://github.
 
 **Version 1.3.0:** All **22 public read-only tools** are available from the published hosted MCP and npm stdio package. Five P4 diagnostics were added, with strict bounded output schemas and paired evaluation statistics. The optional local Codexify checkpoint is the 23rd tool **only when explicitly enabled** on local stdio. The remote MCP does not execute code, fetch repositories or approve changes. See [P4 evidence and release status](docs/roadmaps/godprompt-p4-agent-quality-20261120.md). The combined OpenAI Skill+MCP source package is ready for review, but the existing directory listing is still Skill-only; GHCR 1.3.0 publication is a separately manual step.
 
+**Version 1.4.2 (P5 test-selection patch):** The public tool count remains **22**, with improved advisory trajectory diagnostics, optional accessible MCP Apps evidence display for two existing tools, and smaller task-specific guidance suggestions. The local npm distribution adds `godprompt-repo-map` to derive a bounded static JavaScript/TypeScript dependency map from an explicitly authorized checkout, and `godprompt-proof pack` to combine pinned GitHub evidence with optional Codexify receipts, invalidating contradictions. Both CLIs are **local opt-in**, not hosted MCP permissions. The free coding-agent benchmark runner and 12 deliberately failing grader microtasks help set up paired A/B evaluation; they do **not** prove a model productivity improvement. The v1.4.2 patch also resolves NodeNext source imports and detects more instruction-bypass wording; clients must update the local package for these improvements.
+
 ### Optional local proof bridge (from v1.1.1)
 
 The new **godprompt-proof** CLI (Node 22+, **no additional dependencies**) can normalize pinned GitHub CI checks and exported Codexify command receipts into inputs for the existing GodPrompt evidence reviewer. It also supports an optional **single 256 KiB local JSONL feedback file** for project-scoped generic lessons, **on-demand read-only metrics**, and **versioned workflow previews** from that same file (no telemetry or automatic rule changes). No database server, GPU, background worker or global telemetry is involved.
@@ -306,7 +308,7 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent droi
 Droid discovers compatible project skills under `.agents/skills/`. To add the callable GodPrompt tools as a local stdio MCP server, use Droid's native MCP command with the published version pinned:
 
 ```bash
-droid mcp add god-prompt "npx -y god-prompt-mcp@1.3.0"
+droid mcp add god-prompt "npx -y god-prompt-mcp@1.4.2"
 ```
 
 Open `/mcp` in Droid to verify the server and available tools. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's read-only task and protocol tools. Node.js 22+ is required for the MCP server.
@@ -319,7 +321,7 @@ Warp can use GodPrompt as both an Agent Skill and a local MCP server. Install th
 npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent warp --copy -y
 ```
 
-Warp discovers project skills from `.agents/skills/` and `.warp/skills/`. For MCP tools, add a CLI-based MCP server in Warp with command `npx` and arguments `-y`, `god-prompt-mcp`; Warp's Oz CLI can also receive MCP configuration through `oz agent run --mcp`. The skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
+Warp discovers project skills from `.agents/skills/` and `.warp/skills/`. For MCP tools, add a CLI-based MCP server in Warp with command `npx` and arguments `-y`, `god-prompt-mcp`; Warp's Oz CLI can also receive MCP configuration through `oz agent run --mcp`. The skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.4.2. Node.js 22+ is required for the MCP server.
 
 ### Goose
 
@@ -332,10 +334,10 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent goos
 Goose discovers the copied skill under `.goose/skills/god-prompt/`. To expose GodPrompt's callable tools for a session, start Goose with the published MCP package as an external stdio extension:
 
 ```bash
-goose session --with-extension "npx -y god-prompt-mcp@1.3.0"
+goose session --with-extension "npx -y god-prompt-mcp@1.4.2"
 ```
 
-Goose currently treats Agent Skills and MCP extensions as separate native surfaces, so this path does not depend on Agent Plugins support. The skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
+Goose currently treats Agent Skills and MCP extensions as separate native surfaces, so this path does not depend on Agent Plugins support. The skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.4.2. Node.js 22+ is required for the MCP server.
 
 ### Zed
 
@@ -397,13 +399,13 @@ The Trae target installs the skill under `.trae/skills/god-prompt/`, where TraeC
   "mcpServers": {
     "god-prompt": {
       "command": "npx",
-      "args": ["-y", "god-prompt-mcp@1.3.0"]
+      "args": ["-y", "god-prompt-mcp@1.4.2"]
     }
   }
 }
 ```
 
-TraeCode also supports the portable `.agents/skills/` convention when **Enable .agents Skills Directory** is turned on in its import settings. Treat project MCP configuration as executable workspace configuration and enable it only in repositories you trust. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
+TraeCode also supports the portable `.agents/skills/` convention when **Enable .agents Skills Directory** is turned on in its import settings. Treat project MCP configuration as executable workspace configuration and enable it only in repositories you trust. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.4.2. Node.js 22+ is required for the MCP server.
 
 ### OpenClaw
 
@@ -416,11 +418,11 @@ npx -y skills@latest add AKzar1el/god-prompt-mcp --skill god-prompt --agent open
 The copied skill lands under `.agents/skills/god-prompt/`, one of OpenClaw's documented project skill roots. To expose GodPrompt's callable tools to OpenClaw-managed agent runtimes as well, register the published stdio server:
 
 ```bash
-openclaw mcp add god-prompt --command npx --arg -y --arg god-prompt-mcp@1.3.0
+openclaw mcp add god-prompt --command npx --arg -y --arg god-prompt-mcp@1.4.2
 openclaw mcp probe god-prompt
 ```
 
-`mcp probe` opens a live MCP connection and reports the discovered capabilities, making it a direct verification step after registration. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
+`mcp probe` opens a live MCP connection and reports the discovered capabilities, making it a direct verification step after registration. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.4.2. Node.js 22+ is required for the MCP server.
 
 ### Qoder
 
@@ -437,13 +439,13 @@ The Qoder target installs the skill under `.qoder/skills/god-prompt/`, where Qod
   "mcpServers": {
     "god-prompt": {
       "command": "npx",
-      "args": ["-y", "god-prompt-mcp@1.3.0"]
+      "args": ["-y", "god-prompt-mcp@1.4.2"]
     }
   }
 }
 ```
 
-Qoder requires approval before using project-level MCP servers by default. After adding or changing the server, start a new session or run `/mcp reload`, then use `/mcp` to verify the connection. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
+Qoder requires approval before using project-level MCP servers by default. After adding or changing the server, start a new session or run `/mcp reload`, then use `/mcp` to verify the connection. The Agent Skill supplies the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.4.2. Node.js 22+ is required for the MCP server.
 
 ### Qwen Code
 
@@ -466,7 +468,7 @@ This installs GodPrompt under `.qwen/skills/god-prompt/`, where Qwen Code can di
 }
 ```
 
-Restart Qwen Code after changing MCP configuration, then open `/mcp` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
+Restart Qwen Code after changing MCP configuration, then open `/mcp` to verify the server. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.4.2. Node.js 22+ is required for the MCP server.
 
 ### Kimi Code
 
@@ -477,7 +479,7 @@ Kimi Code CLI can install GodPrompt as one native custom plugin containing the e
 /reload
 ```
 
-The Kimi manifest points at `skills/`, so the `god-prompt` skill remains available through Kimi's normal relevance-based skill loading instead of being forced into every session. The same manifest exposes `god-prompt-mcp@1.3.0` as a local stdio MCP server, including the seventeen public tools available in v1.2.0. The explicit `tree/main` URL matters because Kimi's bare GitHub-repository install form prefers the latest GitHub release; using `main` makes the current plugin manifest available without forcing a documentation-only npm/MCP Registry release. Node.js 22+ is required for the MCP server.
+The Kimi manifest points at `skills/`, so the `god-prompt` skill remains available through Kimi's normal relevance-based skill loading instead of being forced into every session. The same manifest exposes `god-prompt-mcp@1.4.2` as a local stdio MCP server, including the 22 public tools available in v1.4.2. The explicit `tree/main` URL matters because Kimi's bare GitHub-repository install form prefers the latest GitHub release; using `main` makes the current plugin manifest available without forcing a documentation-only npm/MCP Registry release. Node.js 22+ is required for the MCP server.
 
 ### JetBrains AI Assistant
 
@@ -515,7 +517,7 @@ If you only want the portable skill, place the complete skill directory at `.age
 devin mcp add god-prompt -- npx -y god-prompt-mcp
 ```
 
-Run `devin mcp list` to verify the direct server registration. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.3.0. Node.js 22+ is required for the MCP server.
+Run `devin mcp list` to verify the direct server registration. The Agent Skill provides the reusable workflow while MCP exposes GodPrompt's 22 public tools in v1.4.2. Node.js 22+ is required for the MCP server.
 
 ### Cursor
 
@@ -643,3 +645,15 @@ The five P4 diagnostic tools listed above and the paired evaluation enhancements
 ### Unpublished combined OpenAI Skill + MCP preview
 
 The reviewed combined OpenAI plugin source is now in `distribution/openai/` on `main`, while the published marketplace listing remains unchanged. It contains the existing scoped Skill plus a **single remote MCP** declaration for the current 22 public GodPrompt v1.3.0 tools. Two metadata formats (portable `mcp.json` and Codex compatibility `.mcp.json`) describe the same URL; they are not separate services. A dedicated GitHub workflow builds an **unpublished review ZIP** and validates the hosted tool list and a read-only call. The currently published OpenAI directory listing remains Skill-only until its separate reviewed update. See `docs/qa/godprompt-openai-combined-preview-20261120.md`.
+
+> **P5 v1.4.2:** The local repo mapper additionally recognizes test files that import built `dist/*.js` modules and maps them to matching existing `src/*.ts` source files. The mapping is advisory, not proof of test coverage. [Local efficiency and regression measurements](docs/qa/godprompt-p5-local-productivity-20261121.md) show measured MCP I/O and initial test-selection usefulness, **not** an independently verified coding-agent productivity gain.
+
+### P5 — local intelligence, benchmark and optional visualization
+
+After installing the versioned Node 22+ npm distribution, the local-only repo mapper can generate a compact import/export graph **without transmitting source code**. For example, in a working directory you already own, run `godprompt-repo-map C:/path/to/authorized-repo src/example.ts` (change paths to match your checkout). The JSON output is heuristic: dynamic imports, aliases, symlink/hardlink relationships and test coverage still require review.
+
+To collate verification receipts, use `godprompt-proof pack --contract contract.json --repo OWNER/REPO --sha EXACT40CHAR_COMMIT --map checks.json`, optionally with `--snapshot connector-export.json` and `--codexify codexify-export.json`. It reuses the existing evidence adapters, never executes a test or approves a release, and does not turn self-reported results into authenticated proof.
+
+The [paired benchmark](benchmarks/agent-ab/README.md) generates deterministic matched-task order and scoring, and includes twelve independently failing microtask tests as initial grading fixtures. It **does not run models** or claim causal productivity gains. [P5 design, security and limits](docs/roadmaps/godprompt-p5-quality-intelligence-20261120.md).
+
+MCP Apps-compatible clients can optionally present read-only, keyboard-accessible trajectory and impact reports through `ui://godprompt/evidence-review.html`. Text and `structuredContent` remain available to clients without MCP Apps and remain the basis for verification. No remote repository access or automatic policy execution has been added to the Worker.

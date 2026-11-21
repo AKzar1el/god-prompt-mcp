@@ -70,7 +70,7 @@ function report(result) {
 
 test("default stdio exposes 22 public tools without local checkpoint", async (t) => {
   const client = await connect(t, "dist/stdio.js", { GODPROMPT_CODEXIFY_CHECKPOINT: "0" });
-  assert.equal(client.initialized.serverInfo.version, "1.3.0");
+  assert.equal(client.initialized.serverInfo.version, "1.4.2");
   const listed = await client.send("tools/list");
   assert.equal(listed.tools.length, 22);
   assert.equal(listed.tools.some((x) => x.name === TOOL), false);
@@ -79,7 +79,7 @@ test("default stdio exposes 22 public tools without local checkpoint", async (t)
 test("opt-in stdio exposes 22 public tools plus local checkpoint", async (t) => {
   const client = await connect(t, "dist/stdio.js", { GODPROMPT_CODEXIFY_CHECKPOINT: "1" });
   assert.equal(client.initialized.serverInfo.name, "god-prompt-mcp");
-  assert.equal(client.initialized.serverInfo.version, "1.3.0-checkpoint-preview.10");
+  assert.equal(client.initialized.serverInfo.version, "1.4.2-checkpoint-preview.10");
   assert.match(client.initialized.instructions, /review_codexify_checkpoint/);
   assert.match(client.initialized.instructions, /rollout_checkpoint_required/);
   assert.match(client.initialized.instructions, /rollout_update/);
