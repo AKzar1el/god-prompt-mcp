@@ -2,6 +2,17 @@
 
 This is a **real coding-agent pilot environment**, not a classifier benchmark. The three tasks target real, user-owned, public GitHub repositories. Each task has two separately cloned, pinned Git checkouts and an independent, read-only Node grader. The grader does **not** call AI models, external provider APIs, network services, npm install scripts, or deployment endpoints.
 
+**Completed pilot evidence:** [pilot-results-20261121.md](./pilot-results-20261121.md).
+All three paired read-only coding-output comparisons were executed using
+ChatGPT-authenticated Codex CLI through Codexify, with actual pinned GodPrompt
+MCP guidance for candidate arms. Both variants passed all 24 behavioral
+checks; the candidate used 28.1% more reported tokens and 14.1% more model
+session time across these three tasks. **Do not equate this with autonomous
+tool-using agent productivity:** Windows sandbox execution failed, so the
+models returned code patches without executing tools. Three useful public
+repo changes were opened as draft PRs and have green GitHub CI. No merges,
+deployments, paid provider-key calls or Codexify restarts occurred.
+
 ## Pinned tasks
 
 | Task | Repository | Type | Baseline (before agent edits) |
