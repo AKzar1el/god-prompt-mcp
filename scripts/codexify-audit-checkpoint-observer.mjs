@@ -15,6 +15,7 @@ import { appendBoundedReport } from "./codexify-observer-report-retention.mjs";
 const MAX_READ = 512 * 1024;
 const MAX_LINE = 64 * 1024;
 const POLL_MS = 400;
+const FINAL_DRAIN_MAX_READS = 8;
 const CURSOR_ANCHOR_BYTES = 128;
 
 async function cursorAnchor(handle, cursor) {
@@ -215,7 +216,7 @@ if (!validFlags) {
       // File rotation may briefly remove the audit path between closing the
       // old log and creating its replacement. Preserve the old cursor and
       // retry on the next poll instead of terminating the observer.
-      if (error?.code === "ENOENT") return;
+      if (error?.code === "ENOENT") return false;
       throw error;
     }
     try {
@@ -239,7 +240,7 @@ if (!validFlags) {
       }
       fileIdentity = { dev: info.dev, ino: info.ino, birthtimeMs: info.birthtimeMs };
       const amount = Math.min(size - cursor, MAX_READ);
-      if (amount === 0) return;
+      if (amount === 0) return false;
       const bytes = Buffer.allocUnsafe(amount);
       const read = await handle.read(bytes, 0, amount, cursor);
       cursor += read.bytesRead;
@@ -252,7 +253,7 @@ if (!validFlags) {
         decoder = new StringDecoder("utf8");
         first = false;
         anchor = Buffer.alloc(0);
-        return;
+        return true;
       }
       anchor = nextAnchor;
       // Preserve multibyte code points split across MAX_READ boundaries.
@@ -273,14 +274,28 @@ if (!validFlags) {
           reviewErrors++;
         }
       }
+      return size > cursor;
     } finally {
       await handle.close();
     }
   }
 
+  let finalDrainReads = 0;
+  let auditBacklogIncomplete = false;
   do {
-    await readNewEvents();
-    if (!watch || (duration && Date.now() - started >= duration)) break;
+    const backlog = await readNewEvents();
+    if (!watch) break;
+    if (duration && Date.now() - started >= duration) {
+      // Deadline can arrive after a partial MAX_READ chunk. Drain the bytes
+      // already visible at that poll without waiting or extending indefinitely
+      // for new host writes. This prevents split UTF-8/JSONL from being lost.
+      if (!backlog) break;
+      if (finalDrainReads++ >= FINAL_DRAIN_MAX_READS) {
+        auditBacklogIncomplete = true;
+        break;
+      }
+      continue;
+    }
     await new Promise((resolve) => setTimeout(resolve, POLL_MS));
   } while (true);
   // Only safe summaries leave the observer. No original audit or contract.
@@ -288,7 +303,8 @@ if (!validFlags) {
     mode: watch ? "watch" : "once", observed_checkpoints: submitted,
     stages: recentStages,
     holds, rechecks,
+    audit_backlog_incomplete: auditBacklogIncomplete,
     review_errors: reviewErrors, invalid_records: invalidRecords,
   }) + "\n");
-  if (reviewErrors) process.exitCode = 1;
+  if (reviewErrors || auditBacklogIncomplete) process.exitCode = 1;
 }

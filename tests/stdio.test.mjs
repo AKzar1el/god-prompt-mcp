@@ -267,6 +267,10 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["validate cache headers", "ANALYZE"],
     ["test API response behavior", "ANALYZE"],
     ["automate nightly backups", "AUTOMATE"],
+    ["Create a scheduled task that checks for new opportunities every morning", "AUTOMATE"],
+    ["Build an automation that sends a report every 6 hours", "AUTOMATE"],
+    ["Implement a recurring job to refresh the search index", "AUTOMATE"],
+    ["Set up a scheduled job to monitor service health", "AUTOMATE"],
     ["plan the database migration", "PLAN"],
   ];
   for (const [description, expected] of clearCases) {
@@ -280,6 +284,36 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
     assert.ok(parseInt(result.confidence, 10) >= 70, description);
     assert.ok(result.matched_signals.length > 0, description);
+  }
+
+  // The three frozen intent sets include normal, negative and mixed-action
+  // examples. They are regression checks, not population accuracy claims.
+  for (const dataset of ["cases", "holdout", "forward", "adversarial"]) {
+    const hardeningCases = JSON.parse(await readFile(
+      new URL(`../benchmarks/classifier-hardening/${dataset}.json`, import.meta.url), "utf8",
+    )).cases;
+    for (const { id, description, expected } of hardeningCases) {
+      const result = await classify(child, pending, `hardening-${id}`, description);
+      assert.equal(result.task_type, expected, `${id}: ${description}`);
+      // Mixed instructions can legitimately require caller disambiguation.
+      assert.equal(typeof result.ambiguous, "boolean", `${id}: ${description}`);
+    }
+  }
+  // Real MCP transport must accept the documented maximum length without
+  // timing out or echoing the full prompt. Repeated tokens exercise both
+  // regex scanning and negated-action detection with bounded input length.
+  const boundaryCases = [
+    "x".repeat(1000),
+    "should we deploy this release ".repeat(40).slice(0, 1000),
+    "build an automation then review its tests ".repeat(30).slice(0, 1000),
+    "do not deploy ".repeat(70).slice(0, 1000),
+    "review the existing automation ".repeat(35).slice(0, 1000),
+  ];
+  for (const [index, description] of boundaryCases.entries()) {
+    const result = await classify(child, pending, "boundary-" + index, description);
+    assert.equal(typeof result.task_type, "string");
+    assert.ok(result.task_type.length < 32);
+    assert.ok(JSON.stringify(result).length < 2000, "Classification response must remain bounded");
   }
 
   const negatedShipCases = [
@@ -327,6 +361,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Inspect the error logs for a root cause", "ANALYZE"],
     ["Audit the CI pipeline configuration", "ANALYZE"],
     ["Review the cron workflow setup", "ANALYZE"],
+    ["Review the scheduled task configuration without changing it", "ANALYZE"],
+    ["Audit the automation configuration", "ANALYZE"],
     ["Audit and automate the CI pipeline", "AUTOMATE"],
     ["Build a CI pipeline and verify the result", "AUTOMATE"],
     ["Build a new feature flag system and review it", "BUILD"],
@@ -346,6 +382,14 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["draft a customer-facing explanation", "CONTENT"],
     ["debug the authentication handler", "DEBUG"],
     ["debugging a crash in production", "DEBUG"],
+    ["Fix the scheduled task retry bug", "DEBUG"],
+    ["Refactor the scheduled job implementation", "REFACTOR"],
+    ["Plan a scheduled task for database backups", "PLAN"],
+    ["Write documentation for recurring jobs", "CONTENT"],
+    ["Build a dashboard to display scheduled tasks", "BUILD"],
+    ["Create a REST API that lists scheduled jobs", "BUILD"],
+    ["Implement a feature to review recurring jobs", "BUILD"],
+    ["Create documentation explaining automation jobs", "CONTENT"],
   ];
   for (const [description, expected] of specificityCases) {
     const result = await classify(
