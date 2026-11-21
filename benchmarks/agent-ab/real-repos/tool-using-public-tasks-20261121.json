@@ -1,0 +1,26 @@
+{
+  "schema": "godprompt.real-agentic-public-repo-tasks.v1",
+  "recorded_at": "2026-11-21",
+  "repository": "AKzar1el/searcharis",
+  "source_sha": "c8cd398ec642b348f5b526cfb60b1fb23840e6f9",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "godprompt_source_sha": "f2ea9b679c90ad8d94eb4684d234b1bc4a054ef6",
+  "notes": "Published copy of the two original frozen prompts, recorded after the trials for regression testing. Raw agent and hidden-grader receipts remain untouched in ignored local real-runs directories. This fixture is NOT an independent holdout after the bug was discovered.",
+  "tasks": [
+    {
+      "task_id": "searcharis-unicode-url-identity",
+      "first_arm": "baseline",
+      "original_godprompt_route": "BUILD",
+      "expected_route": "DEBUG",
+      "description": "Fix Searcharis offline SEO contract URL validation to reject RAW invisible Unicode formatting or directionality controls (e.g. U+202E, U+2066, U+200B, U+FEFF), ASCII DEL, and raw C1 controls anywhere in an HTTP(S) URL, including in a hostname or path. Such invisible characters must not be accepted as declared public SEO URL identities. Preserve ordinary internationalized printable URL paths such as café and 東京, normal percent-encoded routes, plus current HTTP(S), credentials, malformed-host and port policies. Make a minimal production code fix and add focused regression tests. Do not change cloud agents, external providers, deployments or published services."
+    },
+    {
+      "task_id": "searcharis-contract-input-byte-bound",
+      "first_arm": "candidate",
+      "original_godprompt_route": "SHIP",
+      "expected_route": "DEBUG",
+      "description": "Fix Searcharis offline contract CLI input reading so its 4,000,000-byte safety limit remains enforced even when an input file grows after the initial stat check. The current _read performs Path.stat().st_size then an unbounded read_text(), a time-of-check/time-of-use gap that can exceed the intended size and memory cap. Read at most _MAX_INPUT_BYTES + 1 bytes in a bounded operation BEFORE UTF-8 decoding; reject excess data and preserve existing small, exact-limit, multi-byte UTF-8 and invalid-UTF-8 behavior. Add focused regression tests for oversized, exact-limit, and stale-stat inputs in a new tests/unit/test_contract_cli_read_bounds.py file. Do not change site policy rules, deploy anything, call providers, or install dependencies."
+    }
+  ]
+}

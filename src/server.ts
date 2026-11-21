@@ -127,6 +127,7 @@ const ACTION_SIGNALS = new Set([
   "verify",
   "write",
 ]);
+const SHIPPING_ACTIONS = new Set(["deploy", "release", "publish", "push", "merge", "ship", "launch"]);
 
 const RELEASE_ARTIFACT = /\brelease\s+(?:plan|notes|roadmap|strategy|checklist|schedule)\b/;
 const PLAN_DELIVERABLE_SIGNALS = new Set(["plan", "strategy", "roadmap", "proposal"]);
@@ -228,10 +229,26 @@ function triggerIndex(text: string, trigger: string): number {
   return match ? match.index + match[1].length : -1;
 }
 
+function isNegatedSerialShipping(text: string, actionIndex: number): boolean {
+  // "Do not change settings, deploy anything, or call providers" is one
+  // forbidden-action list, not a request to deploy after a comma. An explicit
+  // contrasting action ("but", "instead", "then") starts a separate request.
+  const before = text.slice(0, actionIndex);
+  const boundary = Math.max(
+    before.lastIndexOf("."), before.lastIndexOf(";"),
+    before.lastIndexOf("!"), before.lastIndexOf("?"),
+  );
+  const clause = before.slice(boundary + 1);
+  return /\b(?:do not|don't|never|must not|should not|avoid)\b(?:(?!\b(?:but|however|instead|then)\b)[^.!?;]){0,200},\s*$/.test(clause);
+}
+
 function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
   // matchAll clones the global regex: no shared lastIndex across requests.
   const matches = text.matchAll(triggerRegex(trigger).all);
   for (const match of matches) {
+    if (SHIPPING_ACTIONS.has(trigger) && isNegatedSerialShipping(text, match.index + match[1].length)) {
+      continue;
+    }
     const prefix = text.slice(0, match.index + match[1].length).split(/[.!?;,]/).at(-1) ?? "";
     // A forbidden downstream action is not a requested deployment action.
     if (!/(?:\b(?:do not|don't|never|without|avoid|must not|should not|no)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,3})$/.test(prefix)) {
@@ -259,7 +276,10 @@ function requestedShippingVerb(text: string): string | null {
     /^\s+(?:plan|notes|roadmap|strategy|checklist|schedule)\b/.test(text.slice(direct[0].length))) {
     return null;
   }
-  return direct?.[1] ?? followup?.[1] ?? null;
+  const requestedFollowup = followup && !isNegatedSerialShipping(
+    text, followup.index + followup[0].lastIndexOf(followup[1]),
+  ) ? followup[1] : null;
+  return direct?.[1] ?? requestedFollowup;
 }
 
 function requestedFollowupBuildVerb(text: string): string | null {
@@ -270,7 +290,7 @@ function requestedFollowupBuildVerb(text: string): string | null {
   // Adding regression tests or diagnostics is part of fixing a bug, not an
   // independent feature-build request. A distinct new feature still wins.
   const debugging = /^(?:(?:please|can you|could you|would you)\s+)*(?:fix|debug|diagnose|troubleshoot)\b/.test(text);
-  const supportingWork = /^\s+(?:(?:a|an|new|more|extra|some|unit|integration|regression|e2e|error|robust)\s+){0,4}(?:tests?|checks?|coverage|logs?|logging|docs|documentation|error handling)\b/
+  const supportingWork = /^\s+(?:(?:a|an|new|more|extra|some|focused|targeted|additional|unit|integration|regression|e2e|error|robust)\s+){0,4}(?:tests?|checks?|coverage|logs?|logging|docs|documentation|error handling)\b/
     .test(text.slice(match.index + match[0].length));
   return debugging && supportingWork ? null : match[1];
 }
