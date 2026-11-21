@@ -1,0 +1,257 @@
+{
+  "schema": "godprompt.classifier.evaluation.v1",
+  "frozen_on": "2026-11-21",
+  "description": "Second independent-of-dev-fixtures hand-labeled intent probe. Freeze before first evaluation. Unchanged source fixture even if misses.",
+  "cases": [
+    {
+      "id": "H01",
+      "expected": "AUTOMATE",
+      "description": "Schedule a daily report to be emailed to the team"
+    },
+    {
+      "id": "H02",
+      "expected": "AUTOMATE",
+      "description": "Please schedule the weekly newsletter export"
+    },
+    {
+      "id": "H03",
+      "expected": "AUTOMATE",
+      "description": "Set up a scheduled check for server uptime"
+    },
+    {
+      "id": "H04",
+      "expected": "AUTOMATE",
+      "description": "Create a recurring notification for expiring SSL certificates"
+    },
+    {
+      "id": "H05",
+      "expected": "AUTOMATE",
+      "description": "Implement a scheduled task that executes hourly"
+    },
+    {
+      "id": "H06",
+      "expected": "AUTOMATE",
+      "description": "Write a bot to summarize GitHub issues nightly"
+    },
+    {
+      "id": "H07",
+      "expected": "AUTOMATE",
+      "description": "Make a script that syncs new CRM leads"
+    },
+    {
+      "id": "H08",
+      "expected": "AUTOMATE",
+      "description": "Create an email automation for incoming support tickets"
+    },
+    {
+      "id": "H09",
+      "expected": "AUTOMATE",
+      "description": "Automate a daily customer follow-up"
+    },
+    {
+      "id": "H10",
+      "expected": "AUTOMATE",
+      "description": "Build a data pipeline for event streaming"
+    },
+    {
+      "id": "H11",
+      "expected": "AUTOMATE",
+      "description": "Create a nightly workflow to alert on failures"
+    },
+    {
+      "id": "H12",
+      "expected": "AUTOMATE",
+      "description": "Add a scheduled job to clean stale invoices"
+    },
+    {
+      "id": "H13",
+      "expected": "AUTOMATE",
+      "description": "Build an automation for release note reminders"
+    },
+    {
+      "id": "H14",
+      "expected": "AUTOMATE",
+      "description": "Create an automatic daily digest of crawl failures"
+    },
+    {
+      "id": "H15",
+      "expected": "AUTOMATE",
+      "description": "Configure a cron task to run nightly"
+    },
+    {
+      "id": "H16",
+      "expected": "AUTOMATE",
+      "description": "Set up a recurring backup of the database"
+    },
+    {
+      "id": "H17",
+      "expected": "AUTOMATE",
+      "description": "Implement a notification bot for repository releases"
+    },
+    {
+      "id": "H18",
+      "expected": "AUTOMATE",
+      "description": "Please create a new weekly reminder automation"
+    },
+    {
+      "id": "H19",
+      "expected": "BUILD",
+      "description": "Build a metrics dashboard for the scheduled task"
+    },
+    {
+      "id": "H20",
+      "expected": "DESIGN",
+      "description": "Design a screen to inspect pipelines"
+    },
+    {
+      "id": "H21",
+      "expected": "BUILD",
+      "description": "Make a read-only API for cron status"
+    },
+    {
+      "id": "H22",
+      "expected": "BUILD",
+      "description": "Add a UI section listing automations"
+    },
+    {
+      "id": "H23",
+      "expected": "BUILD",
+      "description": "Implement the job history viewer"
+    },
+    {
+      "id": "H24",
+      "expected": "CONTENT",
+      "description": "Write a tutorial on scheduled tasks"
+    },
+    {
+      "id": "H25",
+      "expected": "CONTENT",
+      "description": "Create a blog post about cron scheduling"
+    },
+    {
+      "id": "H26",
+      "expected": "CONTENT",
+      "description": "Draft a release summary for the scheduler"
+    },
+    {
+      "id": "H27",
+      "expected": "ANALYZE",
+      "description": "Audit the automation trigger expressions"
+    },
+    {
+      "id": "H28",
+      "expected": "ANALYZE",
+      "description": "Compare two scheduled task implementations without editing"
+    },
+    {
+      "id": "H29",
+      "expected": "ANALYZE",
+      "description": "Investigate why nightly jobs keep failing"
+    },
+    {
+      "id": "H30",
+      "expected": "DEBUG",
+      "description": "Fix broken CI pipeline deployments"
+    },
+    {
+      "id": "H31",
+      "expected": "DEBUG",
+      "description": "Debug workflow crashes"
+    },
+    {
+      "id": "H32",
+      "expected": "REFACTOR",
+      "description": "Refactor the cron worker to reduce its cost"
+    },
+    {
+      "id": "H33",
+      "expected": "REFACTOR",
+      "description": "Optimize the automation script for speed"
+    },
+    {
+      "id": "H34",
+      "expected": "PLAN",
+      "description": "Plan a migration for the build pipeline"
+    },
+    {
+      "id": "H35",
+      "expected": "PLAN",
+      "description": "Write a rollout plan for scheduled jobs"
+    },
+    {
+      "id": "H36",
+      "expected": "SHIP",
+      "description": "Release the cron job after approval"
+    },
+    {
+      "id": "H37",
+      "expected": "SHIP",
+      "description": "Push the automated worker to production"
+    },
+    {
+      "id": "H38",
+      "expected": "SHIP",
+      "description": "Merge the PR for the scheduled job"
+    },
+    {
+      "id": "H39",
+      "expected": "ANALYZE",
+      "description": "Please don't deploy; audit the cron configuration"
+    },
+    {
+      "id": "H40",
+      "expected": "ANALYZE",
+      "description": "Never build a new automation, just review the existing pipeline"
+    },
+    {
+      "id": "H41",
+      "expected": "AUTOMATE",
+      "description": "Fix this one and then create a new scheduled task"
+    },
+    {
+      "id": "H42",
+      "expected": "AUTOMATE",
+      "description": "Review the existing schedule and create a new CI pipeline"
+    },
+    {
+      "id": "H43",
+      "expected": "SHIP",
+      "description": "Build the cron dashboard and then deploy it"
+    },
+    {
+      "id": "H44",
+      "expected": "PLAN",
+      "description": "Develop a plan for nightly snapshot automation"
+    },
+    {
+      "id": "H45",
+      "expected": "BUILD",
+      "description": "Implement a verification tool for checking cron job configs"
+    },
+    {
+      "id": "H46",
+      "expected": "CONTENT",
+      "description": "Review the script and then write its documentation"
+    },
+    {
+      "id": "H47",
+      "expected": "ANALYZE",
+      "description": "Trace why the notification bot crashes"
+    },
+    {
+      "id": "H48",
+      "expected": "DEBUG",
+      "description": "Fix the bot and add regression tests"
+    },
+    {
+      "id": "H49",
+      "expected": "PLAN",
+      "description": "Plan to schedule data exports without running them"
+    },
+    {
+      "id": "H50",
+      "expected": "AUTOMATE",
+      "description": "Set up a weekly automated check for broken links"
+    }
+  ]
+}

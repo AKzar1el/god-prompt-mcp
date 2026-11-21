@@ -286,6 +286,20 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.ok(result.matched_signals.length > 0, description);
   }
 
+  // The three frozen intent sets include normal, negative and mixed-action
+  // examples. They are regression checks, not population accuracy claims.
+  for (const dataset of ["cases", "holdout", "forward"]) {
+    const hardeningCases = JSON.parse(await readFile(
+      new URL(`../benchmarks/classifier-hardening/${dataset}.json`, import.meta.url), "utf8",
+    )).cases;
+    for (const { id, description, expected } of hardeningCases) {
+      const result = await classify(child, pending, `hardening-${id}`, description);
+      assert.equal(result.task_type, expected, `${id}: ${description}`);
+      // Mixed instructions can legitimately require caller disambiguation.
+      assert.equal(typeof result.ambiguous, "boolean", `${id}: ${description}`);
+    }
+  }
+
   const negatedShipCases = [
     ["audit the authentication code but do not deploy it", "ANALYZE"],
     ["fix login validation, never publish or ship it", "DEBUG"],

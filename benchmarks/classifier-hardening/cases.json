@@ -1,0 +1,387 @@
+{
+  "schema": "godprompt.classifier.evaluation.v1",
+  "frozen_on": "2026-11-21",
+  "description": "Original hand-labeled engineering task intents; this evaluates deterministic classifier routing only, not agent productivity.",
+  "cases": [
+    {
+      "id": "A01",
+      "expected": "AUTOMATE",
+      "description": "Create an hourly scheduled task to sync contacts"
+    },
+    {
+      "id": "A02",
+      "expected": "AUTOMATE",
+      "description": "Build a daily automation to back up the database"
+    },
+    {
+      "id": "A03",
+      "expected": "AUTOMATE",
+      "description": "Set up a recurring job that validates invoices"
+    },
+    {
+      "id": "A04",
+      "expected": "AUTOMATE",
+      "description": "Implement a scheduled job that retries failed emails"
+    },
+    {
+      "id": "A05",
+      "expected": "AUTOMATE",
+      "description": "Build a workflow that dispatches nightly reports"
+    },
+    {
+      "id": "A06",
+      "expected": "AUTOMATE",
+      "description": "Write a Python script to send a weekly digest"
+    },
+    {
+      "id": "A07",
+      "expected": "AUTOMATE",
+      "description": "Create a cron job to purge expired records"
+    },
+    {
+      "id": "A08",
+      "expected": "AUTOMATE",
+      "description": "Make an automation for monthly data checks"
+    },
+    {
+      "id": "A09",
+      "expected": "AUTOMATE",
+      "description": "Can you create an automation to run daily?"
+    },
+    {
+      "id": "A10",
+      "expected": "AUTOMATE",
+      "description": "Please build a CI pipeline for tests"
+    },
+    {
+      "id": "A11",
+      "expected": "AUTOMATE",
+      "description": "Build the notification bot that posts on Slack"
+    },
+    {
+      "id": "A12",
+      "expected": "AUTOMATE",
+      "description": "Implement an automation to handle incoming support emails"
+    },
+    {
+      "id": "A13",
+      "expected": "AUTOMATE",
+      "description": "Set up a daily automation for invoices"
+    },
+    {
+      "id": "A14",
+      "expected": "AUTOMATE",
+      "description": "Configure the scheduled job for weekly exports"
+    },
+    {
+      "id": "A15",
+      "expected": "AUTOMATE",
+      "description": "Schedule nightly exports for the data team"
+    },
+    {
+      "id": "A16",
+      "expected": "AUTOMATE",
+      "description": "Set a recurring task to check applications each morning"
+    },
+    {
+      "id": "A17",
+      "expected": "AUTOMATE",
+      "description": "Write an automation that handles API retries"
+    },
+    {
+      "id": "A18",
+      "expected": "AUTOMATE",
+      "description": "Create a recurring task that sends daily metrics"
+    },
+    {
+      "id": "A19",
+      "expected": "AUTOMATE",
+      "description": "Implement the event-driven pipeline for ingest"
+    },
+    {
+      "id": "A20",
+      "expected": "AUTOMATE",
+      "description": "Build a job that runs every six hours"
+    },
+    {
+      "id": "A21",
+      "expected": "AUTOMATE",
+      "description": "Configure a nightly job to rotate credentials"
+    },
+    {
+      "id": "A22",
+      "expected": "AUTOMATE",
+      "description": "Add a weekly scheduled task that monitors prices"
+    },
+    {
+      "id": "A23",
+      "expected": "AUTOMATE",
+      "description": "Set up a webhook automation to notify on new builds"
+    },
+    {
+      "id": "A24",
+      "expected": "AUTOMATE",
+      "description": "Create a bot to triage the inbox"
+    },
+    {
+      "id": "A25",
+      "expected": "AUTOMATE",
+      "description": "Automate reviewing invoices every day"
+    },
+    {
+      "id": "B01",
+      "expected": "BUILD",
+      "description": "Build a dashboard to view the scheduled tasks"
+    },
+    {
+      "id": "B02",
+      "expected": "BUILD",
+      "description": "Build a web page for viewing CI pipeline status"
+    },
+    {
+      "id": "B03",
+      "expected": "BUILD",
+      "description": "Make an API endpoint listing the CI pipelines"
+    },
+    {
+      "id": "B04",
+      "expected": "BUILD",
+      "description": "Implement a table showing cron execution history"
+    },
+    {
+      "id": "B05",
+      "expected": "BUILD",
+      "description": "Build an analytics page for bot runs"
+    },
+    {
+      "id": "B06",
+      "expected": "BUILD",
+      "description": "Implement a UI for editing scheduled tasks"
+    },
+    {
+      "id": "B07",
+      "expected": "BUILD",
+      "description": "Make a dashboard that tracks nightly jobs"
+    },
+    {
+      "id": "B08",
+      "expected": "BUILD",
+      "description": "Create an API for displaying automation metrics"
+    },
+    {
+      "id": "B09",
+      "expected": "BUILD",
+      "description": "Implement a new feature to examine scheduled jobs"
+    },
+    {
+      "id": "B10",
+      "expected": "BUILD",
+      "description": "Build a CLI viewer for the automation scripts"
+    },
+    {
+      "id": "C01",
+      "expected": "CONTENT",
+      "description": "Create docs for the automation pipeline"
+    },
+    {
+      "id": "C02",
+      "expected": "CONTENT",
+      "description": "Write a guide to scheduled tasks"
+    },
+    {
+      "id": "C03",
+      "expected": "CONTENT",
+      "description": "Create a documentation page about automation"
+    },
+    {
+      "id": "C04",
+      "expected": "CONTENT",
+      "description": "Write release notes for the new scheduler"
+    },
+    {
+      "id": "C05",
+      "expected": "CONTENT",
+      "description": "Do not automate backups; create documentation"
+    },
+    {
+      "id": "D01",
+      "expected": "DEBUG",
+      "description": "Fix the cron job failure"
+    },
+    {
+      "id": "D02",
+      "expected": "DEBUG",
+      "description": "Debug the recurring job that crashes"
+    },
+    {
+      "id": "D03",
+      "expected": "DEBUG",
+      "description": "Fix the bot's authentication bug"
+    },
+    {
+      "id": "D04",
+      "expected": "DEBUG",
+      "description": "Fix the scheduled task without deploying"
+    },
+    {
+      "id": "D05",
+      "expected": "DEBUG",
+      "description": "Investigate broken cron and fix it"
+    },
+    {
+      "id": "D06",
+      "expected": "DEBUG",
+      "description": "Do not create an automation; fix the existing one"
+    },
+    {
+      "id": "R01",
+      "expected": "REFACTOR",
+      "description": "Refactor the scheduler to remove duplication"
+    },
+    {
+      "id": "R02",
+      "expected": "REFACTOR",
+      "description": "Optimize the nightly automation script without new features"
+    },
+    {
+      "id": "R03",
+      "expected": "REFACTOR",
+      "description": "Simplify the recurring job logic"
+    },
+    {
+      "id": "P01",
+      "expected": "PLAN",
+      "description": "Plan the nightly automation migration"
+    },
+    {
+      "id": "P02",
+      "expected": "PLAN",
+      "description": "Plan the CI migration before writing code"
+    },
+    {
+      "id": "P03",
+      "expected": "PLAN",
+      "description": "Prepare a migration roadmap for scheduled jobs"
+    },
+    {
+      "id": "P04",
+      "expected": "PLAN",
+      "description": "Write a plan for a recurring task; do not implement it"
+    },
+    {
+      "id": "P05",
+      "expected": "PLAN",
+      "description": "Do not deploy the automation; write a test plan"
+    },
+    {
+      "id": "N01",
+      "expected": "ANALYZE",
+      "description": "Review the daily scheduled job logs"
+    },
+    {
+      "id": "N02",
+      "expected": "ANALYZE",
+      "description": "Audit GitHub Actions workflow configurations"
+    },
+    {
+      "id": "N03",
+      "expected": "ANALYZE",
+      "description": "Review the automation scripts for security issues"
+    },
+    {
+      "id": "N04",
+      "expected": "ANALYZE",
+      "description": "Check if the deployment pipeline failed"
+    },
+    {
+      "id": "N05",
+      "expected": "ANALYZE",
+      "description": "Do not create a scheduled task; audit the current one"
+    },
+    {
+      "id": "N06",
+      "expected": "ANALYZE",
+      "description": "Please review the cron setup but do not run it"
+    },
+    {
+      "id": "N07",
+      "expected": "ANALYZE",
+      "description": "Compare the behavior of two cron implementations"
+    },
+    {
+      "id": "N08",
+      "expected": "ANALYZE",
+      "description": "Do not build a bot; review the logs"
+    },
+    {
+      "id": "S01",
+      "expected": "SHIP",
+      "description": "Deploy the approved cron worker"
+    },
+    {
+      "id": "S02",
+      "expected": "SHIP",
+      "description": "Build a scheduled job and then deploy it"
+    },
+    {
+      "id": "S03",
+      "expected": "SHIP",
+      "description": "Build a bot, then ship the update"
+    },
+    {
+      "id": "S04",
+      "expected": "SHIP",
+      "description": "Build a dashboard for workflow alerts and deploy it"
+    },
+    {
+      "id": "M01",
+      "expected": "AUTOMATE",
+      "description": "Audit the current pipeline and then implement a new scheduled job"
+    },
+    {
+      "id": "M02",
+      "expected": "AUTOMATE",
+      "description": "Build the automation and run tests"
+    },
+    {
+      "id": "M03",
+      "expected": "AUTOMATE",
+      "description": "Review code and create a new automation"
+    },
+    {
+      "id": "M04",
+      "expected": "AUTOMATE",
+      "description": "Create automation but do not publish it"
+    },
+    {
+      "id": "M05",
+      "expected": "AUTOMATE",
+      "description": "Please create an automated nightly check for regressions"
+    },
+    {
+      "id": "M06",
+      "expected": "AUTOMATE",
+      "description": "I need an automated weekly digest of job openings"
+    },
+    {
+      "id": "M07",
+      "expected": "AUTOMATE",
+      "description": "Set up a scheduled workflow to email the report"
+    },
+    {
+      "id": "M08",
+      "expected": "BUILD",
+      "description": "Implement a new tool to inspect automation workflows"
+    },
+    {
+      "id": "M09",
+      "expected": "ANALYZE",
+      "description": "Review a CI pipeline, no implementation or deployment"
+    },
+    {
+      "id": "M10",
+      "expected": "PLAN",
+      "description": "Plan how to automate CI without actually implementing it"
+    }
+  ]
+}

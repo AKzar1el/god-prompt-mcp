@@ -1,0 +1,257 @@
+{
+  "schema": "godprompt.classifier.evaluation.v1",
+  "frozen_on": "2026-11-21",
+  "description": "Forward cross-domain routing evaluation frozen before first run. Not used in the first two tuning passes.",
+  "cases": [
+    {
+      "id": "F01",
+      "expected": "ANALYZE",
+      "description": "Check whether Cloudflare blocked Googlebot last night"
+    },
+    {
+      "id": "F02",
+      "expected": "DEBUG",
+      "description": "Diagnose why the API returns HTTP 500 after startup"
+    },
+    {
+      "id": "F03",
+      "expected": "ANALYZE",
+      "description": "Investigate why webhook callbacks fail intermittently"
+    },
+    {
+      "id": "F04",
+      "expected": "BUILD",
+      "description": "Build an event ingestion endpoint and run tests"
+    },
+    {
+      "id": "F05",
+      "expected": "DEBUG",
+      "description": "Debug why OAuth refresh tokens expire early"
+    },
+    {
+      "id": "F06",
+      "expected": "REFACTOR",
+      "description": "Refactor retry logic without adding features"
+    },
+    {
+      "id": "F07",
+      "expected": "SHIP",
+      "description": "Deploy the approved release candidate to staging"
+    },
+    {
+      "id": "F08",
+      "expected": "CONTENT",
+      "description": "Draft release notes for a feature"
+    },
+    {
+      "id": "F09",
+      "expected": "PLAN",
+      "description": "Create a rollout plan for the plugin upgrade"
+    },
+    {
+      "id": "F10",
+      "expected": "BUILD",
+      "description": "Implement a new security report dashboard"
+    },
+    {
+      "id": "F11",
+      "expected": "ANALYZE",
+      "description": "Review the security audit report"
+    },
+    {
+      "id": "F12",
+      "expected": "AUTOMATE",
+      "description": "Make a weekly automation for grant opportunities"
+    },
+    {
+      "id": "F13",
+      "expected": "AUTOMATE",
+      "description": "Configure a scheduled Slack digest job"
+    },
+    {
+      "id": "F14",
+      "expected": "AUTOMATE",
+      "description": "Schedule a one-off backup job tomorrow"
+    },
+    {
+      "id": "F15",
+      "expected": "BUILD",
+      "description": "Create a bot UI for manual approvals"
+    },
+    {
+      "id": "F16",
+      "expected": "DEBUG",
+      "description": "Fix the bot after it fails its unit tests"
+    },
+    {
+      "id": "F17",
+      "expected": "REFACTOR",
+      "description": "Reorganize build pipeline code without changing results"
+    },
+    {
+      "id": "F18",
+      "expected": "ANALYZE",
+      "description": "Audit deployment pipeline and report risks"
+    },
+    {
+      "id": "F19",
+      "expected": "PLAN",
+      "description": "Plan how to create a queue worker"
+    },
+    {
+      "id": "F20",
+      "expected": "SHIP",
+      "description": "Release the benchmark report as a GitHub asset"
+    },
+    {
+      "id": "F21",
+      "expected": "CONTENT",
+      "description": "Write an article about benchmark findings"
+    },
+    {
+      "id": "F22",
+      "expected": "BUILD",
+      "description": "Create a tool to validate MCP schemas"
+    },
+    {
+      "id": "F23",
+      "expected": "BUILD",
+      "description": "Build a test harness to grade code completions"
+    },
+    {
+      "id": "F24",
+      "expected": "AUTOMATE",
+      "description": "Build a workflow that runs graders for each PR"
+    },
+    {
+      "id": "F25",
+      "expected": "ANALYZE",
+      "description": "Inspect whether tests were actually run"
+    },
+    {
+      "id": "F26",
+      "expected": "ANALYZE",
+      "description": "Do not restart Codexify; review its config"
+    },
+    {
+      "id": "F27",
+      "expected": "PLAN",
+      "description": "Do not publish; prepare a deployment plan"
+    },
+    {
+      "id": "F28",
+      "expected": "SHIP",
+      "description": "Fix this first and then deploy the patch"
+    },
+    {
+      "id": "F29",
+      "expected": "AUTOMATE",
+      "description": "Write an automated script to summarize logs"
+    },
+    {
+      "id": "F30",
+      "expected": "AUTOMATE",
+      "description": "Please create a new recurring daily reminder for client calls"
+    },
+    {
+      "id": "F31",
+      "expected": "AUTOMATE",
+      "description": "Review agent logs, then schedule a daily status email"
+    },
+    {
+      "id": "F32",
+      "expected": "ANALYZE",
+      "description": "Compare the performance of two GodPrompt versions"
+    },
+    {
+      "id": "F33",
+      "expected": "BUILD",
+      "description": "Write a new test for broken cache"
+    },
+    {
+      "id": "F34",
+      "expected": "DESIGN",
+      "description": "Edit the UI layout for mobile"
+    },
+    {
+      "id": "F35",
+      "expected": "SHIP",
+      "description": "Make an automation and publish it"
+    },
+    {
+      "id": "F36",
+      "expected": "AUTOMATE",
+      "description": "Schedule a nightly job but do not execute it yet"
+    },
+    {
+      "id": "F37",
+      "expected": "ANALYZE",
+      "description": "Investigate the scheduled task crash without editing"
+    },
+    {
+      "id": "F38",
+      "expected": "ANALYZE",
+      "description": "Test the build pipeline for failures"
+    },
+    {
+      "id": "F39",
+      "expected": "ANALYZE",
+      "description": "Review docs for the new bot"
+    },
+    {
+      "id": "F40",
+      "expected": "DESIGN",
+      "description": "Design a dashboard for monitoring cron runs"
+    },
+    {
+      "id": "F41",
+      "expected": "PLAN",
+      "description": "Plan the migration but do not change any code"
+    },
+    {
+      "id": "F42",
+      "expected": "AUTOMATE",
+      "description": "Set up a recurring heartbeat check every minute"
+    },
+    {
+      "id": "F43",
+      "expected": "BUILD",
+      "description": "Create a dashboard that displays the automation's last run"
+    },
+    {
+      "id": "F44",
+      "expected": "DEBUG",
+      "description": "Troubleshoot scheduled executions that timeout"
+    },
+    {
+      "id": "F45",
+      "expected": "CONTENT",
+      "description": "Prepare onboarding documentation for operators"
+    },
+    {
+      "id": "F46",
+      "expected": "AUTOMATE",
+      "description": "Set up a cron-triggered backup pipeline"
+    },
+    {
+      "id": "F47",
+      "expected": "ANALYZE",
+      "description": "Audit whether the automation’s weekly run violates time limits"
+    },
+    {
+      "id": "F48",
+      "expected": "BUILD",
+      "description": "Implement a CLI to inspect job execution"
+    },
+    {
+      "id": "F49",
+      "expected": "REFACTOR",
+      "description": "Improve bot initialization without new functionality"
+    },
+    {
+      "id": "F50",
+      "expected": "AUTOMATE",
+      "description": "Create an automated rule to notify a customer when threshold is exceeded"
+    }
+  ]
+}
