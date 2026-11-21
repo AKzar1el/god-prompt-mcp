@@ -267,6 +267,10 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["validate cache headers", "ANALYZE"],
     ["test API response behavior", "ANALYZE"],
     ["automate nightly backups", "AUTOMATE"],
+    ["Create a scheduled task that checks for new opportunities every morning", "AUTOMATE"],
+    ["Build an automation that sends a report every 6 hours", "AUTOMATE"],
+    ["Implement a recurring job to refresh the search index", "AUTOMATE"],
+    ["Set up a scheduled job to monitor service health", "AUTOMATE"],
     ["plan the database migration", "PLAN"],
   ];
   for (const [description, expected] of clearCases) {
@@ -327,6 +331,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["Inspect the error logs for a root cause", "ANALYZE"],
     ["Audit the CI pipeline configuration", "ANALYZE"],
     ["Review the cron workflow setup", "ANALYZE"],
+    ["Review the scheduled task configuration without changing it", "ANALYZE"],
+    ["Audit the automation configuration", "ANALYZE"],
     ["Audit and automate the CI pipeline", "AUTOMATE"],
     ["Build a CI pipeline and verify the result", "AUTOMATE"],
     ["Build a new feature flag system and review it", "BUILD"],
@@ -346,6 +352,14 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["draft a customer-facing explanation", "CONTENT"],
     ["debug the authentication handler", "DEBUG"],
     ["debugging a crash in production", "DEBUG"],
+    ["Fix the scheduled task retry bug", "DEBUG"],
+    ["Refactor the scheduled job implementation", "REFACTOR"],
+    ["Plan a scheduled task for database backups", "PLAN"],
+    ["Write documentation for recurring jobs", "CONTENT"],
+    ["Build a dashboard to display scheduled tasks", "BUILD"],
+    ["Create a REST API that lists scheduled jobs", "BUILD"],
+    ["Implement a feature to review recurring jobs", "BUILD"],
+    ["Create documentation explaining automation jobs", "CONTENT"],
   ];
   for (const [description, expected] of specificityCases) {
     const result = await classify(

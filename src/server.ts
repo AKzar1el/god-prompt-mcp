@@ -61,7 +61,10 @@ const TASK_TYPES = {
     description: "Auditing and reviewing existing systems",
   },
   AUTOMATE: {
-    triggers: ["pipeline", "bot", "script", "automate", "cron", "workflow", "ci"],
+    triggers: [
+      "pipeline", "bot", "script", "automate", "cron", "workflow", "ci",
+      "automation", "scheduled task", "scheduled job", "recurring task", "recurring job",
+    ],
     protocol: "Architecture → resilience → docs",
     description: "Building automation and pipelines",
   },
@@ -124,6 +127,12 @@ const ACTION_SIGNALS = new Set([
 
 const RELEASE_ARTIFACT = /\brelease\s+(?:plan|notes|roadmap|strategy|checklist|schedule)\b/;
 const PLAN_DELIVERABLE_SIGNALS = new Set(["plan", "strategy", "roadmap", "proposal"]);
+const AUTOMATION_DELIVERABLE_SIGNALS = new Set([
+  "automation", "scheduled task", "scheduled job", "recurring task", "recurring job",
+]);
+const AUTOMATION_BUILD_ACTION =
+  // A scheduled job must be the requested deliverable, not merely a dashboard's subject.
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make|set up|configure)\s+(?:(?:a|an|the|new|scheduled|recurring|hourly|daily|nightly|weekly|automated|automatic|reliable)\s+){0,5}(?:automation|scheduled task|scheduled job|recurring task|recurring job)\b/;
 
 type MatchedSignal = {
   signal: string;
@@ -300,6 +309,7 @@ function classifyTask(description: string): {
     ? requestedPrimaryBuildVerb(normalized) : null;
   const nominalRelease = RELEASE_ARTIFACT.test(normalized);
   const writingRequested = /^(?:(?:please|can you|could you|would you|help me(?: to)?)\s+)*(?:write|draft|prepare|edit|translate|create)\b/.test(normalized);
+  const automationBuildRequested = AUTOMATION_BUILD_ACTION.test(normalized);
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
@@ -321,6 +331,8 @@ function classifyTask(description: string): {
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
     const matches = info.triggers
       .filter((trigger) =>
+        !(type === "AUTOMATE" && AUTOMATION_DELIVERABLE_SIGNALS.has(trigger) &&
+          !automationBuildRequested) &&
         !(type === "SHIP" &&
           ((trigger === "release" && nominalRelease && shippingVerb !== "release") ||
            (inspectionRequested && shippingVerb === null))) &&
