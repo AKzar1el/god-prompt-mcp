@@ -5,7 +5,7 @@ import { createInterface } from "node:readline";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 
-const FIXTURE_NAMES = new Set(["cases", "holdout", "forward"]);
+const FIXTURE_NAMES = new Set(["cases", "holdout", "forward", "adversarial"]);
 const percentile = (values, p) => {
   if (values.length === 0) return null;
   const sorted = [...values].sort((a, b) => a - b);
@@ -17,7 +17,7 @@ export async function evaluate({ repeats = 1, concurrency = 4, dataset = "cases"
   if (!Number.isInteger(repeats) || repeats < 1 || repeats > 10 ||
       !Number.isInteger(concurrency) || concurrency < 1 || concurrency > 4 ||
       !FIXTURE_NAMES.has(dataset)) {
-    throw new Error("repeats 1..10, concurrency 1..4, dataset cases|holdout|forward required");
+    throw new Error("repeats 1..10, concurrency 1..4, dataset cases|holdout|forward|adversarial required");
   }
   if (typeof mutate !== "boolean" || typeof negative !== "boolean") {
     throw new Error("mutate and negative must be boolean");

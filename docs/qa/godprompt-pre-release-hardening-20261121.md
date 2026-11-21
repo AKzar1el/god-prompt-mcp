@@ -58,6 +58,95 @@ An earlier parallel run against the prior v1.4.2 release candidate occasionally 
 - Local stdio response latency varied sharply with concurrent machine activity (single-digit ms median in quiet runs; substantially higher in some loaded runs). These samples do **not** establish improved end-to-end agent latency, model-token savings or total cost savings.
 - Earlier Claude Code CLI was unauthenticated and no working local Ollama model service was available. **No free approved coding-agent A/B run has taken place.** Any claim of increased coding success rate or reduced agent time/tokens remains **unmeasured**; baseline and candidate have not solved paired real tasks.
 
+## Continued pre-release hardening: round 3 (2026-11-21)
+
+This new evidence comes **after** the previous PR candidate at `3e070c5`.
+The earlier 176-case results above remain historical measurements.
+
+- Added `benchmarks/classifier-hardening/adversarial.json`: **70 newly
+  labeled** cross-workflow, shipping-safety, negation, UI/API, plan and
+  test-writing cases. First run against the prior candidate:
+  **54/70 (77.14%)**. Some shipping-readiness questions such as
+  "Should we deploy this release?" were incorrectly categorized as
+  `SHIP` rather than `ANALYZE`. This is a tool-routing/decision-support
+  error, not evidence that GodPrompt actually executes shipping actions.
+- Added action-intent guards and a bounded shipping-assessment detector.
+  The additional **70/70** cases and previous **176/176** cases now
+  agree with their labels: **246/246 tuned regression cases**.
+  Because the new cases informed refinements, this is not an unbiased
+  estimate of accuracy on all real user requests.
+- Reduced redundant signal matching by doing the trigger-presence and
+  first-index check together, and avoiding affirmative scans for absent
+  triggers. The reproducible, same-process A/B runner
+  `benchmarks/classifier-hardening/compare.mjs` loads commit `3e070c5`
+  and the working candidate, alternates call order and uses identical
+  inputs without invoking MCP, models, network or writing files:
+
+| Trial | Previous correct | Candidate correct | Previous p50 CPU | Candidate p50 CPU | Previous p95 CPU | Candidate p95 CPU |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 230/246 | 246/246 | 338 us | 312 us | 618 us | 605 us |
+| 2 | 230/246 | 246/246 | 264 us | 242 us | 463 us | 419 us |
+| 3 | 230/246 | 246/246 | 348 us | 318 us | 617 us | 581 us |
+
+  That is a **7.7-8.6% improvement in local median classifier CPU time**
+  in these three paired samples. Results are load-sensitive and are
+  **not** evidence of faster coding agents or reduced model tokens.
+- Real stdio transport stress at four concurrent requests, four
+  deterministic text variants: adversarial **1,400/1,400**, previous
+  cases **912/912**, holdout **600/600**, forward **600/600**.
+  Together **3,512/3,512 labeled calls**, zero inconsistent semantic
+  decisions/protocol errors/stderr. **44/44 malformed requests rejected**,
+  zero privacy-canary echoes.
+- The previously intermittent Codexify host observer test file passed
+  **three complete independent rounds (15/15 tests)**. The earlier race
+  has **not** been root-caused; repeated passes do not prove it fixed.
+- Complete Windows/Node 22 source suite at test-file concurrency four:
+  **293/293 passed, zero failures, 117.2 s**. After adding explicit
+  1,000-character routing-input tests, targeted MCP stdio tests also
+  passed **2/2**.
+- A free authenticated coding-agent runner remains unavailable for
+  a legitimate paired A/B trial. **Real agent success, wall time,
+  tool-count and token/cost uplift are still unmeasured.**
+
+## Observer high-load investigation and bounded recovery
+
+The next full-suite run with file concurrency 2 reproduced a **292/293**
+failure: "observer preserves UTF-8 JSONL split across its bounded read
+window" received **zero** observed checkpoints instead of one.
+The source showed a concrete failure mode: at its watch deadline the
+observer could stop after a single 512 KiB read, even when a complete
+record was already visible beyond that read window. A multibyte UTF-8
+character at the boundary leaves the JSONL record incomplete until the
+following read. This is a plausible explanation for the observed race,
+not proof that no other timing failures exist.
+
+The isolated observer now immediately consumes up to **eight additional
+bounded 512 KiB chunks** of already-visible backlog when its deadline
+expires. It does **not** extend the watcher indefinitely; it emits
+`audit_backlog_incomplete: true` and exits with status 1 if that limit
+is exhausted instead of presenting an incomplete audit as complete.
+Only local, privacy-preserving summary metadata is emitted.
+
+Two new regression scenarios simulate the deadline condition:
+1. A UTF-8 verification record crossing the fourth read window must
+   still be observed when the deadline expires.
+2. A record beyond twenty windows must fail closed with an explicit
+   incomplete-backlog flag and nonzero exit status.
+
+Targeted tests following this change passed **7/7 observer tests**
+and **2/2 stdio tests**. Two subsequent complete Windows/Node22 test
+runs passed **295/295 each**: test-file concurrency four in **88.3 s**,
+and test-file concurrency two in **247.2 s** under higher machine load.
+The earlier failing UTF-8 case passed in both runs. The difference in
+elapsed time reinforces that host-load measurements are noisy.
+
+`npm pack --dry-run --ignore-scripts --json` passed for version
+`1.4.2`: **23 distributable files**, including the stdio entrypoint,
+with no benchmark/test fixtures. The Codexify audit observer script
+is a local opt-in script, **not part of the npm package contents**.
+This source-only candidate remains on release hold pending exact-head
+GitHub CI and review.
+
 ## Release controls
 
 **Not authorized/performed in this hardening pass:** merge to main; version bump; npm, MCPB, official registry, OpenAI plugin or GHCR release; live Codexify GodPrompt hot reload/restart; paid API/model calls; changes to other Codexify workers.

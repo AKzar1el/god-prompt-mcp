@@ -288,7 +288,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
 
   // The three frozen intent sets include normal, negative and mixed-action
   // examples. They are regression checks, not population accuracy claims.
-  for (const dataset of ["cases", "holdout", "forward"]) {
+  for (const dataset of ["cases", "holdout", "forward", "adversarial"]) {
     const hardeningCases = JSON.parse(await readFile(
       new URL(`../benchmarks/classifier-hardening/${dataset}.json`, import.meta.url), "utf8",
     )).cases;
@@ -298,6 +298,22 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
       // Mixed instructions can legitimately require caller disambiguation.
       assert.equal(typeof result.ambiguous, "boolean", `${id}: ${description}`);
     }
+  }
+  // Real MCP transport must accept the documented maximum length without
+  // timing out or echoing the full prompt. Repeated tokens exercise both
+  // regex scanning and negated-action detection with bounded input length.
+  const boundaryCases = [
+    "x".repeat(1000),
+    "should we deploy this release ".repeat(40).slice(0, 1000),
+    "build an automation then review its tests ".repeat(30).slice(0, 1000),
+    "do not deploy ".repeat(70).slice(0, 1000),
+    "review the existing automation ".repeat(35).slice(0, 1000),
+  ];
+  for (const [index, description] of boundaryCases.entries()) {
+    const result = await classify(child, pending, "boundary-" + index, description);
+    assert.equal(typeof result.task_type, "string");
+    assert.ok(result.task_type.length < 32);
+    assert.ok(JSON.stringify(result).length < 2000, "Classification response must remain bounded");
   }
 
   const negatedShipCases = [

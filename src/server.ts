@@ -20,7 +20,7 @@ const READ_ONLY_ANNOTATIONS = {
 
 const TASK_TYPES = {
   BUILD: {
-    triggers: ["create", "implement", "add", "feature", "build", "make", "new", "test"],
+    triggers: ["create", "implement", "add", "feature", "build", "make", "new", "test", "tests"],
     protocol: "TDD Red-Green-Refactor",
     description: "Creating new functionality",
   },
@@ -65,12 +65,13 @@ const TASK_TYPES = {
       "pipeline", "bot", "script", "automate", "cron", "workflow", "ci",
       "automation", "scheduled task", "scheduled job", "recurring task", "recurring job",
       "schedule", "scheduled", "recurring", "automated", "automatic", "job",
+      "daily", "weekly", "nightly", "hourly",
     ],
     protocol: "Architecture → resilience → docs",
     description: "Building automation and pipelines",
   },
   PLAN: {
-    triggers: ["brainstorm", "think", "plan", "strategy", "roadmap", "proposal", "release plan", "rollout plan", "architect", "design system"],
+    triggers: ["brainstorm", "think", "plan", "strategy", "roadmap", "proposal", "release plan", "rollout plan", "architect", "architecture", "propose", "design system"],
     protocol: "Explore → document → handoff",
     description: "Planning and brainstorming",
   },
@@ -145,6 +146,8 @@ const AUTOMATION_FOLLOWUP_ACTION =
     AUTOMATION_OBJECT_MODIFIERS + "\\s+){0,6}" + AUTOMATION_OBJECT + "\\b");
 const AUTOMATION_FOLLOWUP_PIPELINE =
   /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(?:build|create|implement|add|make|set up|configure)\s+(?:(?:a|an|the|new|ci|data|build|deployment)\s+){0,5}(?:pipeline|workflow|cron job)\b(?!\s+(?:dashboard|viewer|api|page|status))/;
+const AUTOMATION_FOLLOWUP_TIMEBOUND =
+  /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(?:build|create|implement|add|make|set up|configure|schedule)\s+(?:(?:a|an|the|new)\s+){0,3}(?:daily|weekly|nightly|hourly|monthly)\s+(?:job|check|report|alert|task|reminder)\b/;
 const AUTOMATION_DIRECT_SCHEDULE =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*schedule\b/;
 const AUTOMATION_FOLLOWUP_SCHEDULE =
@@ -152,11 +155,17 @@ const AUTOMATION_FOLLOWUP_SCHEDULE =
 const AUTOMATION_TIMEBOUND_JOB =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make|set up|configure)\s+(?:(?:a|an|the|new|reliable)\s+){0,4}(?:(?:nightly|daily|weekly|hourly)\s+job\b|job\s+that\s+runs\s+every\b)/;
 const AUTOMATION_ADJECTIVE_DELIVERABLE =
-  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:(?:build|create|implement|add|make|set up|configure)\s+(?:(?:a|an|the|new)\s+){0,3}|(?:i|we)\s+(?:need|want)\s+(?:(?:a|an|the)\s+)?)(?:automated|automatic)\s+(?:(?:nightly|daily|weekly|hourly)\s+)?(?:check|digest|report|reminder|alert|job|workflow|task)\b/;
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:(?:build|create|implement|add|make|set up|configure)\s+(?:(?:a|an|the|new)\s+){0,3}|(?:i|we)\s+(?:need|want)\s+(?:(?:a|an|the)\s+)?)(?:automated|automatic|daily|weekly|nightly|hourly)\s+(?:(?:nightly|daily|weekly|hourly)\s+)?(?:check|digest|report|reminder|alert|job|workflow|task)\b/;
 const NON_AUTOMATION_OBJECT =
-  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make|write|draft)\s+(?:(?:a|an|the|new|simple|basic|small|internal|web|rest|cli|analytics|documentation|read-only|verification|bot)\s+){0,5}(?:dashboard|web page|page|api|endpoint|table|ui|viewer|docs?|documentation|guide|article|report|tool|feature)\b/;
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make|write|draft)\s+(?:(?:a|an|the|new|simple|basic|small|internal|web|rest|cli|analytics|documentation|read-only|verification|bot|log|script|editor|administration)\s+){0,6}(?:dashboard|web page|page|api|endpoint|table|ui|viewer|interface|docs?|documentation|guide|article|report|tool|feature)\b/;
 const PRIMARY_SOFTWARE_OBJECT =
-  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make)\s+(?:(?:a|an|the|new|simple|basic|small|internal|web|rest|cli|analytics|read-only|verification|bot)\s+){0,6}(?:dashboard|web page|page|api|endpoint|table|ui|viewer|tool|feature)\b/;
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make)\s+(?:(?:a|an|the|new|simple|basic|small|internal|web|rest|cli|analytics|read-only|verification|bot|log|script|editor|administration)\s+){0,7}(?:dashboard|web page|page|api|endpoint|table|ui|viewer|interface|tool|feature)\b/;
+const SOFTWARE_AUDIT_VIEW =
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make)\s+(?:(?:a|an|the|new)\s+){0,3}(?:cron(?:-job)?|bot|workflow|automation|pipeline|script|job)\s+(?:history|status|metrics|admin|log|logs|management)\s+(?:table|dashboard|viewer|ui|interface|page)\b/;
+const PRIMARY_CONTENT_OBJECT =
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:write|draft|prepare|create)\s+(?:(?:a|an|the|new|short|brief|public)\s+){0,5}(?:summary|guide|article|blog post|documentation|docs|release notes)\b/;
+const SHIPPING_READINESS_QUESTION =
+  /^(?:should we\b|can we safely\b|could we safely\b|is (?:the|this|our) .{0,80}\bready\b|tell me whether\b|what are the risks\b|how can we\b).{0,180}\b(?:deploy|ship|publish|release|merge|push|launch|pipeline|bot)\b/;
 const PRIMARY_CLI_OBJECT =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:build|create|implement|add|make)\s+(?:(?:a|an|the|new|small|simple)\s+){0,4}cli\b(?=\s+(?:to|for|that|which|with)\b|$)/;
 const PRIMARY_VISUAL_OBJECT =
@@ -338,7 +347,8 @@ function classifyTask(description: string): {
   const affirmativeDebug = debugActions.some(
     (trigger) => hasAffirmativeActionTrigger(normalized, trigger),
   );
-  const inspectionRequested = TASK_TYPES.ANALYZE.triggers
+  const shippingAssessment = SHIPPING_READINESS_QUESTION.test(normalized);
+  const inspectionRequested = shippingAssessment || TASK_TYPES.ANALYZE.triggers
     .some((trigger) => hasTrigger(normalized, trigger));
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
@@ -354,16 +364,19 @@ function classifyTask(description: string): {
   const timeboundJobRequested = AUTOMATION_TIMEBOUND_JOB.test(normalized);
   const automatedDeliverableRequested = AUTOMATION_ADJECTIVE_DELIVERABLE.test(normalized);
   const followupAutomation = AUTOMATION_FOLLOWUP_ACTION.test(normalized) ||
-    AUTOMATION_FOLLOWUP_PIPELINE.test(normalized);
+    AUTOMATION_FOLLOWUP_PIPELINE.test(normalized) ||
+    AUTOMATION_FOLLOWUP_TIMEBOUND.test(normalized);
   const automationBuildRequested = AUTOMATION_BUILD_ACTION.test(normalized) || followupAutomation;
   const automationRequested = automationBuildRequested || scheduleRequested ||
     timeboundJobRequested || automatedDeliverableRequested;
-  const nonAutomationObject = NON_AUTOMATION_OBJECT.test(normalized);
+  const nonAutomationObject = NON_AUTOMATION_OBJECT.test(normalized) ||
+    SOFTWARE_AUDIT_VIEW.test(normalized);
   const primarySoftwareObject = PRIMARY_SOFTWARE_OBJECT.test(normalized) ||
-    PRIMARY_CLI_OBJECT.test(normalized);
+    PRIMARY_CLI_OBJECT.test(normalized) || SOFTWARE_AUDIT_VIEW.test(normalized);
   const visualRequested = PRIMARY_VISUAL_OBJECT.test(normalized);
   const primaryInspection = PRIMARY_INSPECTION_ACTION.test(normalized);
   const testImplementationRequested = PRIMARY_TEST_IMPLEMENTATION.test(normalized);
+  const contentRequested = PRIMARY_CONTENT_OBJECT.test(normalized);
   const directPrRequested = DIRECT_PR_REQUEST.test(normalized);
   const maintenanceRequested = PRIMARY_MAINTENANCE.test(normalized);
   const contentFollowup = FOLLOWUP_CONTENT.test(normalized);
@@ -378,12 +391,16 @@ function classifyTask(description: string): {
     // turn a dashboard, debugging, refactor, or actual shipping into automation.
     if (type === "BUILD" && shippingVerb !== null) continue;
     if (type === "AUTOMATE" && (shippingVerb !== null || nonAutomationObject ||
+      shippingAssessment || contentRequested ||
       visualRequested || testImplementationRequested ||
       (primaryInspection && !automationRequested &&
         !hasAffirmativeActionTrigger(normalized, "automate")) ||
       (maintenanceRequested && !followupAutomation))) continue;
     if (type === "BUILD" && (automationRequested || primaryContentFollowup || primaryPlanFollowup) &&
       !nonAutomationObject && shippingVerb === null) continue;
+    if (type === "SHIP" && shippingAssessment) continue;
+    if (type === "DESIGN" && maintenanceRequested) continue;
+    if (type === "CONTENT" && testImplementationRequested) continue;
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
     if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild &&
       !testImplementationRequested) ||
@@ -403,36 +420,41 @@ function classifyTask(description: string): {
       !hasAffirmativeActionTrigger(normalized, "automate")) continue;
     // Mentions of bugs or errors must not override an explicit no-debug instruction.
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
-    const matches = info.triggers
-      .filter((trigger) =>
-        !(type === "AUTOMATE" &&
+    const matches: MatchedSignal[] = info.triggers
+      .flatMap((trigger): MatchedSignal[] => {
+        if ((type === "AUTOMATE" &&
           ((trigger === "schedule" && !scheduleRequested) ||
-           (trigger === "job" && !timeboundJobRequested) ||
-           (trigger === "automated" && !automationRequested))) &&
-        !(type === "BUILD" && trigger === "test" && !testImplementationRequested) &&
-        !(type === "SHIP" && trigger === "pr" && shippingVerb === null &&
-          !directPrRequested) &&
-        !(type === "AUTOMATE" && AUTOMATION_DELIVERABLE_SIGNALS.has(trigger) &&
-          !automationBuildRequested) &&
-        !(type === "SHIP" &&
+           (trigger === "job" && !timeboundJobRequested && !followupAutomation) ||
+           (trigger === "automated" && !automationRequested) ||
+           (["daily", "weekly", "nightly", "hourly"].includes(trigger) &&
+             !automatedDeliverableRequested && !followupAutomation))) ||
+          (type === "BUILD" && (trigger === "test" || trigger === "tests") &&
+            !testImplementationRequested) ||
+          (type === "SHIP" && trigger === "pr" && shippingVerb === null &&
+            !directPrRequested) ||
+          (type === "AUTOMATE" && AUTOMATION_DELIVERABLE_SIGNALS.has(trigger) &&
+            !automationBuildRequested) ||
+          (type === "SHIP" &&
           ((trigger === "release" && nominalRelease && shippingVerb !== "release") ||
-           (inspectionRequested && shippingVerb === null))) &&
-        (type === "SHIP" || type === "BUILD"
-          ? hasAffirmativeActionTrigger(normalized, trigger)
-          : hasTrigger(normalized, trigger)))
-      .map((trigger) => ({
-        signal: trigger,
-        strength: (type === "PLAN" && (primaryPlanningIntent || primaryPlanFollowup) &&
-          PLAN_DELIVERABLE_SIGNALS.has(trigger)) ||
+           (inspectionRequested && shippingVerb === null)))) return [];
+        const index = triggerIndex(normalized, trigger);
+        if (index < 0 ||
+          ((type === "SHIP" || type === "BUILD") &&
+            !hasAffirmativeActionTrigger(normalized, trigger))) return [];
+        const emphasized =
+          (type === "PLAN" && (primaryPlanningIntent || primaryPlanFollowup) &&
+            PLAN_DELIVERABLE_SIGNALS.has(trigger)) ||
           (type === "SHIP" && trigger === shippingVerb) ||
           (type === "BUILD" && (trigger === followupBuildVerb ||
             trigger === primaryBuildVerb ||
-            (testImplementationRequested && trigger === "test") ||
-            (primarySoftwareObject && hasTrigger(normalized, trigger) &&
-              ["build", "create", "implement", "add", "make"].includes(trigger))))
-          ? 3 : signalStrength(trigger),
-        index: triggerIndex(normalized, trigger),
-      }));
+            (testImplementationRequested && (trigger === "test" || trigger === "tests")) ||
+            (primarySoftwareObject &&
+              ["build", "create", "implement", "add", "make"].includes(trigger))));
+        return [{ signal: trigger, strength: emphasized ? 3 : signalStrength(trigger), index }];
+      });
+    if (type === "ANALYZE" && shippingAssessment) {
+      matches.push({ signal: "shipping-readiness-question", strength: 3, index: 0 });
+    }
     if (matches.length === 0) continue;
 
     candidates.push({

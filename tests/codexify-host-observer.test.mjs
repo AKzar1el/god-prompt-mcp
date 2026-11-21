@@ -283,7 +283,7 @@ test("watcher preserves new checks after truncation, rotation, log absence, or g
   }
 });
 
-test("observer preserves UTF-8 JSONL split across its bounded read window", async (t) => {
+async function checkUtf8Boundary(t, durationMs, readWindows, expectIncomplete = false) {
   const dir = await mkdtemp(join(tmpdir(), "godprompt-utf8-audit-"));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const audit = join(dir, "audit.jsonl");
@@ -302,7 +302,7 @@ test("observer preserves UTF-8 JSONL split across its bounded read window", asyn
   await writeFile(audit, "");
   const child = spawn(process.execPath, [
     "scripts/codexify-audit-checkpoint-observer.mjs",
-    "--watch", "--duration-ms", "3500",
+    "--watch", "--duration-ms", String(durationMs),
   ], {
     stdio: ["ignore", "pipe", "pipe"], windowsHide: true,
     env: {
@@ -329,9 +329,10 @@ test("observer preserves UTF-8 JSONL split across its bounded read window", asyn
   const events = toolEvents("exec_command", 187);
   events[0].command_preview = command;
   const start = JSON.stringify(events[0]) + "\n";
-  // Place the first byte of the multibyte character at offset MAX_READ-1.
-  // The second read must finish decoding it before JSON parsing or matching.
-  let remaining = 512 * 1024 - 1 - Buffer.byteLength(start.slice(0, start.indexOf(unicode)));
+  // Place the first byte of the multibyte character at a MAX_READ boundary.
+  // Later reads must finish decoding it before JSON parsing or matching.
+  const splitOffset = readWindows * 512 * 1024 - 1;
+  let remaining = splitOffset - Buffer.byteLength(start.slice(0, start.indexOf(unicode)));
   assert.ok(remaining > 0);
   let padding = "";
   while (remaining > 0) {
@@ -340,14 +341,36 @@ test("observer preserves UTF-8 JSONL split across its bounded read window", asyn
     remaining -= size + 1;
   }
   const payload = padding + events.map(JSON.stringify).join("\n") + "\n";
-  assert.equal(Buffer.from(payload).indexOf(Buffer.from(unicode)), 512 * 1024 - 1);
+  assert.equal(Buffer.from(payload).indexOf(Buffer.from(unicode)), splitOffset);
   await appendFile(audit, payload);
   const [code] = await exitPromise;
-  assert.equal(code, 0, stderr);
   const summary = JSON.parse(stdout.trim());
+  if (expectIncomplete) {
+    assert.equal(code, 1, stderr);
+    assert.equal(summary.audit_backlog_incomplete, true);
+    assert.equal(summary.observed_checkpoints, 0);
+    return;
+  }
+  assert.equal(code, 0, stderr);
   assert.equal(summary.observed_checkpoints, 1);
+  assert.equal(summary.audit_backlog_incomplete, false);
   const report = JSON.parse((await readFile(reportFile, "utf8")).trim());
   assert.equal(report.stage, "verification");
   assert.equal(report.counts.supplied_checks, 1);
   assert.equal(report.completion_authorized, false);
+}
+
+test("observer preserves UTF-8 JSONL split across its bounded read window", async (t) => {
+  await checkUtf8Boundary(t, 3500, 1);
+});
+
+test("observer drains an existing split JSONL backlog at its bounded deadline", async (t) => {
+  // Four complete MAX_READ chunks can straddle the 1.5-second deadline.
+  // A watcher must consume the already-visible fifth chunk, not stop in
+  // the middle of the verification record after the fourth read.
+  await checkUtf8Boundary(t, 1500, 4);
+});
+
+test("observer fails closed instead of hiding a backlog beyond its final drain cap", async (t) => {
+  await checkUtf8Boundary(t, 1500, 20, true);
 });

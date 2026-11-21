@@ -1,0 +1,357 @@
+{
+  "schema": "godprompt.classifier.evaluation.v1",
+  "frozen_on": "2026-11-21",
+  "description": "Independent follow-on negative-controls and counterfactual tests, created before first run; do not claim unbiased results once used for refinement.",
+  "cases": [
+    {
+      "id": "Q01",
+      "expected": "ANALYZE",
+      "description": "Should we deploy this release or would it be risky?"
+    },
+    {
+      "id": "Q02",
+      "expected": "ANALYZE",
+      "description": "Can we safely ship this release? Evaluate the risks."
+    },
+    {
+      "id": "Q03",
+      "expected": "ANALYZE",
+      "description": "Is the CI pipeline ready to deploy?"
+    },
+    {
+      "id": "Q04",
+      "expected": "ANALYZE",
+      "description": "Tell me whether to publish the package after tests."
+    },
+    {
+      "id": "Q05",
+      "expected": "ANALYZE",
+      "description": "What are the risks if we deploy the patch?"
+    },
+    {
+      "id": "Q06",
+      "expected": "ANALYZE",
+      "description": "Review deployment readiness; do not deploy."
+    },
+    {
+      "id": "Q07",
+      "expected": "ANALYZE",
+      "description": "Audit the release process without changing it."
+    },
+    {
+      "id": "Q08",
+      "expected": "ANALYZE",
+      "description": "Investigate why the last cron job failed, no edits."
+    },
+    {
+      "id": "Q09",
+      "expected": "DEBUG",
+      "description": "Fix the broken scheduled task, but don't ship anything."
+    },
+    {
+      "id": "Q10",
+      "expected": "REFACTOR",
+      "description": "Refactor the pipeline worker without changing what it does."
+    },
+    {
+      "id": "Q11",
+      "expected": "BUILD",
+      "description": "Create an API that lists every automation's last run."
+    },
+    {
+      "id": "Q12",
+      "expected": "BUILD",
+      "description": "Implement a bot administration interface."
+    },
+    {
+      "id": "Q13",
+      "expected": "BUILD",
+      "description": "Build a scheduled-jobs analytics dashboard."
+    },
+    {
+      "id": "Q14",
+      "expected": "BUILD",
+      "description": "Add a cron-job history table to the UI."
+    },
+    {
+      "id": "Q15",
+      "expected": "BUILD",
+      "description": "Create a REST endpoint to inspect bot alerts."
+    },
+    {
+      "id": "Q16",
+      "expected": "BUILD",
+      "description": "Write integration tests for existing automation logic."
+    },
+    {
+      "id": "Q17",
+      "expected": "ANALYZE",
+      "description": "Test the existing scheduled task, but do not rewrite it."
+    },
+    {
+      "id": "Q18",
+      "expected": "ANALYZE",
+      "description": "Review the queue worker and propose a fix, no code changes."
+    },
+    {
+      "id": "Q19",
+      "expected": "AUTOMATE",
+      "description": "Create a daily recurring report for failed crawls."
+    },
+    {
+      "id": "Q20",
+      "expected": "AUTOMATE",
+      "description": "Set up a weekly job to email customers."
+    },
+    {
+      "id": "Q21",
+      "expected": "AUTOMATE",
+      "description": "Can you schedule a monthly security audit?"
+    },
+    {
+      "id": "Q22",
+      "expected": "AUTOMATE",
+      "description": "Build a webhook automation to process support replies."
+    },
+    {
+      "id": "Q23",
+      "expected": "AUTOMATE",
+      "description": "Implement an automated reminder when an SLA is exceeded."
+    },
+    {
+      "id": "Q24",
+      "expected": "AUTOMATE",
+      "description": "Create a cron job that runs at 3am every day."
+    },
+    {
+      "id": "Q25",
+      "expected": "AUTOMATE",
+      "description": "Write an automation that checks job openings each morning."
+    },
+    {
+      "id": "Q26",
+      "expected": "PLAN",
+      "description": "Prepare a strategy to automate monthly reports; don't build it."
+    },
+    {
+      "id": "Q27",
+      "expected": "PLAN",
+      "description": "Write a roadmap for a CI automation upgrade."
+    },
+    {
+      "id": "Q28",
+      "expected": "CONTENT",
+      "description": "Draft a blog post explaining scheduled jobs."
+    },
+    {
+      "id": "Q29",
+      "expected": "CONTENT",
+      "description": "Create documentation about the automation tool."
+    },
+    {
+      "id": "Q30",
+      "expected": "DESIGN",
+      "description": "Design a UI for visualizing cron executions."
+    },
+    {
+      "id": "Q31",
+      "expected": "SHIP",
+      "description": "Deploy the approved scheduled worker to production."
+    },
+    {
+      "id": "Q32",
+      "expected": "SHIP",
+      "description": "Merge the reviewed CI pipeline changes."
+    },
+    {
+      "id": "Q33",
+      "expected": "ANALYZE",
+      "description": "Do not merge PR 42; review its automation code."
+    },
+    {
+      "id": "Q34",
+      "expected": "ANALYZE",
+      "description": "Please don't publish a new release; inspect the changelog."
+    },
+    {
+      "id": "Q35",
+      "expected": "DEBUG",
+      "description": "Please fix the bot, never deploy it."
+    },
+    {
+      "id": "Q36",
+      "expected": "BUILD",
+      "description": "Please create a new UI for configuring recurring jobs, not the jobs themselves."
+    },
+    {
+      "id": "Q37",
+      "expected": "AUTOMATE",
+      "description": "Review the existing scheduler, and then create a new daily job."
+    },
+    {
+      "id": "Q38",
+      "expected": "SHIP",
+      "description": "Build the monthly automation, then deploy it."
+    },
+    {
+      "id": "Q39",
+      "expected": "CONTENT",
+      "description": "Write release notes about the new scheduler."
+    },
+    {
+      "id": "Q40",
+      "expected": "PLAN",
+      "description": "Plan the release of the recurring-jobs feature."
+    },
+    {
+      "id": "Q41",
+      "expected": "ANALYZE",
+      "description": "How can we make the bot faster? Investigate first, no modifications."
+    },
+    {
+      "id": "Q42",
+      "expected": "REFACTOR",
+      "description": "Optimize the webhook handler and keep public behavior unchanged."
+    },
+    {
+      "id": "Q43",
+      "expected": "DEBUG",
+      "description": "Diagnose and fix webhook retries failing under load."
+    },
+    {
+      "id": "Q44",
+      "expected": "ANALYZE",
+      "description": "Check whether the releases are compliant without shipping."
+    },
+    {
+      "id": "Q45",
+      "expected": "BUILD",
+      "description": "Create a page that displays scheduled job errors."
+    },
+    {
+      "id": "Q46",
+      "expected": "AUTOMATE",
+      "description": "Make an automatic daily status report for deployments."
+    },
+    {
+      "id": "Q47",
+      "expected": "BUILD",
+      "description": "Implement a log viewer for the cron scheduler."
+    },
+    {
+      "id": "Q48",
+      "expected": "ANALYZE",
+      "description": "Why did our nightly automation miss its deadline?"
+    },
+    {
+      "id": "Q49",
+      "expected": "CONTENT",
+      "description": "Write a summary of how CI pipelines are structured."
+    },
+    {
+      "id": "Q50",
+      "expected": "DESIGN",
+      "description": "Redesign the UI for the pipeline dashboard."
+    },
+    {
+      "id": "Q51",
+      "expected": "BUILD",
+      "description": "Create test fixtures for scheduled task rollback."
+    },
+    {
+      "id": "Q52",
+      "expected": "ANALYZE",
+      "description": "Check the package signatures before publication."
+    },
+    {
+      "id": "Q53",
+      "expected": "SHIP",
+      "description": "Release the validated new feature after approval."
+    },
+    {
+      "id": "Q54",
+      "expected": "REFACTOR",
+      "description": "Simplify the UI rendering pipeline and keep the layout."
+    },
+    {
+      "id": "Q55",
+      "expected": "AUTOMATE",
+      "description": "Add a recurring check to watch for new research jobs."
+    },
+    {
+      "id": "Q56",
+      "expected": "AUTOMATE",
+      "description": "Build an automation, but do not deploy it."
+    },
+    {
+      "id": "Q57",
+      "expected": "ANALYZE",
+      "description": "We want to deploy, but first verify its safety. Don't deploy now."
+    },
+    {
+      "id": "Q58",
+      "expected": "ANALYZE",
+      "description": "Do not build anything or start a job. Audit the deployment script."
+    },
+    {
+      "id": "Q59",
+      "expected": "DEBUG",
+      "description": "Fix and test the script that schedules weekly exports."
+    },
+    {
+      "id": "Q60",
+      "expected": "BUILD",
+      "description": "Please implement the database tool, no automation or scheduled tasks."
+    },
+    {
+      "id": "Q61",
+      "expected": "SHIP",
+      "description": "Please push the already approved change without altering code."
+    },
+    {
+      "id": "Q62",
+      "expected": "PLAN",
+      "description": "Propose an architecture for an automated verification system."
+    },
+    {
+      "id": "Q63",
+      "expected": "BUILD",
+      "description": "Create an endpoint for adding job labels; don't schedule jobs."
+    },
+    {
+      "id": "Q64",
+      "expected": "AUTOMATE",
+      "description": "Build a daily check for open grant windows."
+    },
+    {
+      "id": "Q65",
+      "expected": "ANALYZE",
+      "description": "Check whether the bot login is broken."
+    },
+    {
+      "id": "Q66",
+      "expected": "CONTENT",
+      "description": "Prepare documentation for nightly backup rotation."
+    },
+    {
+      "id": "Q67",
+      "expected": "BUILD",
+      "description": "Create a script editor UI to manage existing automations."
+    },
+    {
+      "id": "Q68",
+      "expected": "REFACTOR",
+      "description": "Refactor the job processor and remove duplication."
+    },
+    {
+      "id": "Q69",
+      "expected": "BUILD",
+      "description": "Write new tests that detect automation failures."
+    },
+    {
+      "id": "Q70",
+      "expected": "AUTOMATE",
+      "description": "Configure a cron workflow to back up the repository."
+    }
+  ]
+}
