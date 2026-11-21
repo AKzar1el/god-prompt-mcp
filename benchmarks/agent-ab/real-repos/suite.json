@@ -1,0 +1,47 @@
+{
+  "schema": "godprompt.real_repo_ab.v1",
+  "suite_id": "public-mcp-repairs-pilot-20261121",
+  "evaluation_status": "calibration_only_unscored",
+  "seed": "gp-public-pilot-20261121",
+  "tasks": [
+    {
+      "task_id": "auvrora-template-inert",
+      "kind": "bug",
+      "repo": "AKzar1el/auvrora-webmcp",
+      "source_sha": "87b012a0bca53517b73927b9ee9babb7aabe05bf",
+      "url": "https://github.com/AKzar1el/auvrora-webmcp.git",
+      "allowed_paths": [
+        "src/lib/audit/analyze-page.ts",
+        "test/analyze-page.test.ts"
+      ],
+      "max_minutes": 18,
+      "description": "Fix the deterministic HTML auditor so content inside inert <template> elements, including nested templates, is not counted as visible H1s, canonical links, image-alt violations or robots directives. Preserve visible markup outside templates, original audit rules and existing tests. Make a production-quality minimal fix with regression tests, without changing published services."
+    },
+    {
+      "task_id": "auvrora-specific-robots",
+      "kind": "feature",
+      "repo": "AKzar1el/auvrora-webmcp",
+      "source_sha": "87b012a0bca53517b73927b9ee9babb7aabe05bf",
+      "url": "https://github.com/AKzar1el/auvrora-webmcp.git",
+      "allowed_paths": [
+        "src/lib/audit/analyze-page.ts",
+        "test/analyze-page.test.ts"
+      ],
+      "max_minutes": 14,
+      "description": "Extend Auvrora's deterministic noindex audit to recognize the standards-style <meta name=\"googlebot\" content=\"noindex\"> and <meta name=\"bingbot\" content=\"none\"> search-bot directives, case insensitively, while preserving existing generic robots handling and not flagging unrelated meta tags. Add a concise regression test. No external fetches or deployment."
+    },
+    {
+      "task_id": "geo-safe-domain-errors",
+      "kind": "bug",
+      "repo": "AKzar1el/mcp-geo",
+      "source_sha": "9d893f11d6ecc05fc19ece20d99cfdfb35fe7d0a",
+      "url": "https://github.com/AKzar1el/mcp-geo.git",
+      "allowed_paths": [
+        "src/core/domain.ts",
+        "tests/unit/domain-normalization.test.ts"
+      ],
+      "max_minutes": 14,
+      "description": "Harden domain-validation errors so untrusted, extremely long or control-character-bearing brand/competitor domain inputs cannot be reflected verbatim into error messages/logs. Preserve DomainInputError, useful bounded feedback and valid host normalization. Add tests for oversized input, newline/control injection and normal invalid-domain feedback. No provider calls."
+    }
+  ]
+}
