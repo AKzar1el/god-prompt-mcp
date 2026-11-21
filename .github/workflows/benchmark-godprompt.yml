@@ -1,0 +1,40 @@
+name: Free GodPrompt quality benchmark
+
+on:
+  pull_request:
+    paths:
+      - "benchmarks/public-toolkit/**"
+      - ".github/workflows/benchmark-godprompt.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  controlled-benchmark:
+    name: Controlled tool-quality and transport evaluation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install audited project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build independent sources
+        run: npm run build
+      - name: Fresh-install the publicly published MCP
+        run: |
+          npm install --prefix "$RUNNER_TEMP/godprompt-consumer" --omit=dev --ignore-scripts --no-audit --no-fund --prefer-online "god-prompt-mcp@1.2.0"
+      - name: Evaluate 74 frozen quality cases and real hosted/stdio transport
+        run: |
+          GODPROMPT_BENCH_STDIO="$RUNNER_TEMP/godprompt-consumer/node_modules/god-prompt-mcp/dist/stdio.js" node benchmarks/public-toolkit/transport.mjs
+      - name: Archive evidence even when a quality gate fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godprompt-v120-free-quality-report
+          path: benchmarks/public-toolkit/results/*
+          if-no-files-found: warn
+          retention-days: 3

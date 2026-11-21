@@ -9,8 +9,13 @@ import { mkdir, open, readFile, lstat, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  codexifyEvidence, validateWorkContractEnvelope, CODEXIFY_BUNDLE_SCHEMA,
+} from "../dist/codexify-evidence.js";
 
-export const BUNDLE_SCHEMA = "godprompt.evidence_bundle.v1";
+export { codexifyEvidence };
+
+export const BUNDLE_SCHEMA = CODEXIFY_BUNDLE_SCHEMA;
 const MAX_JSON_BYTES = 256 * 1024;
 const MAX_FEEDBACK_BYTES = 256 * 1024;
 const MAX_PAGES = 3;
@@ -20,14 +25,6 @@ function sha256(text) {
 }
 function fail(message) {
   throw new Error(message);
-}
-function checkContract(contract) {
-  if (!contract || contract.schema !== "godprompt.work_contract.v1" ||
-      !/^sha256:[a-f0-9]{64}$/.test(contract.contract_id || "") ||
-      !Array.isArray(contract.verification_commands) ||
-      !Array.isArray(contract.allowed_paths) ||
-      !Array.isArray(contract.success_criteria)) fail("Expected a complete v1 GodPrompt contract");
-  return contract;
 }
 export async function readSmallJson(filename) {
   const bytes = await readFile(filename);
@@ -85,7 +82,7 @@ async function githubJson(url, fetchImpl) {
 }
 export async function githubEvidence({ repo, sha, contract, mapping = {}, pr = null, fetchImpl = fetch }) {
   validateRepo(repo, sha);
-  checkContract(contract);
+  validateWorkContractEnvelope(contract);
   if (!mapping || typeof mapping !== "object" || Array.isArray(mapping)) fail("Expected a VC-ID-to-check-name JSON map");
   const base = "https://api.github.com/repos/" + repo;
   const gaps = [];
@@ -218,53 +215,60 @@ export async function githubSnapshotEvidence({ repo, sha, contract, mapping = {}
   bundle.gaps.push("CONNECTOR_SNAPSHOT_PROVENANCE_NOT_AUTHENTICATED");
   return bundle;
 }
-export function codexifyEvidence({ contract, exportData }) {
-  checkContract(contract);
-  if (!exportData || typeof exportData !== "object" || Array.isArray(exportData)) fail("Codexify export must be an object");
-  const rawFiles = exportData.changed_files;
-  if (!Array.isArray(rawFiles) || rawFiles.length > 150 || rawFiles.some((v) => typeof v !== "string")) {
-    fail("Codexify export needs a bounded changed_files array");
-  }
-  const rawChecks = exportData.checks;
-  if (!Array.isArray(rawChecks) || rawChecks.length > 100) fail("Codexify export needs a bounded checks array");
-  const gaps = [];
-  const checks = rawChecks.map((receipt) => {
-    if (!receipt || typeof receipt !== "object" || typeof receipt.id !== "string" || typeof receipt.command !== "string") {
-      fail("Malformed Codexify receipt");
+/**
+ * One opt-in evidence collection call. Reuses the existing pinned GitHub and
+ * Codexify adapters; does not execute commands, merge scopes or authenticate text.
+ */
+export async function combinedEvidence({
+  repo, sha, contract, mapping={}, pr=null, codexifyExport=null, snapshot=null, fetchImpl=fetch,
+}) {
+  const valid=validateWorkContractEnvelope(contract);
+  if(!repo || !sha) fail("Combined evidence requires a pinned GitHub repository and commit");
+  const github=snapshot
+    ? await githubSnapshotEvidence({repo,sha,contract:valid,mapping,pr,snapshot})
+    : await githubEvidence({repo,sha,contract:valid,mapping,pr,fetchImpl});
+  const codex=codexifyExport===null ? null :
+    await codexifyEvidence({contract:valid,exportData:codexifyExport});
+  const gaps=[...github.gaps.map(x=>"github:"+x),...(codex?.gaps??[]).map(x=>"codexify:"+x)];
+  const files=[...new Set([...(github.review_input.changed_files??[]),
+    ...(codex?.review_input?.changed_files??[])])].sort();
+  if(files.length>150) fail("Combined changed file list exceeds review safety limit");
+  const grouped=new Map();
+  for(const source of [{key:"github",checks:github.review_input.checks},
+                        ...(codex?[{key:"codexify",checks:codex.review_input.checks}]:[])]) {
+    for(const check of source.checks) {
+      if(!grouped.has(check.id))grouped.set(check.id,[]);
+      grouped.get(check.id).push({...check,provider:source.key});
     }
-    // Only a pasted structured exec_command envelope is attributed to tool output.
-    // An ordinary claimed numeric exit_code is never promoted to tool provenance.
-    const result = receipt.tool === "mcp__God_v5__exec_command" &&
-      receipt.response && typeof receipt.response === "object" ? receipt.response.upstream_result : null;
-    const code = Number.isInteger(result?.exit_code) && result.exit_code >= 0 ? result.exit_code : null;
-    const attributed = code !== null;
-    if (!attributed) gaps.push("NO_STRUCTURED_CODEXIFY_RECEIPT:" + receipt.id);
-    return {
-      id: receipt.id,
-      command: receipt.command,
-      exit_code: code,
-      source: attributed ? "tool_output" : "self_report",
-      evidence_excerpt: attributed
-        ? "Codexify exec_command exported envelope: exit_code=" + code + "; result_sha256=" + sha256(JSON.stringify(result)).slice(0, 16) + "; raw output withheld."
-        : "No structured Codexify exec_command tool result; self-report only.",
-    };
-  });
-  for (const required of contract.verification_commands) {
-    if (!checks.some((c) => c.id === required.id)) gaps.push("VERIFICATION_MISSING:" + required.id);
   }
-  gaps.push("CHANGED_FILE_LIST_IS_CALLER_SUPPLIED");
-  gaps.push("ACCEPTANCE_REQUIRES_INDEPENDENT_EVIDENCE");
-  const bundle = makeBundle("codexify_receipts", contract, rawFiles, checks, gaps, {
-    provider: "codexify_export",
-    claimed_receipts: checks.length,
-  });
-  if (Array.isArray(exportData.operations_performed) &&
-      exportData.operations_performed.length <= 100 &&
-      exportData.operations_performed.every((v) => typeof v === "string" && v.length <= 500)) {
-    bundle.review_input.operations_performed = exportData.operations_performed;
+  const checks=[];
+  for(const expected of valid.verification_commands) {
+    const options=grouped.get(expected.id)??[];
+    if(!options.length){gaps.push("CHECK_NOT_OBSERVED:"+expected.id);continue;}
+    if(options.some(x=>x.command!==expected.command)||options.some(x=>x.exit_code!==options[0].exit_code)){
+      checks.push({id:expected.id,command:expected.command,exit_code:null,
+        source:"self_report",evidence_excerpt:"Multiple sources disagree on command or exit status; reconcile original receipts."});
+      gaps.push("CHECK_EVIDENCE_CONFLICT:"+expected.id);
+      continue;
+    }
+    const best=options.find(x=>x.source==="tool_output")??options[0];
+    checks.push({id:expected.id,command:expected.command,exit_code:best.exit_code,
+      source:best.source,evidence_excerpt:"Concordant "+options.map(x=>x.provider).join("+")+
+        " receipt; matched contract VC ID. Original outputs and execution must still be verified independently."});
+    if(best.source!=="tool_output")gaps.push("CHECK_NOT_STRUCTURED:"+expected.id);
   }
-  return bundle;
+  return {
+    ...makeBundle("combined_github_codexify",valid,files,checks,gaps,{
+      provider:"combined_local_collectors",
+      github:github.provenance,
+      codexify:codex ? codex.provenance : null,
+      commit_sha:sha,
+    }),
+    observed_sources:codex ? 2 : 1,
+    receipt_conflicts:gaps.filter(x=>x.startsWith("CHECK_EVIDENCE_CONFLICT:")).length,
+  };
 }
+
 function filePath(env = process.env) {
   if (env.GODPROMPT_FEEDBACK_FILE) {
     if (!isAbsolute(env.GODPROMPT_FEEDBACK_FILE)) fail("GODPROMPT_FEEDBACK_FILE must be an absolute path");
@@ -556,13 +560,14 @@ function parseOptions(argv) {
     github: ["repo", "sha", "contract", "map", "pr"],
     "github-snapshot": ["repo", "sha", "contract", "map", "snapshot", "pr"],
     codexify: ["contract", "export"],
+    pack: ["contract","repo","sha","map","pr","snapshot","codexify"],
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
     "learn-review": ["project", "review"],
     metrics: ["project", "days"],
     workflow: ["project", "type", "risk", "min-reports", "format"],
   };
-  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|learn|learn-review|lessons|metrics|workflow [--name value ...]");
+  if (!allowed[command]) fail("Usage: godprompt-proof github|github-snapshot|codexify|pack|learn|learn-review|lessons|metrics|workflow [--name value ...]");
   for (const key of Object.keys(opts)) if (!allowed[command].includes(key)) fail("Unknown option --" + key);
   return { command, opts };
 }
@@ -573,7 +578,7 @@ export async function cli(argv = process.argv.slice(2)) {
     return githubEvidence({
       repo: opts.repo,
       sha: opts.sha,
-      contract: checkContract(await readSmallJson(opts.contract)),
+      contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       mapping: opts.map ? await readSmallJson(opts.map) : {},
       pr: opts.pr ? Number(opts.pr) : null,
     });
@@ -583,7 +588,7 @@ export async function cli(argv = process.argv.slice(2)) {
     return githubSnapshotEvidence({
       repo: opts.repo,
       sha: opts.sha,
-      contract: checkContract(await readSmallJson(opts.contract)),
+      contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       mapping: opts.map ? await readSmallJson(opts.map) : {},
       pr: opts.pr ? Number(opts.pr) : null,
       snapshot: await readSmallJson(opts.snapshot),
@@ -592,8 +597,18 @@ export async function cli(argv = process.argv.slice(2)) {
   if (command === "codexify") {
     if (!opts.contract || !opts.export) fail("codexify requires --contract --export");
     return codexifyEvidence({
-      contract: checkContract(await readSmallJson(opts.contract)),
+      contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       exportData: await readSmallJson(opts.export),
+    });
+  }
+  if(command==="pack"){
+    if(!opts.contract||!opts.repo||!opts.sha)fail("pack requires --contract --repo --sha");
+    return combinedEvidence({
+      contract:validateWorkContractEnvelope(await readSmallJson(opts.contract)),
+      repo:opts.repo,sha:opts.sha,pr:opts.pr?Number(opts.pr):null,
+      mapping:opts.map?await readSmallJson(opts.map):{},
+      snapshot:opts.snapshot?await readSmallJson(opts.snapshot):null,
+      codexifyExport:opts.codexify?await readSmallJson(opts.codexify):null,
     });
   }
   if (command === "learn-review") {

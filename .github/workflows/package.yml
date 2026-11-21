@@ -39,7 +39,7 @@ jobs:
         run: |
           node - <<'NODE'
           const pkg = require('./package.json');
-          const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/work-contract.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js', 'bin/godprompt-proof.mjs', 'README.md', 'LICENSE'];
+          const expectedFiles = ['dist/stdio.js', 'dist/server.js', 'dist/work-contract.js', 'dist/public-engineering.js', 'dist/tailored-guidance.js', 'dist/decision-support.js', 'dist/agent-trajectory.js', 'dist/change-impact.js', 'dist/mcp-contract-audit.js', 'dist/instruction-audit.js', 'dist/adversarial-planning.js', 'dist/quality-view.js', 'dist/codexify-evidence.js', 'dist/codexify-host-audit.js', 'dist/codexify-checkpoint.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js', 'bin/godprompt-proof.mjs', 'bin/godprompt-repo-map.mjs', 'README.md', 'LICENSE'];
           if (pkg.name !== 'god-prompt-mcp') throw new Error('package name drift');
           const serverSource = require('fs').readFileSync('src/server.ts', 'utf8');
           const match = serverSource.match(/version:\s*"([^"]+)"/);
@@ -49,6 +49,7 @@ jobs:
           if (pkg.publishConfig?.registry !== 'https://registry.npmjs.org/') throw new Error('publishConfig.registry drift');
           if (JSON.stringify(pkg.files) !== JSON.stringify(expectedFiles)) throw new Error('npm files allowlist drift');
           if (pkg.bin?.['god-prompt-mcp'] !== 'dist/stdio.js') throw new Error('stdio binary drift');
+          if (pkg.bin?.['godprompt-repo-map'] !== 'bin/godprompt-repo-map.mjs') throw new Error('repo-map binary drift');
           NODE
 
       - name: Run tests
@@ -67,7 +68,7 @@ jobs:
           node - <<'NODE'
           const pack = require(process.env.RUNNER_TEMP + '/npm-pack.json')[0];
           const names = new Set(pack.files.map((f) => f.path));
-          const required = ['package.json', 'README.md', 'LICENSE', 'dist/stdio.js', 'dist/server.js', 'dist/work-contract.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js'];
+          const required = ['package.json', 'README.md', 'LICENSE', 'dist/stdio.js', 'dist/server.js', 'dist/work-contract.js', 'dist/skill-content.js', 'dist/skills.js', 'dist/content.js', 'dist/quality-view.js', 'bin/godprompt-repo-map.mjs'];
           for (const file of required) {
             if (!names.has(file)) throw new Error(`missing packaged file: ${file}`);
           }
@@ -162,15 +163,28 @@ jobs:
             const listed = await request('tools/list', {});
             const names = (listed.result?.tools ?? []).map((tool) => tool.name).sort();
             const expected = [
+              'audit_agent_instructions',
+              'audit_agent_trajectory',
+              'audit_requirements',
+              'design_adversarial_tests',
+              'assess_release_readiness',
+              'build_test_matrix',
               'classify_task',
+              'compare_evaluation_runs',
+              'create_context_handoff',
               'create_work_contract',
+              'diagnose_failure',
               'review_work_evidence',
               'get_anti_patterns',
               'get_core_skill',
               'get_gates',
               'get_god_prompt',
               'get_protocols',
+              'get_tailored_guidance',
               'get_version',
+              'review_code_change',
+              'review_mcp_tool_contracts',
+              'trace_change_impact',
             ].sort();
             if (JSON.stringify(names) !== JSON.stringify(expected)) {
               throw new Error(`tool surface mismatch: ${JSON.stringify(names)}`);

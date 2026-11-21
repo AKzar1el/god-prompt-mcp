@@ -1,6 +1,6 @@
 {
   "name": "god-prompt-mcp",
-  "version": "1.1.1",
+  "version": "1.4.2",
   "mcpName": "io.github.AKzar1el/god-prompt-mcp",
   "description": "GodPrompt MCP server + portable Agent Skill for coding agents — TDD, debugging, verification gates, task routing, and progressive disclosure.",
   "private": false,
@@ -10,16 +10,30 @@
     "dist/stdio.js",
     "dist/server.js",
     "dist/work-contract.js",
+    "dist/public-engineering.js",
+    "dist/tailored-guidance.js",
+    "dist/decision-support.js",
+    "dist/agent-trajectory.js",
+    "dist/change-impact.js",
+    "dist/mcp-contract-audit.js",
+    "dist/instruction-audit.js",
+    "dist/adversarial-planning.js",
+    "dist/quality-view.js",
+    "dist/codexify-evidence.js",
+    "dist/codexify-host-audit.js",
+    "dist/codexify-checkpoint.js",
     "dist/skill-content.js",
     "dist/skills.js",
     "dist/content.js",
     "bin/godprompt-proof.mjs",
+    "bin/godprompt-repo-map.mjs",
     "README.md",
     "LICENSE"
   ],
   "bin": {
     "god-prompt-mcp": "dist/stdio.js",
-    "godprompt-proof": "bin/godprompt-proof.mjs"
+    "godprompt-proof": "bin/godprompt-proof.mjs",
+    "godprompt-repo-map": "bin/godprompt-repo-map.mjs"
   },
   "repository": {
     "type": "git",
@@ -72,6 +86,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",
+    "parse-diff": "0.12.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {

@@ -43,7 +43,8 @@ jobs:
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
+        # Main and PR updates validate the image; only a manual dispatch may publish.
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -136,15 +137,28 @@ jobs:
             const listed = await request('tools/list', {});
             const names = (listed.result?.tools ?? []).map((tool) => tool.name).sort();
             const expected = [
+              'audit_agent_instructions',
+              'audit_agent_trajectory',
+              'audit_requirements',
+              'assess_release_readiness',
+              'build_test_matrix',
               'classify_task',
+              'compare_evaluation_runs',
+              'create_context_handoff',
               'create_work_contract',
+              'design_adversarial_tests',
+              'diagnose_failure',
               'review_work_evidence',
               'get_anti_patterns',
               'get_core_skill',
               'get_gates',
               'get_god_prompt',
               'get_protocols',
+              'get_tailored_guidance',
               'get_version',
+              'review_code_change',
+              'review_mcp_tool_contracts',
+              'trace_change_impact',
             ].sort();
             if (JSON.stringify(names) !== JSON.stringify(expected)) {
               throw new Error(`tool surface mismatch: ${JSON.stringify(names)}`);
@@ -163,7 +177,7 @@ jobs:
           node "${RUNNER_TEMP}/mcp-smoke.mjs" "${IMAGE}:sha-${SHORT_SHA}"
 
       - name: Preserve immutable version tag
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         id: version_tag
         shell: bash
         run: |
@@ -178,7 +192,7 @@ jobs:
           fi
 
       - name: Push image tags
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           IMAGE="${{ steps.meta.outputs.image }}"

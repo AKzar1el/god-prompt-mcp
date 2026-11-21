@@ -60,18 +60,11 @@ This is a client-specific workaround, not a change to the MCP server. It is not 
 
 ## Verify
 
-1. Confirm Cline shows `god-prompt` as connected.
-2. For the installed **v1.1.1** stdio package, confirm its nine tools are available:
-   - `get_god_prompt`
-   - `get_core_skill`
-   - `get_protocols`
-   - `get_gates`
-   - `get_anti_patterns`
-   - `classify_task`
-   - `get_version`
-   - `create_work_contract`
-   - `review_work_evidence`
-3. Run a low-impact call to `get_version`, then optionally ask Cline to classify a small development task. Older or version-pinned installations may still expose the original seven tools; check the actual installed/deployed version before treating a difference as a connection failure. Do not assume future releases will retain a fixed count.
+1. Confirm Cline shows `god-prompt` as connected. Call `get_version` and check the actual installed server version before comparing tool lists; `npx -y` and version-pinned clients can expose different catalogs.
+2. The original **seven core tools** are: `get_god_prompt`, `get_core_skill`, `get_protocols`, `get_gates`, `get_anti_patterns`, `classify_task`, `get_version`.
+3. **v1.1.1** added `create_work_contract`, `review_work_evidence`, making **nine tools** in that tagged version.
+4. The repository's **v1.4.2 Node stdio implementation** registers **22 tools by default**: those nine plus `review_code_change`, `audit_requirements`, `build_test_matrix`, `get_tailored_guidance`, `diagnose_failure`, `assess_release_readiness`, `create_context_handoff`, `compare_evaluation_runs`, `audit_agent_trajectory`, `trace_change_impact`, `review_mcp_tool_contracts`, `audit_agent_instructions`, `design_adversarial_tests`. The optional local-only `review_codexify_checkpoint` is available only when `GODPROMPT_CODEXIFY_CHECKPOINT=1`; it is not part of the default 22. Resources and prompts are not counted as tools.
+5. Verify your client's actual tool list (tools/list) against its installed version; do not assume other releases keep an exact count. Keep `autoApprove` empty, and test a low-impact `get_version` or `classify_task` call before using additional guidance tools.
 
 ## Fallback: cloned checkout
 

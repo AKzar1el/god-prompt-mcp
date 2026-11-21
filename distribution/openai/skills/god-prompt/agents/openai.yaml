@@ -1,0 +1,10 @@
+interface:
+  display_name: "GodPrompt"
+  short_description: "Evidence-led software engineering"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "god-prompt-mcp"
+      description: "Read-only GodPrompt task routing, code and requirements analysis, test planning, change impact, agent trajectory and evidence review"
+      transport: "streamable_http"
+      url: "https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp"

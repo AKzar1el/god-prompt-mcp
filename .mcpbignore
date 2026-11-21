@@ -4,6 +4,8 @@ src/
 tests/
 scripts/
 distribution/
+benchmarks/
+docs/
 tsconfig.json
 tsconfig.build.json
 worker-configuration.d.ts

@@ -9,16 +9,29 @@ const packageJson = JSON.parse(
 );
 
 const EXPECTED_TOOLS = [
+  "assess_release_readiness",
+  "audit_agent_instructions",
+  "audit_agent_trajectory",
+  "audit_requirements",
+  "build_test_matrix",
   "classify_task",
+  "compare_evaluation_runs",
+  "create_context_handoff",
   "create_work_contract",
+  "diagnose_failure",
+  "design_adversarial_tests",
   "get_anti_patterns",
   "get_core_skill",
   "get_gates",
   "get_god_prompt",
   "get_protocols",
+  "get_tailored_guidance",
   "get_version",
+  "review_code_change",
+  "review_mcp_tool_contracts",
   "review_work_evidence",
-];
+  "trace_change_impact",
+].sort();
 
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -113,7 +126,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
 
   assert.equal(initialized.serverInfo.name, "god-prompt-mcp");
   assert.equal(initialized.serverInfo.version, packageJson.version);
-  assert.match(initialized.instructions, /Start with get_core_skill/i);
+  assert.match(initialized.instructions, /get_tailored_guidance to load only the needed phase/i);
   assert.match(initialized.instructions, /classify_task/i);
   assert.match(initialized.instructions, /All GodPrompt tools are read-only/i);
   assert.match(initialized.instructions, /create_work_contract/i);
@@ -136,6 +149,31 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(tool.annotations?.readOnlyHint, true, `${tool.name} must be read-only`);
     assert.equal(tool.annotations?.destructiveHint, false, `${tool.name} must be non-destructive`);
   }
+
+  // Some MCP bridges intentionally truncate replies above ~10k tokens.
+  // Preserve the no-argument legacy response, but permit bounded reads of
+  // every byte of the complete single-file prompt without losing its middle.
+  const legacyPromptResult = await request(child, pending, "god-prompt-legacy", "tools/call", {
+    name: "get_god_prompt",
+    arguments: {},
+  });
+  const legacyPrompt = toolText(legacyPromptResult);
+  assert.ok(legacyPrompt.length > 50_000, "Test fixture must exceed bridge output caps");
+  const pieces = [];
+  for (let start = 0; start < legacyPrompt.length; start += 8_192) {
+    const part = await request(child, pending, `god-prompt-part-${start}`, "tools/call", {
+      name: "get_god_prompt",
+      arguments: { start, maxChars: 8_192 },
+    });
+    assert.notEqual(part.isError, true, "Chunked GodPrompt retrieval must succeed");
+    const chunk = toolText(part);
+    assert.equal(chunk, legacyPrompt.slice(start, start + 8_192));
+    assert.equal(part.structuredContent?.start, start);
+    assert.equal(part.structuredContent?.end, Math.min(start + 8_192, legacyPrompt.length));
+    assert.equal(part.structuredContent?.totalChars, legacyPrompt.length);
+    pieces.push(chunk);
+  }
+  assert.equal(pieces.join(""), legacyPrompt, "Bounded MCP reads must reconstruct full prompt");
 
   const coreTool = listed.tools.find((tool) => tool.name === "get_core_skill");
   assert.ok(coreTool, "get_core_skill must be listed");
@@ -320,6 +358,149 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  const planningIntentCases = [
+    ["Plan a feature release without deploying anything", "PLAN"],
+    ["Write a rollout plan for a new feature", "PLAN"],
+    ["Create a release plan for the feature", "PLAN"],
+    ["Prepare a rollout plan for a new feature", "PLAN"],
+    ["Plan the release of a new feature", "PLAN"],
+    ["Please plan a new feature launch", "PLAN"],
+    ["Plan the new feature before coding", "PLAN"],
+    ["Draft a feature release plan", "PLAN"],
+    ["Plan a release, but do not deploy it", "PLAN"],
+    ["Plan how to deploy a new feature", "PLAN"],
+    ["Plan to build a new API", "PLAN"],
+    ["Plan the deployment of a new feature", "PLAN"],
+    ["Write a plan to implement the feature safely", "PLAN"],
+    ["We need a rollout plan for the new feature", "PLAN"],
+    ["I need a release plan for the new feature", "PLAN"],
+    ["Give me a rollout plan for the new feature", "PLAN"],
+    ["Can you plan a new feature release?", "PLAN"],
+    ["Let's plan a new feature launch", "PLAN"],
+    ["Help me prepare a roadmap for a new feature", "PLAN"],
+    ["Create a migration roadmap for a new feature", "PLAN"],
+    ["Outline a feature release strategy", "PLAN"],
+    ["Plan the feature release and then implement the code", "BUILD"],
+    ["Plan the feature release; implement the API", "BUILD"],
+    ["Plan the release and then deploy it to production", "SHIP"],
+    ["Plan the release; deploy the approved package", "SHIP"],
+    ["Deploy a new feature to production", "SHIP"],
+    ["Publish the new feature to the registry", "SHIP"],
+    ["Release the new feature after QA", "SHIP"],
+    ["Launch a new feature", "SHIP"],
+    ["Build a new feature and then deploy it", "SHIP"],
+    ["Plan a feature release and then deploy it", "SHIP"],
+    ["Plan a feature release, then publish it", "SHIP"],
+    ["Plan a feature release; deploy the approved package", "SHIP"],
+    ["Implement a new feature then publish it", "SHIP"],
+    ["Review and deploy the approved feature", "SHIP"],
+    ["Deploy the release plan to production", "SHIP"],
+    ["Please release the new feature after approval", "SHIP"],
+    ["Release the new feature alongside release notes", "SHIP"],
+    ["Please release the new feature and write release notes", "SHIP"],
+    ["Release plan for the new feature", "PLAN"],
+    ["Rollout plan for the new feature", "PLAN"],
+    ["Review the release plan for the new feature", "ANALYZE"],
+    ["Audit the release checklist before deployment", "ANALYZE"],
+    ["Do not deploy the new feature; review its release plan", "ANALYZE"],
+    ["Audit the feature roadmap", "ANALYZE"],
+    ["Build a roadmap feature", "BUILD"],
+    ["Review the rollout plan for the new feature", "ANALYZE"],
+    ["Implement the rollout plan in our app", "BUILD"],
+    ["Build the new feature and then plan its rollout", "BUILD"],
+    ["Plan and implement a new feature", "BUILD"],
+    ["Create the new feature, then prepare a rollout plan", "BUILD"],
+  ];
+  for (const [description, expected] of planningIntentCases) {
+    const result = await classify(child, pending, `planning-${description}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
+  // Real-world GodPrompt calls: investigative verbs, release-as-subject,
+  // and proposal deliverables must not trigger build/deployment workflows.
+  const realWorldIntentCases = [
+    ["Investigate the Google Search Console visibility collapse on digestseo.com, compare query/page data, and report findings. Read-only, no site edits.", "ANALYZE"],
+    ["Investigate the root cause of a broken API", "ANALYZE"],
+    ["Find out why production impressions collapsed yesterday", "ANALYZE"],
+    ["Tell me why Google impressions fell", "ANALYZE"],
+    ["Why did Search Console impressions collapse?", "ANALYZE"],
+    ["Why are Google impressions disappearing?", "ANALYZE"],
+    ["Why is the API responding slowly?", "ANALYZE"],
+    ["Find why Google traffic collapsed after a deployment; do not change the site", "ANALYZE"],
+    ["Find why the MCP server returns an HTTP 500", "ANALYZE"],
+    ["Identify the root cause of a latency spike without code changes", "ANALYZE"],
+    ["Please find why the latest release failed", "ANALYZE"],
+    ["Look into the incident and summarize the evidence", "ANALYZE"],
+    ["Compare the login flow before and after the release", "ANALYZE"],
+    ["Determine whether a Cloudflare deployment caused the incident", "ANALYZE"],
+    ["Examine how an untrusted email could exploit an MCP integration", "ANALYZE"],
+    ["Investigate the release failures without making changes", "ANALYZE"],
+    ["Review the release logs and trace when the errors began", "ANALYZE"],
+    ["Inspect the new feature implementation for security issues", "ANALYZE"],
+    ["Can you prepare a proposal for a new release without deploying it", "PLAN"],
+    ["Write a proposal for a new authentication feature", "PLAN"],
+    ["Create an implementation proposal for a new API", "PLAN"],
+    ["Prepare a release proposal for the next feature", "PLAN"],
+    ["Investigate the incident and fix the broken endpoint", "DEBUG"],
+    ["Fix the Codexify MCP oversized structuredContent error by bounding downstream responses; reproduce the crash and add tests.", "DEBUG"],
+    ["Fix the login bug and add regression tests", "DEBUG"],
+    ["Troubleshoot the outage, then add error logging", "DEBUG"],
+    ["Fix the login bug and add a new payment feature", "BUILD"],
+    ["Implement and test an MCP audit tool", "BUILD"],
+    ["Build and test a new MCP audit tool", "BUILD"],
+    ["Please implement the audit API, then test its results", "BUILD"],
+    ["Build the approved API and verify its behavior", "BUILD"],
+    ["Build a CI pipeline and verify the result", "AUTOMATE"],
+    ["Implement an automated cron workflow", "AUTOMATE"],
+    ["Review the implementation and test the diff", "ANALYZE"],
+    ["Compare the two implementations, then build the selected one", "BUILD"],
+    ["Compare the two releases, then deploy the approved rollback", "SHIP"],
+    ["Release the approved update to npm", "SHIP"],
+    ["Write release notes for the new feature", "CONTENT"],
+    ["Write an article about why Google rankings fluctuate", "CONTENT"],
+    ["Prepare the release notes for the website", "CONTENT"],
+    ["Review the release notes for mistakes", "ANALYZE"],
+    ["Publish the release notes to the public site", "SHIP"],
+    ["Write the release notes, then publish them", "SHIP"],
+    ["Review the release proposal and report risks", "ANALYZE"],
+    ["Audit the deployment pipeline and its release status", "ANALYZE"],
+  ];
+  for (const [description, expected] of realWorldIntentCases) {
+    const result = await classify(child, pending, `dogfood-${description}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
+  // The verb specifies the work; the feature/API/service noun must not hijack
+  // planning, inspection, or deployment intent across different subjects.
+  const routingSubjects = [
+    "a new feature",
+    "the authentication feature",
+    "a REST API",
+    "the billing service",
+    "a mobile app",
+    "an internal tool",
+    "the checkout feature",
+  ];
+  const routingTemplates = [
+    [(subject) => `Plan a release of ${subject}`, "PLAN"],
+    [(subject) => `Plan how to deploy ${subject}`, "PLAN"],
+    [(subject) => `Write a rollout plan for ${subject}`, "PLAN"],
+    [(subject) => `Deploy ${subject} to production`, "SHIP"],
+    [(subject) => `Plan a release of ${subject}, then deploy it`, "SHIP"],
+    [(subject) => `Review the release plan for ${subject}`, "ANALYZE"],
+    [(subject) => `Do not deploy ${subject}; review its release plan`, "ANALYZE"],
+  ];
+  for (const [subjectIndex, subject] of routingSubjects.entries()) {
+    for (const [templateIndex, [template, expected]] of routingTemplates.entries()) {
+      const description = template(subject);
+      const result = await classify(child, pending, `intent-${subjectIndex}-${templateIndex}`, description);
+      assert.equal(result.task_type, expected, description);
+      assert.equal(result.ambiguous, false, description);
+    }
+  }
+
   const ambiguityCases = [
     ["build and fix authentication", ["BUILD", "DEBUG"]],
     ["review and refactor checkout", ["ANALYZE", "REFACTOR"]],
@@ -445,7 +626,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.equal(workerResponse.status, 200);
   const workerInitializeText = await workerResponse.text();
   assert.match(workerInitializeText, /god-prompt-mcp/);
-  assert.match(workerInitializeText, /Start with get_core_skill/i);
+  assert.match(workerInitializeText, /get_tailored_guidance to load only the needed phase/i);
   assert.match(workerInitializeText, /All GodPrompt tools are read-only/i);
 
   const workerModernDiscover = new Request("https://example.test/mcp", {
@@ -484,7 +665,7 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     workerModern.result?._meta?.["io.modelcontextprotocol/serverInfo"]?.version,
     packageJson.version
   );
-  assert.match(workerModern.result?.instructions, /Start with get_core_skill/i);
+  assert.match(workerModern.result?.instructions, /get_tailored_guidance to load only the needed phase/i);
   assert.match(workerModern.result?.instructions, /classify_task/i);
   assert.match(workerModern.result?.instructions, /All GodPrompt tools are read-only/i);
   assert.match(workerModern.result?.instructions, /create_work_contract/i);
@@ -569,7 +750,7 @@ test("serves the MCP 2026-07-28 era over stdio", async (t) => {
     discovered._meta?.["io.modelcontextprotocol/serverInfo"]?.version,
     packageJson.version
   );
-  assert.match(discovered.instructions, /Start with get_core_skill/i);
+  assert.match(discovered.instructions, /get_tailored_guidance to load only the needed phase/i);
   assert.match(discovered.instructions, /classify_task/i);
   assert.match(discovered.instructions, /All GodPrompt tools are read-only/i);
   assert.match(discovered.instructions, /create_work_contract/i);

@@ -15,6 +15,18 @@ Apply this workflow only after the request matches the software-engineering scop
 skill description or the user explicitly invokes GodPrompt. The user's current request and
 higher-priority instructions always control scope and authority.
 
+## Optional OpenAI Skill + remote MCP workflow
+
+For a software-engineering request, use the bundled, read-only `god-prompt-mcp` **only when it can improve the task with caller-supplied evidence**. See [the compact MCP tool router](references/tool-routing.md) for a goal-to-tool mapping; load it only when a tool call is warranted. The bundled `agents/openai.yaml` declares the single remote MCP dependency. Do not register a second server or assume tool availability solely from a manifest.
+
+Prefer the smallest relevant tool and `get_tailored_guidance` over loading the entire GodPrompt payload. The MCP never reads repositories, runs tests, authenticates evidence, stores secrets or approves an action; all outputs are unverified advisory signals. Use pre-existing authorized host tools for actual inspection, edits, tests and approvals. When the remote MCP is unavailable, state that limitation and use safe instruction-level guidance; never fabricate MCP results.
+
+## Local opt-in evidence and visual enhancement
+
+For an explicitly authorized local checkout, the separate npm tools `godprompt-repo-map` and `godprompt-proof pack` may produce compact dependency and provenance summaries. They are **not hosted MCP tools**: use them only when the local executable is already installed, the root and source access are authorized, and no additional trust, execution or storage permission is inferred. Never invoke them against a private checkout implicitly or transmit raw code, private paths or audit logs to a remote MCP. If unavailable, use existing host-provided evidence or mark impact and provenance unknown.
+
+When a compatible MCP Apps client displays an optional view, treat it as presentation of the same unverified `structuredContent`, never as an independent approval or test result. Always preserve text-based review as fallback. For benchmarks, distinguish frozen synthetic grading fixtures from actual paired agent executions; do not claim a performance gain until a controlled real-agent A/B trial is independently verified.
+
 ## 1. Understand the requested outcome
 
 - Identify the concrete engineering outcome, repository or artifact in scope, and any
