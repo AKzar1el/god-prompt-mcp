@@ -25,7 +25,7 @@ const TASK_TYPES = {
     description: "Creating new functionality",
   },
   DEBUG: {
-    triggers: ["fix", "debug", "debugging", "troubleshoot", "diagnose", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
+    triggers: ["fix", "debug", "debugging", "troubleshoot", "diagnose", "harden", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
     protocol: "Root cause → 4-layer defense",
     description: "Finding and fixing defects",
   },
@@ -101,6 +101,7 @@ const ACTION_SIGNALS = new Set([
   "examine",
   "extend",
   "fix",
+  "harden",
   "implement",
   "improve",
   "inspect",
@@ -181,9 +182,9 @@ const PRIMARY_INSPECTION_ACTION =
 const PRIMARY_TEST_IMPLEMENTATION =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:write|add|create|implement)\s+(?:(?:a|an|the|new|unit|regression|integration|e2e)\s+){0,5}tests?\b(?!\s+(?:plan|report|matrix|strategy|summary|guide|results))/;
 const PRIMARY_MAINTENANCE =
-  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot|refactor|optimize|simplify|improve|reorganize)\b/;
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot|harden|refactor|optimize|simplify|improve|reorganize)\b/;
 const PRIMARY_DEBUG_ACTION =
-  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot)\b/;
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot|harden)\b/;
 const PRIMARY_EXTENSION =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*extend\b/;
 const FOLLOWUP_CONTENT =
@@ -289,7 +290,7 @@ function requestedFollowupBuildVerb(text: string): string | null {
   if (!match) return null;
   // Adding regression tests or diagnostics is part of fixing a bug, not an
   // independent feature-build request. A distinct new feature still wins.
-  const debugging = /^(?:(?:please|can you|could you|would you)\s+)*(?:fix|debug|diagnose|troubleshoot)\b/.test(text);
+  const debugging = /^(?:(?:please|can you|could you|would you)\s+)*(?:fix|debug|diagnose|troubleshoot|harden)\b/.test(text);
   const supportingWork = /^\s+(?:(?:a|an|new|more|extra|some|focused|targeted|additional|unit|integration|regression|e2e|error|robust)\s+){0,4}(?:tests?|checks?|coverage|logs?|logging|docs|documentation|error handling)\b/
     .test(text.slice(match.index + match[0].length));
   return debugging && supportingWork ? null : match[1];
@@ -367,7 +368,7 @@ function classifyTask(description: string): {
     .trim().replace(/\s+/gu, " ").toLowerCase();
   const candidates: Candidate[] = [];
 
-  const debugActions = ["fix", "debug", "debugging", "troubleshoot", "diagnose"];
+  const debugActions = ["fix", "debug", "debugging", "troubleshoot", "diagnose", "harden"];
   const explicitlyNegatedDebug = debugActions.some(
     (trigger) => hasTrigger(normalized, trigger) && !hasAffirmativeActionTrigger(normalized, trigger),
   );
@@ -451,6 +452,11 @@ function classifyTask(description: string): {
       !hasAffirmativeActionTrigger(normalized, "automate")) continue;
     // Mentions of bugs or errors must not override an explicit no-debug instruction.
     if (type === "DEBUG" && explicitlyNegatedDebug && !affirmativeDebug) continue;
+    // "Review whether to harden" and "plan how to fix" discuss a repair
+    // rather than request it. Keep explicit follow-up repair instructions.
+    if (type === "DEBUG" && !primaryDebugRequested &&
+      (primaryInspection || primaryPlanningIntent || contentRequested) &&
+      !/\b(?:and|then)\s+(?:fix|debug|diagnose|troubleshoot|harden)\b/.test(normalized)) continue;
     const matches: MatchedSignal[] = info.triggers
       .flatMap((trigger): MatchedSignal[] => {
         if ((type === "AUTOMATE" &&

@@ -1,0 +1,26 @@
+{
+  "schema": "godprompt.public-agentic-v3-retrospective-regression.v1",
+  "recorded_at": "2026-11-21",
+  "status": "PUBLISHED_AFTER_TRIAL_NOT_INDEPENDENT_HOLDOUT",
+  "godprompt_source_sha": "ec528e9280cf550d1ef586e33f95c8fedff024ab",
+  "tasks": [
+    {
+      "task_id": "crypto-pr-content-path",
+      "source_repo": "AKzar1el/ai-crypto-auditor",
+      "source_sha": "14e39acecd2f20545b02e763b08a115531cd4e14",
+      "first_arm": "baseline",
+      "description": "Fix AI Crypto Auditor's changed-file retrieval on pull requests. The GitHub pulls.listFiles response supplies file.filename (including nested and renamed paths), but the action passes file.path (which can be undefined or misleading) to repos.getContent, causing audits to fail before reports can be posted. Use the actual changed filename at the PR head SHA; keep handling for removed/excluded files unchanged. Add real offline Node regression tests with mocked GitHub and LLM/fetch so no provider or GitHub APIs are called. Make a minimal fix, verify tests, and do not change secrets, deploy, publish, or contact external services.",
+      "original_godprompt_route": "DEBUG",
+      "expected_route": "DEBUG"
+    },
+    {
+      "task_id": "gsc-canonical-aes-key",
+      "source_repo": "AKzar1el/mcp-gsc",
+      "source_sha": "e518db8c9ae99598e3617e52d81bd09de2944be0",
+      "first_arm": "candidate",
+      "description": "Harden the MCP-GSC local launcher encryption-key check. It currently accepts noncanonical base64 text with nonzero unused padding bits when Buffer.from(..., 'base64') still decodes it to 32 bytes. Reject those ambiguous encodings (and other malformed key strings) before endpoint logging or any Wrangler start, while retaining valid canonical 32-byte base64 keys and all existing required-variable, bind address and port protections. Add focused offline Node built-in regression tests that never connect to Google, launch Wrangler or use real credentials. Modify only scripts/glama-start.mjs and tests/launcher.test.mjs. Do not publish, deploy, or call external providers.",
+      "original_godprompt_route": "ANALYZE",
+      "expected_route": "DEBUG"
+    }
+  ]
+}

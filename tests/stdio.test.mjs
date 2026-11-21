@@ -481,6 +481,34 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  // The next independent, tool-using public-repo round discovered that a
+  // primary "Harden..." repair was misrouted to ANALYZE. These descriptions
+  // were frozen before the original agent sessions and published only after.
+  const agenticV3Suite = JSON.parse(await readFile(
+    new URL("../benchmarks/agent-ab/real-repos/tool-using-public-tasks-v3-20261121.json", import.meta.url),
+    "utf8",
+  ));
+  for (const task of agenticV3Suite.tasks) {
+    const result = await classify(child, pending, `agentic-v3-${task.task_id}`, task.description);
+    assert.equal(result.task_type, task.expected_route, task.task_id);
+    assert.equal(result.ambiguous, false, task.task_id);
+  }
+  const hardeningContrasts = [
+    ["Harden the token parser against noncanonical base64 keys", "DEBUG"],
+    ["Please harden the input validator without changing the API", "DEBUG"],
+    ["Harden the login failure handling and add regression tests", "DEBUG"],
+    ["Review whether to harden the token parser", "ANALYZE"],
+    ["Plan how to harden the token parser", "PLAN"],
+    ["Do not harden the parser; inspect the current validation", "ANALYZE"],
+    ["Harden the token parser, then deploy the approved fix", "SHIP"],
+    ["Write an article about how to harden an input parser", "CONTENT"],
+  ];
+  for (const [i, [description, expected]] of hardeningContrasts.entries()) {
+    const result = await classify(child, pending, `agentic-v3-contrast-${i}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
   const planningIntentCases = [
     ["Plan a feature release without deploying anything", "PLAN"],
     ["Write a rollout plan for a new feature", "PLAN"],
