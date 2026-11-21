@@ -48,7 +48,19 @@ function resolveImport(consumer, spec, available) {
   const alternatives=(sourceExtensions[extension]??[]).map(ext=>base.slice(0,-extension.length)+ext);
   const variants=[base,...alternatives,...[...CODE_EXTS].map(ext=>base+ext),
     ...["index.ts","index.tsx","index.js","index.mjs"].map(x=>base+"/"+x)];
-  return variants.find(x=>available.has(x))??null;
+  const direct=variants.find(x=>available.has(x));
+  if(direct)return direct;
+  // Tests often import emitted dist/*.js while only src/*.ts exists locally.
+  // Suggest a source link only for an exact matching test-file import.
+  // This is a heuristic, NOT proof that the emitted artifact corresponds to source.
+  if(!/(?:^|\/)[^/]+\.(?:test|spec)\.[cm]?[jt]sx?$/.test(consumer) ||
+     !base.startsWith("dist/"))return null;
+  const sourceBase="src/"+base.slice("dist/".length);
+  if(!safeRel(sourceBase))return null;
+  const sourceExt=posix.extname(sourceBase);
+  const sourceCandidates=[sourceBase,
+    ...(sourceExtensions[sourceExt]??[]).map(ext=>sourceBase.slice(0,-sourceExt.length)+ext)];
+  return sourceCandidates.find(x=>available.has(x))??null;
 }
 export async function mapRepository({root,changed_files=[],max_files=LIMIT_FILES}={}) {
   if(typeof root!=="string"||!root.trim())bail("Explicit repository root required");

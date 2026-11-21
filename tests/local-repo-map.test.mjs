@@ -76,3 +76,35 @@ test("post-reload: map TypeScript NodeNext .js/.mjs import specifiers to .ts/.mt
     assert.equal(result.remote_transmission,false);
   });
 });
+
+test("v1.4.2 maps emitted dist imports back to existing TypeScript source for test suggestions only",async()=>{
+  await inRepo(async root=>{
+    await mkdir(join(root,"src"),{recursive:true});
+    await mkdir(join(root,"tests"),{recursive:true});
+    await writeFile(join(root,"src","calc.ts"),"export function calc(){return 1;}");
+    await writeFile(join(root,"src","native.mts"),"export const native=2;");
+    await writeFile(join(root,"tests","calc.test.mjs"),
+      "import {calc} from '../dist/calc.js';\n// PRIVATE_CANARY_NOT_EXPOSED\n");
+    await writeFile(join(root,"tests","native.spec.mjs"),
+      "import {native} from '../dist/native.mjs';\n");
+    await writeFile(join(root,"tests","absent.test.mjs"),
+      "import {unused} from '../dist/does-not-exist.js';\n");
+    await writeFile(join(root,"src","bypass.ts"),
+      "import {calc} from '../dist/calc.js';\n");
+    const r=await mapRepository({root,changed_files:["src/calc.ts","src/native.mts"]});
+    assert.ok(r.dependencies.some(x=>x.consumer==="tests/calc.test.mjs" &&
+      x.dependency==="src/calc.ts"));
+    assert.ok(r.dependencies.some(x=>x.consumer==="tests/native.spec.mjs" &&
+      x.dependency==="src/native.mts"));
+    assert.ok(r.candidate_test_imports.some(x=>x.test_file==="tests/calc.test.mjs"&&
+      x.imports_changed_files.includes("src/calc.ts")));
+    assert.ok(r.candidate_test_imports.some(x=>x.test_file==="tests/native.spec.mjs"&&
+      x.imports_changed_files.includes("src/native.mts")));
+    assert.ok(!r.dependencies.some(x=>x.consumer==="src/bypass.ts" ||
+      x.consumer==="tests/absent.test.mjs"));
+    assert.equal(r.candidate_test_imports.length,2);
+    assert.doesNotMatch(JSON.stringify(r),/PRIVATE_CANARY_NOT_EXPOSED/);
+    assert.equal(r.remote_transmission,false);
+    assert.equal(r.independently_verified,false);
+  });
+});
