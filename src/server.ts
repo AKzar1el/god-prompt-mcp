@@ -20,7 +20,7 @@ const READ_ONLY_ANNOTATIONS = {
 
 const TASK_TYPES = {
   BUILD: {
-    triggers: ["create", "implement", "add", "feature", "build", "make", "new", "test", "tests"],
+    triggers: ["create", "implement", "add", "extend", "feature", "build", "make", "new", "test", "tests"],
     protocol: "TDD Red-Green-Refactor",
     description: "Creating new functionality",
   },
@@ -99,6 +99,7 @@ const ACTION_SIGNALS = new Set([
   "design",
   "evaluate",
   "examine",
+  "extend",
   "fix",
   "implement",
   "improve",
@@ -139,8 +140,10 @@ const AUTOMATION_OBJECT =
   "(?:automation|(?:scheduled|recurring|automated|automatic)\\s+(?:(?:hourly|daily|nightly|weekly|slack|email|digest|heartbeat|health|status|uptime|notification|monitoring)\\s+){0,2}(?:task|job|check|notification|backup|digest|report|reminder|alert|rule))";
 const AUTOMATION_BUILD_ACTION =
   // The automation must be the direct object, not a dashboard's subject.
-  new RegExp("^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\\s+)*(?:build|create|implement|add|make|set up|configure|set|write)\\s+(?:" +
+  new RegExp("^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\\s+)*(?:build|create|implement|add|extend|make|set up|configure|set|write)\\s+(?:" +
     AUTOMATION_OBJECT_MODIFIERS + "\\s+){0,6}" + AUTOMATION_OBJECT + "\\b");
+const AUTOMATION_EXTENSION_PIPELINE =
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*extend\s+(?:(?:a|an|the|new|existing|ci|data|build|deployment)\s+){0,5}(?:pipeline|workflow|cron job)\b/;
 const AUTOMATION_FOLLOWUP_ACTION =
   new RegExp("(?:\\b(?:and|then)\\s+(?:then\\s+)?|[;,]\\s*(?:(?:and|then)\\s+)?)(?:build|create|implement|add|make|set up|configure|set|write)\\s+(?:" +
     AUTOMATION_OBJECT_MODIFIERS + "\\s+){0,6}" + AUTOMATION_OBJECT + "\\b");
@@ -178,6 +181,10 @@ const PRIMARY_TEST_IMPLEMENTATION =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:write|add|create|implement)\s+(?:(?:a|an|the|new|unit|regression|integration|e2e)\s+){0,5}tests?\b(?!\s+(?:plan|report|matrix|strategy|summary|guide|results))/;
 const PRIMARY_MAINTENANCE =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot|refactor|optimize|simplify|improve|reorganize)\b/;
+const PRIMARY_DEBUG_ACTION =
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot)\b/;
+const PRIMARY_EXTENSION =
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*extend\b/;
 const FOLLOWUP_CONTENT =
   /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(?:create|write|draft)\s+(?:(?:a|an|the|new|its|their)\s+){0,3}(?:docs?|documentation|guide|article|report)\b/;
 const FOLLOWUP_PLAN =
@@ -351,7 +358,8 @@ function classifyTask(description: string): {
   const inspectionRequested = shippingAssessment || TASK_TYPES.ANALYZE.triggers
     .some((trigger) => hasTrigger(normalized, trigger));
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
-    .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
+    .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger)) ||
+    PRIMARY_EXTENSION.test(normalized);
   const primaryPlanningIntent = hasPrimaryPlanningIntent(normalized);
   const shippingVerb = requestedShippingVerb(normalized);
   const followupBuildVerb = requestedFollowupBuildVerb(normalized);
@@ -367,7 +375,8 @@ function classifyTask(description: string): {
     AUTOMATION_FOLLOWUP_PIPELINE.test(normalized) ||
     AUTOMATION_FOLLOWUP_TIMEBOUND.test(normalized);
   const automationBuildRequested = AUTOMATION_BUILD_ACTION.test(normalized) || followupAutomation;
-  const automationRequested = automationBuildRequested || scheduleRequested ||
+  const automationRequested = automationBuildRequested ||
+    AUTOMATION_EXTENSION_PIPELINE.test(normalized) || scheduleRequested ||
     timeboundJobRequested || automatedDeliverableRequested;
   const nonAutomationObject = NON_AUTOMATION_OBJECT.test(normalized) ||
     SOFTWARE_AUDIT_VIEW.test(normalized);
@@ -379,6 +388,8 @@ function classifyTask(description: string): {
   const contentRequested = PRIMARY_CONTENT_OBJECT.test(normalized);
   const directPrRequested = DIRECT_PR_REQUEST.test(normalized);
   const maintenanceRequested = PRIMARY_MAINTENANCE.test(normalized);
+  const primaryDebugRequested = PRIMARY_DEBUG_ACTION.test(normalized);
+  const extensionRequested = PRIMARY_EXTENSION.test(normalized);
   const contentFollowup = FOLLOWUP_CONTENT.test(normalized);
   const planFollowup = FOLLOWUP_PLAN.test(normalized);
   const primaryBuildAction =
@@ -445,8 +456,19 @@ function classifyTask(description: string): {
           (type === "PLAN" && (primaryPlanningIntent || primaryPlanFollowup) &&
             PLAN_DELIVERABLE_SIGNALS.has(trigger)) ||
           (type === "SHIP" && trigger === shippingVerb) ||
+          (type === "AUTOMATE" && extensionRequested && automationRequested &&
+            (AUTOMATION_DELIVERABLE_SIGNALS.has(trigger) ||
+              trigger === "pipeline" || trigger === "workflow")) ||
+          // A requested repair or feature extension outranks incidental
+          // nouns such as "audit" and "test". Keep separate shipping and
+          // feature-build followups in their specialized routes.
+          (type === "DEBUG" && primaryDebugRequested && affirmativeDebug &&
+            shippingVerb === null && followupBuildVerb === null &&
+            debugActions.includes(trigger)) ||
           (type === "BUILD" && (trigger === followupBuildVerb ||
             trigger === primaryBuildVerb ||
+            (trigger === "extend" && extensionRequested && !automationRequested &&
+              shippingVerb === null) ||
             (testImplementationRequested && (trigger === "test" || trigger === "tests")) ||
             (primarySoftwareObject &&
               ["build", "create", "implement", "add", "make"].includes(trigger))));
