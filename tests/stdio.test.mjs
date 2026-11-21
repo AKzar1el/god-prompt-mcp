@@ -446,6 +446,41 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  // A later, genuinely tool-using public-repo trial exposed two more mistakes:
+  // a supporting regression-test request was treated as BUILD, and a negated
+  // comma-separated "deploy anything" constraint was treated as SHIP.
+  // Original prompts are copied, unchanged, into this public fixture only
+  // after the frozen trial, so these are regression cases, not a holdout.
+  const agenticSuite = JSON.parse(await readFile(
+    new URL("../benchmarks/agent-ab/real-repos/tool-using-public-tasks-20261121.json", import.meta.url),
+    "utf8",
+  ));
+  for (const task of agenticSuite.tasks) {
+    const result = await classify(child, pending, `agentic-${task.task_id}`, task.description);
+    assert.equal(result.task_type, task.expected_route, task.task_id);
+    assert.equal(result.ambiguous, false, task.task_id);
+  }
+  const negatedShippingAndQaCases = [
+    ["Fix the parser and add focused regression tests", "DEBUG"],
+    ["Fix the parser and add targeted regression tests", "DEBUG"],
+    ["Fix the parser and add a new payment feature", "BUILD"],
+    ["Fix the parser, add focused regression tests, and do not deploy anything", "DEBUG"],
+    ["Fix the parser; do not deploy anything", "DEBUG"],
+    ["Fix the parser, do not change cloud config, deploy anything, or install dependencies", "DEBUG"],
+    ["Fix the webhook, do not touch credentials, publish any packages, or call providers", "DEBUG"],
+    ["Fix the parser, then deploy the approved patch", "SHIP"],
+    ["Fix the parser and then publish the approved patch", "SHIP"],
+    ["Do not change the build; deploy the approved package", "SHIP"],
+    ["Do not deploy anything; review the existing release", "ANALYZE"],
+    ["Review the pipeline without publishing or deploying", "ANALYZE"],
+    ["Deploy the approved release to production", "SHIP"],
+  ];
+  for (const [i, [description, expected]] of negatedShippingAndQaCases.entries()) {
+    const result = await classify(child, pending, `agentic-contrast-${i}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
   const planningIntentCases = [
     ["Plan a feature release without deploying anything", "PLAN"],
     ["Write a rollout plan for a new feature", "PLAN"],
