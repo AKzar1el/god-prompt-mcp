@@ -5,3 +5,5 @@ dist/
 # Never commit optional local learning history.
 feedback.jsonl
 *.godprompt-feedback.jsonl
+# Disposable, independently cloned public-repository A/B trial workspaces.
+benchmarks/agent-ab/real-runs/
