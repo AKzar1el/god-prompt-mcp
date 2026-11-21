@@ -402,6 +402,50 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  // These are the original, unchanged public-repository tasks used in the
+  // six-session coding-output pilot. First-pass GodPrompt routed the Auvrora
+  // fix and feature to ANALYZE, while the GEO repair was routed correctly.
+  const publicRepoSuite = JSON.parse(await readFile(
+    new URL("../benchmarks/agent-ab/real-repos/suite.json", import.meta.url), "utf8",
+  ));
+  const publicRepoRoutes = {
+    "auvrora-template-inert": "DEBUG",
+    "auvrora-specific-robots": "BUILD",
+    "geo-safe-domain-errors": "DEBUG",
+  };
+  for (const task of publicRepoSuite.tasks) {
+    const result = await classify(child, pending, `public-repo-${task.task_id}`, task.description);
+    assert.equal(result.task_type, publicRepoRoutes[task.task_id], task.task_id);
+    assert.equal(result.ambiguous, false, task.task_id);
+  }
+
+  const publicRepoContrasts = [
+    ["Fix the SEO audit's broken canonical count and add regression tests", "DEBUG"],
+    ["Debug the Googlebot audit classification and verify tests", "DEBUG"],
+    ["Please fix the audit bug and add a new payment feature", "BUILD"],
+    ["Fix the broken audit, then publish the approved patch", "SHIP"],
+    ["Review the HTML audit implementation for template false positives", "ANALYZE"],
+    ["Investigate why the noindex audit is wrong without changing code", "ANALYZE"],
+    ["Review the proposed fix to the SEO audit without applying it", "ANALYZE"],
+    ["Extend the noindex audit to support the Googlebot tag", "BUILD"],
+    ["Extend the review dashboard with sorting controls", "BUILD"],
+    ["Extend the HTML auditor with canonical-link tests", "BUILD"],
+    ["Extend the scheduled task to send a daily alert", "AUTOMATE"],
+    ["Extend the automation with error notifications", "AUTOMATE"],
+    ["Extend the CI pipeline with a nightly security check", "AUTOMATE"],
+    ["Review whether to extend the noindex audit", "ANALYZE"],
+    ["Plan how to extend the Googlebot audit", "PLAN"],
+    ["Write a proposal to extend the noindex audit", "PLAN"],
+    ["Extend the noindex audit and then deploy the approved build", "SHIP"],
+    ["Do not extend the noindex audit; inspect it for defects", "ANALYZE"],
+    ["Fix the API login failure and add unit tests", "DEBUG"],
+  ];
+  for (const [index, [description, expected]] of publicRepoContrasts.entries()) {
+    const result = await classify(child, pending, `public-repo-contrast-${index}`, description);
+    assert.equal(result.task_type, expected, description);
+    assert.equal(result.ambiguous, false, description);
+  }
+
   const planningIntentCases = [
     ["Plan a feature release without deploying anything", "PLAN"],
     ["Write a rollout plan for a new feature", "PLAN"],
