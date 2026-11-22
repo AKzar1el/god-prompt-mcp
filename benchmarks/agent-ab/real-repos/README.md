@@ -56,7 +56,20 @@ The first two calls are read-only. `grade` and `score` import the target's sourc
 - **Codexify** is connected, but its `agents` CLI discovers the existing host connection; it is **not itself a separate LLM agent runner**.
 - `claude.exe` is installed but was unauthenticated in the previous check; do not attempt paid API calls.
 - Ollama is installed but its model service is not running; Codex CLI was not present in the PATH.
-- Therefore **no independent matched coding-agent A/B runs have been performed yet**. The six checkouts are clean and the graders correctly fail on all six. Future ChatGPT sessions using Codexify can provide the two independent agent arms without setting up a new paid provider, subject to confirming equal effective model/effort and usable workspace/tool access. No model-token or true productivity saving is claimed.
+- At the time of this **original three-task read-only pilot**, no independent tool-using agent trials had been performed on these six checkouts. Subsequent, genuinely tool-using sessions on **four different frozen tasks** are recorded separately in docs/qa/godprompt-real-tool-using-agentic-ab-20261121.md and docs/qa/godprompt-cross-repo-agentic-v3-20261121.md. Neither the old read-only pilot nor the later four pairs establishes a general productivity saving.
+
+### Evidence gate and retrospective analysis (22 November 2026)
+
+Before counting **any new** coding-agent session, verify it used real tools:
+
+~~~powershell
+node benchmarks/agent-ab/real-repos/session-evidence.mjs benchmarks/agent-ab/real-runs/my-session.jsonl --stderr benchmarks/agent-ab/real-runs/my-session.stderr.txt
+node benchmarks/agent-ab/real-repos/retrospective-analysis.mjs
+~~~
+
+The receipt parser reads regular files in the ignored real-runs/ tree only, including Windows PowerShell 5.1 UTF-16LE captures. It rejects incomplete turns, missing successful tool calls, and explicit policy-denial messages in captured stderr. Exit code 1 means **not a valid tool-using trial**, even if the Codex process itself exited successfully. Exit code 0 verifies **observed tool use only**: still verify actual source changes, frozen grader outcome, execution policy, effective model and effort, and timing. Preserve **stdout and stderr separately**, without secrets. Do not use this gate alone as an effectiveness score.
+
+The four-pair analysis is deliberately retrospective, based on fixed published records rather than new holdouts. Its exact sign-flip calculations and exhaustive task resampling are **exploratory**; do not interpret a descriptive resampling range as population confidence or a metered-cost estimate. See docs/qa/godprompt-productivity-followup-20261122.md for this environment's actual Windows tool-policy failure and the follow-up gate.
 
 ### First genuine GodPrompt MCP functional calls (before agent trials)
 

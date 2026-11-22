@@ -1,0 +1,55 @@
+{
+  "schema": "godprompt.retrospective-real-agent-pairs.v1",
+  "origin": "COPIED_FROM_PRIOR_POST_EXPERIMENT_REPORTS_NOT_A_NEW_HOLDOUT",
+  "source_reports": [
+    "docs/qa/godprompt-real-tool-using-agentic-ab-20261121.md",
+    "docs/qa/godprompt-cross-repo-agentic-v3-20261121.md"
+  ],
+  "notes": "All pairs: ChatGPT-authenticated GPT-6.1 Sol High; isolated Linux tool-using agents, frozen graders. Candidate received extra pre-session GodPrompt MCP guidance, not live in-session MCP tool use. Raw model receipts remain local ignored. Token numbers are model-reported usage, not bills.",
+  "tasks": [
+    {
+      "id": "searcharis-url-controls",
+      "repo": "AKzar1el/searcharis",
+      "baseline_seconds": 220,
+      "candidate_seconds": 228,
+      "baseline_tokens": 515903,
+      "candidate_tokens": 690014,
+      "baseline_hidden": 17,
+      "candidate_hidden": 17,
+      "posthoc_candidate_compat_regression": false
+    },
+    {
+      "id": "searcharis-bounded-reader",
+      "repo": "AKzar1el/searcharis",
+      "baseline_seconds": 214,
+      "candidate_seconds": 195,
+      "baseline_tokens": 329363,
+      "candidate_tokens": 431072,
+      "baseline_hidden": 14,
+      "candidate_hidden": 14,
+      "posthoc_candidate_compat_regression": true
+    },
+    {
+      "id": "crypto-changed-file-path",
+      "repo": "AKzar1el/ai-crypto-auditor",
+      "baseline_seconds": 508,
+      "candidate_seconds": 386,
+      "baseline_tokens": 626280,
+      "candidate_tokens": 596401,
+      "baseline_hidden": 13,
+      "candidate_hidden": 13,
+      "posthoc_candidate_compat_regression": false
+    },
+    {
+      "id": "gsc-canonical-aes-key",
+      "repo": "AKzar1el/mcp-gsc",
+      "baseline_seconds": 207,
+      "candidate_seconds": 235,
+      "baseline_tokens": 338043,
+      "candidate_tokens": 656914,
+      "baseline_hidden": 15,
+      "candidate_hidden": 15,
+      "posthoc_candidate_compat_regression": false
+    }
+  ]
+}
