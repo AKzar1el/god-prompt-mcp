@@ -57,17 +57,25 @@ test("V4 isolated local prep uses exact grader digests and Latin-square arm orde
   assert.notEqual(invalid.status,0);
 });
 
-test("V4 local prepared arms remain pinned, unmodified and separately housed",{
+test("V4 prepared arms keep pinned identity and only allowed edits after agent runs",{
   skip:!existsSync(resolve(v4root,"arms/trendpulse-references/baseline")),
 },()=>{
   const result=run("status");
   assert.equal(result.status,0,result.stderr);
   const status=JSON.parse(result.stdout);
   for(const task of status.tasks){
+    const frozen=data.tasks.find(t=>t.task_id===task.task_id);
+    assert.ok(frozen,"Unknown frozen task");
     for(const arm of ARM_NAMES){
-      assert.equal(task.arms[arm].state,"FROZEN_SOURCE",
-        "New model comparison must not start from an already edited arm");
-      assert.deepEqual(task.arms[arm].changed_files,[]);
+      const observed=task.arms[arm];
+      assert.ok(["FROZEN_SOURCE","MODIFIED_UNGRADED"].includes(observed.state),
+        "Unexpected frozen arm status");
+      assert.equal(observed.state==="FROZEN_SOURCE",observed.changed_files.length===0,
+        "Arm state must reflect actual Git changes");
+      for(const path of observed.changed_files){
+        assert.ok(frozen.allowed_paths.includes(path),
+          `Out-of-scope modification in ${task.task_id}/${arm}: ${path}`);
+      }
     }
   }
 });

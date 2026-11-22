@@ -131,3 +131,23 @@ shell/file-edit tools were blocked by host policy. **That turn is excluded
 from coding productivity results; V4 contains zero valid model coding arms.**
 The correct next action is supported sandbox permission repair, not bypassing
 the denial or altering the hidden graders.
+
+### Windows 10 supported sandbox recovery and first real V4 coding pilot
+
+See `docs/qa/godprompt-v4-windows-sandbox-coding-pilot-20261122.md` for
+the independently verified, **non-administrator** Windows sandbox fallback:
+explicit `windows.sandbox="unelevated"` per session, `workspace-write`,
+no escalation, and no shell network. A small initialized Git fixture passed
+both an in-workspace write and an out-of-workspace **denial**. A real model
+made a shell source fix; Node tests passed 3/3 inside the sandbox when
+run with Node 22's no-child `--experimental-test-isolation=none` option.
+
+The first frozen Walk Forward Crypto dashboard comparison now has actual
+coding outcomes: baseline **337.41 s, 12/12** hidden passes; preinjected
+GodPrompt **501.87 s, 12/12**, or **48.74% slower** on this task. Its
+nominal live-MCP arm had no code edits, stayed at 5/12 and called *other*
+account-connected apps, so is **not a valid pinned-GodPrompt treatment**.
+No productivity advantage is proven. The per-session, network-limited
+Windows settings and connector isolation flags are encoded defensively in
+`v4-windows-profile.mjs` with security-focused unit tests. The remaining
+fresh tasks must still be run, with their graders unchanged.
