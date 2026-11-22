@@ -99,3 +99,35 @@ reloaded; the separate stdio probe accesses the exact unreleased candidate.
 ## Scope and integrity limitations
 
 These tasks and grading criteria are authored by us, not blinded by a third-party evaluator; fixing the same tests used to choose the tasks can overestimate generalization. The two conversations must not share solution content. The local filesystem is not a security sandbox: discipline/authorization and Codexify's effective workspace guard matter. The suite is pinned by a hash over its **entire** JSON contents so changes to wording, reference commits or budgets invalidate prior trial IDs. Grader hashes are integrity receipts, not cryptographic signatures or proof of which model did the work. No automated expiry or destructive cleanup is installed.
+
+## V4 independent three-arm readiness (22 November 2026)
+
+The fresh V4 pilot is documented in `docs/qa/godprompt-v4-authorized-agent-readiness-20261122.md`.
+It contains three source-pinned public-repository tasks (TrendPulse Python,
+PineScript Auditor JavaScript, and Walk Forward Crypto HTML/JavaScript), each
+with independent baseline, preinjected GodPrompt, and **live in-session MCP**
+checkouts. The private, SHA-256-pinned hidden graders were verified red on **all
+nine** untouched checkouts (13/25, 11/19, and 5/12, respectively). The prepared
+source and arm clones, private graders, raw model transcripts, and full MCP
+guidance stay in the ignored `real-runs/replication-v4/` directory.
+
+The public manifest and controller can be inspected without contacting a
+model or provider:
+
+~~~powershell
+node benchmarks/agent-ab/real-repos/v4-control.mjs plan
+node benchmarks/agent-ab/real-repos/v4-control.mjs status
+node benchmarks/agent-ab/real-repos/v4-control.mjs prompt dashboard-snapshot baseline
+node benchmarks/agent-ab/real-repos/v4-control.mjs grade
+~~~
+
+`prepare` creates new clones **only once** and refuses overwriting existing
+arms. `score` reports grader outcomes only and **never claims productivity**
+without independent model, tool, permission and usage evidence. The
+`v4-session-gate.mjs` requires genuine shell **and** edit tool events, and for
+the live arm genuine in-session GodPrompt MCP tool calls. A real authenticated
+model successfully invoked GodPrompt tools four times, but its native Windows
+shell/file-edit tools were blocked by host policy. **That turn is excluded
+from coding productivity results; V4 contains zero valid model coding arms.**
+The correct next action is supported sandbox permission repair, not bypassing
+the denial or altering the hidden graders.

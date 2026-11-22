@@ -1,0 +1,24 @@
+{
+  "schema": "godprompt.v4.preinjection-pins.v1",
+  "suite_sha256": "bce24d6fc0d1b73699169e5d99563f9ae889b5ac35a031fff28058cdaf7c97b1",
+  "godprompt_product_base_sha": "f1727584f9007fbb678d167f356e7aab15c23787",
+  "context_source": "ACTUAL_LOCAL_STDIO_MCP_AFTER_FREEZE",
+  "runtime_sha256": {
+    "dist/stdio.js": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+    "dist/server.js": "fdbd7e2f17c11f5e0357a9a72bb68b1f0c2cad863342525bf693585f9ad4b890"
+  },
+  "tasks": {
+    "trendpulse-references": {
+      "route": "DEBUG",
+      "receipt_sha256": "5c77fbb78b5ff0db23596769de29b695e54662dfa26953e63a1e1c6394a8a36f"
+    },
+    "pinescript-pagination": {
+      "route": "DEBUG",
+      "receipt_sha256": "e26d25262951b2e65dac65557afdc17994ae3353dc4c657163c31ac8ad4c6c83"
+    },
+    "dashboard-snapshot": {
+      "route": "DEBUG",
+      "receipt_sha256": "738fd64f562f7afe7230d88585575baf419c952b8c8ca436acb2e552e573a3ed"
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "godprompt.v4.frozen-public-agentic-triarm.v1",
+  "suite_id": "godprompt-new-repos-triarm-20261122",
+  "frozen_on": "2026-11-22",
+  "freeze_seed": "godprompt-v4-independent-20261122",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "sandbox": "workspace-write",
+  "network": "shell-offline",
+  "godprompt_product_base_sha": "f1727584f9007fbb678d167f356e7aab15c23787",
+  "arms": [
+    "baseline",
+    "preinjected",
+    "live_mcp"
+  ],
+  "counterbalance_note": "Fixed Latin-square order before any independent coding-agent arms; task order is randomized deterministically from freeze_seed.",
+  "tasks": [
+    {
+      "task_id": "trendpulse-references",
+      "repo": "AKzar1el/mcp-trendpulse",
+      "url": "https://github.com/AKzar1el/mcp-trendpulse.git",
+      "source_sha": "c4ce899ab7eb75d206822c1ea5791187972ded19",
+      "kind": "bug",
+      "language": "Python",
+      "description": "Fix opportunity triage source-reference excerpt completeness. Currently each result returns the first 30 accepted source_references with no explicit total or truncated flag. Add source_references_total and source_references_truncated per result, counting all accepted supportive and contradicting original records after validation/dedup, separately from rejected/skipped records. Keep source_references capped at 30 in deterministic order, preserve all opportunity scoring, provider-health semantics and output safety. Add focused offline regression coverage; avoid network and providers.",
+      "allowed_paths": [
+        "src/mcp_trendpulse/intelligence_opportunities.py",
+        "tests/test_intelligence_opportunities.py"
+      ],
+      "ordinary_tests": [
+        "python -m pytest -q tests/test_intelligence_opportunities.py"
+      ],
+      "max_minutes": 15,
+      "grader": {
+        "file": "trendpulse-grade.py",
+        "sha256": "c7fb21a0fb19fb7a6dd03fa3c968b60710d3296e8791a5563cbf519518a30eaa",
+        "checks": 25,
+        "red_passed": 13
+      }
+    },
+    {
+      "task_id": "pinescript-pagination",
+      "repo": "AKzar1el/ai-pinescript-auditor",
+      "url": "https://github.com/AKzar1el/ai-pinescript-auditor.git",
+      "source_sha": "db8d4d934b39ecc0b3d4a5c5f21c10b7f70fb882",
+      "kind": "bug",
+      "language": "JavaScript",
+      "description": "Fix GitHub pull-request changed-file pagination in the PineScript auditing action. Its current pulls.listFiles call only sees the first page and silently skips later changed .pine/.pinescript files. Handle more than 100 changed files with pagination or Octokit paginate so every eligible file is audited once, while preserving removed, unsupported and excluded path skipping. Add offline regression tests with mocked GitHub SDK and mocked AI fetch; no actual GitHub/provider calls. Do not change default AI provider behavior or bundled dist.",
+      "allowed_paths": [
+        "src/index.js",
+        "tests/pr-pagination.test.mjs"
+      ],
+      "ordinary_tests": [
+        "node --check src/index.js",
+        "node --test tests/pr-pagination.test.mjs"
+      ],
+      "max_minutes": 15,
+      "grader": {
+        "file": "pinescript-grade.mjs",
+        "sha256": "8d4362d5a8cdc62ec02d6227ec3a915583321af58d0b0895cdea7f03563c9372",
+        "checks": 19,
+        "red_passed": 11
+      }
+    },
+    {
+      "task_id": "dashboard-snapshot",
+      "repo": "AKzar1el/walk-forward-crypto",
+      "url": "https://github.com/AKzar1el/walk-forward-crypto.git",
+      "source_sha": "8ec32ea1ad454edd88abc5118a808c6fa764063b",
+      "kind": "bug",
+      "language": "HTML+JavaScript",
+      "description": "Fix the static interactive dashboard's loadSnapshot so the existing hardcoded six metric cards and report header update atomically only when fetched site_snapshot.json has a valid ISO date (YYYY-MM-DD) and all six expected metrics are finite JavaScript numbers. For missing or invalid nested data, unsuccessful fetch or invalid JSON, preserve the original coherent fallback without partial mutations, NaN or uncaught errors. Preserve existing valid numeric formatting, animations, layout and relative JSON path. Add offline Node regression tests that mock DOM and fetch; no browser/provider network.",
+      "allowed_paths": [
+        "docs/interactive/dashboard.html",
+        "tests/dashboard-snapshot.test.mjs"
+      ],
+      "ordinary_tests": [
+        "node --test tests/dashboard-snapshot.test.mjs"
+      ],
+      "max_minutes": 15,
+      "grader": {
+        "file": "dashboard-grade.mjs",
+        "sha256": "da0cdb7b2f9119573f6592107bc17323cf202acbc911775926e8c616bd7f7a4a",
+        "checks": 12,
+        "red_passed": 5
+      }
+    }
+  ]
+}
