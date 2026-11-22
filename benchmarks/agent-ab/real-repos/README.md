@@ -127,10 +127,12 @@ without independent model, tool, permission and usage evidence. The
 `v4-session-gate.mjs` requires genuine shell **and** edit tool events, and for
 the live arm genuine in-session GodPrompt MCP tool calls. A real authenticated
 model successfully invoked GodPrompt tools four times, but its native Windows
-shell/file-edit tools were blocked by host policy. **That turn is excluded
-from coding productivity results; V4 contains zero valid model coding arms.**
-The correct next action is supported sandbox permission repair, not bypassing
-the denial or altering the hidden graders.
+shell/file-edit tools were blocked by host policy. **That earlier pre-recovery
+turn is excluded from coding productivity results; at that historical
+checkpoint V4 contained no valid model coding arms.** The next step *then*
+was supported sandbox permission repair, not bypassing host policy or altering
+the hidden graders. The supported Windows fallback was later independently
+verified as described below.
 
 ### Windows 10 supported sandbox recovery and first real V4 coding pilot
 
@@ -147,7 +149,24 @@ coding outcomes: baseline **337.41 s, 12/12** hidden passes; preinjected
 GodPrompt **501.87 s, 12/12**, or **48.74% slower** on this task. Its
 nominal live-MCP arm had no code edits, stayed at 5/12 and called *other*
 account-connected apps, so is **not a valid pinned-GodPrompt treatment**.
-No productivity advantage is proven. The per-session, network-limited
-Windows settings and connector isolation flags are encoded defensively in
-`v4-windows-profile.mjs` with security-focused unit tests. The remaining
-fresh tasks must still be run, with their graders unchanged.
+No productivity advantage is proven. Restricted, per-session Windows
+settings are encoded defensively in `v4-windows-profile.mjs` with focused
+tests. **Disabling Codex's `apps` feature also hides the pinned local MCP**, so
+unrelated connector use must be identified and rejected from raw tool events;
+see `v4-evaluate-runs.mjs` for independent Git/receipt/hidden-grade review.
+The remaining frozen tasks retain their original graders unchanged.
+
+### Completed nine-arm productivity pilot
+
+See `docs/qa/godprompt-v4-independent-productivity-results-20261122.md` for
+the full post-experiment result. **All nine arms completed**, and the
+independent Git/transcript/grader reviewer reports **six valid correct**
+coding sessions and **three invalid live-MCP treatments**. Across three
+previously unused repositories, both baseline and pre-injected GodPrompt
+passed **56/56 identical frozen hidden checks**, but pre-injected guidance
+used **1,394.27 seconds** versus **953.82 seconds** for baseline (**46.18%
+slower**), winning one of three individual speed comparisons. All three
+nominal live-MCP arms failed the original two-phase tool-use protocol; one
+produced correct code despite incomplete guidance, two did not fix the bug.
+The private raw receipts and frozen graders remain ignored. **No generalized
+GodPrompt productivity advantage is established, and no release is approved.**

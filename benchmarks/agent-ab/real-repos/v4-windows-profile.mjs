@@ -20,9 +20,10 @@ export function safeWindowsCodexProfile({arm,serverExecutable,serverScript}){
     "--sandbox=workspace-write",
     "-c", 'approval_policy="never"',
     "-c", "sandbox_workspace_write.network_access=false",
-    // Suppress account-connected apps that may masquerade as the pinned
-    // local GodPrompt MCP. Verified as an effective CLI feature override.
-    "-c", "features.apps=false",
+    // Do NOT set features.apps=false here. Real Codex model testing showed
+    // that this also hides explicitly configured local GodPrompt MCP tools.
+    // Treat any use of unrelated codex_apps servers as arm contamination
+    // in the post-session provenance reviewer instead.
   ];
   if(arm==="live_mcp"){
     for(const [name,path] of [["serverExecutable",serverExecutable],
@@ -50,5 +51,7 @@ export const trustedWindowsSandboxPrerequisites=Object.freeze({
   global_config_edits:false,
   admin_setup_required_for_this_fallback:false,
   danger_full_access:false,
+  account_apps_not_disabled_because_local_mcp_depends_on_feature:true,
+  unrelated_app_calls_invalidate_arm:true,
   honest_productivity_requires_independent_grade:true,
 });
