@@ -1,0 +1,258 @@
+{
+  "schema": "godprompt.v6.public-synthetic-seeded-bug-suite.v1",
+  "frozen_manifest_sha256": "fef56a571bebd902341e0ab3dc892998ceec4aebbd1d634b72931cb25d0341f4",
+  "task_count": 10,
+  "caveat": "Seeds are standalone artificial examples representing engineering concerns. Hidden first-party graders and original agent transcripts are not published. Source Git SHAs are of local temporary commits and are not externally fetchable.",
+  "tasks": [
+    {
+      "task_id": "gsc-calendar-range",
+      "representative_domain": "AKzar1el/mcp-gsc",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Fix an existing Search Console calendar-date checker. Return true only when all inputs are real YYYY-MM-DD Gregorian dates and the tested date is inclusively between start and end; reject impossible dates, invalid formats and reversed ranges. Preserve the existing exported function; write offline regression tests.",
+      "source_sha": "58c2e0c9467352719752c65d4397d47a56d39e4f",
+      "source_file_sha256": "7ef3a0b70360fab4e19a0ed5e2673d220c175fa089a72d9968f95a863f72de88",
+      "source_code": "export function isDateInRange(day,start,end) {\n if(![day,start,end].every(x=>typeof x===\"string\"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(x)))return false;\n return start<=day&&day<=end;\n}\n",
+      "visible_test_sha256": "f88acdf88e47e6f73c3b84cf880e29f860c809f576159a91e4583e6c222dd1e0",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {isDateInRange} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"2024-02-29\",\"2024-01-01\",\"2024-12-31\"],\"expected\":true},{\"id\":5,\"input\":[\"2026-11-23\",\"2026-11-22\",\"2026-11-22\"],\"expected\":false},{\"id\":10,\"input\":[\"2026-02-28\",\"2026-02-29\",\"2026-03-01\"],\"expected\":false},{\"id\":15,\"input\":[\"2024-06-15\",\"2024-06-15\",\"2024-06-30\"],\"expected\":true},{\"id\":20,\"input\":[\"2026-01-01\",\"2026-01-01\",\"2026-12-31\"],\"expected\":true},{\"id\":25,\"input\":[null,\"2024-01-01\",\"2024-12-31\"],\"expected\":false}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=isDateInRange(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "c26638677d9d71764b048fc5cbe19d2bce2b3677a8e823583cd4f35232a5501d",
+      "pre_model_hidden_grade": {
+        "passed": 14,
+        "total": 20
+      },
+      "frozen_arm_order": [
+        "baseline",
+        "preinjected",
+        "live_mcp"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "validator-utf8-budget",
+      "representative_domain": "AKzar1el/mcp-web-validator",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Repair the JSON byte-budget preview helper. Return the longest contiguous prefix of items whose JSON-array UTF-8 byte length (including brackets and commas and escaped JSON) does not exceed maxBytes; never mutate inputs. Reject nonarray input with TypeError and invalid byte budgets with RangeError. Preserve the exported function and add offline tests.",
+      "source_sha": "49d8fc014f3f2009f4232b896f604b586d1af938",
+      "source_file_sha256": "6ff1ccd61ccd146089e63a86a5dd490b6a20475320c47fe7efd33e14e90bdbc2",
+      "source_code": "export function boundedItems(items,maxBytes=16000) {\n if(!Array.isArray(items))throw new TypeError(\"items\");\n if(!Number.isInteger(maxBytes)||maxBytes<2)throw new RangeError(\"maxBytes\");\n const out=[];let bytes=2;\n for(const item of items){const n=JSON.stringify(item).length;if(bytes+n>maxBytes)break;out.push(item);bytes+=n;}\n return out;\n}\n",
+      "visible_test_sha256": "e897f447d2231bccb0efa38b628675d8d5d1845bef19b82966064dff104673eb",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {boundedItems} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[[1,2,3],7],\"expected\":[1,2,3]},{\"id\":5,\"input\":[[\"a\",\"b\",\"c\"],10],\"expected\":[\"a\",\"b\"]},{\"id\":10,\"input\":[[\"🔥\",\"a\"],9],\"expected\":[\"🔥\"]},{\"id\":15,\"input\":[[true,false],11],\"expected\":[true]},{\"id\":20,\"input\":[[100,100],11],\"expected\":[100,100]},{\"id\":25,\"input\":[[1],2],\"expected\":[]}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=boundedItems(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "a7ffc512b1f58b549032a131931492f0d18509cb339b7be6bc006fdab7e224a3",
+      "pre_model_hidden_grade": {
+        "passed": 19,
+        "total": 24
+      },
+      "frozen_arm_order": [
+        "preinjected",
+        "live_mcp",
+        "baseline"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "seo-url-canonical",
+      "representative_domain": "AKzar1el/digestseo-site",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Fix the canonical URL helper: accept only absolute http or https URLs, strip the URL fragment and utm_* tracking parameters (case-insensitive), preserve all other query parameters including duplicates and order, lowercase host via URL parsing, remove standard default ports, and preserve pathname. Return null for invalid/nonweb URLs. Do not fetch anything. Preserve the export and add tests.",
+      "source_sha": "d527e9a0e786dea27b3f401dbebf8597f386009f",
+      "source_file_sha256": "39452675bdcc9417561635d79c2559a96e175dd6b37bd13d9bf3b9bd35e64756",
+      "source_code": "export function cleanCanonicalUrl(raw) {\n try{const u=new URL(raw);u.hash=\"\";u.search=\"\";return u.toString();}catch{return null;}\n}\n",
+      "visible_test_sha256": "6165d52e221fa8b51ad5149cddf12a40b5c64b169b8bebdd4b74312b3f388a86",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {cleanCanonicalUrl} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"https://example.com/page?a=1&utm_source=abc#frag\"],\"expected\":\"https://example.com/page?a=1\"},{\"id\":5,\"input\":[\"https://example.com/path?x=1&x=2\"],\"expected\":\"https://example.com/path?x=1&x=2\"},{\"id\":10,\"input\":[\"https://example.com/?uTM_campaign=1\"],\"expected\":\"https://example.com/\"},{\"id\":15,\"input\":[\"ftp://example.com/file\"],\"expected\":null},{\"id\":20,\"input\":[\"https://sub.example.com/a?abc=one&abc=two\"],\"expected\":\"https://sub.example.com/a?abc=one&abc=two\"}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=cleanCanonicalUrl(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "453596f92a873f4a0ff6198af461b170865d7522e8bd9a8de707d235b923945b",
+      "pre_model_hidden_grade": {
+        "passed": 7,
+        "total": 20
+      },
+      "frozen_arm_order": [
+        "live_mcp",
+        "baseline",
+        "preinjected"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "trends-headline-dedupe",
+      "representative_domain": "AKzar1el/mcp-trendpulse",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Fix news-headline deduplication. Keep the earliest article for each title after Unicode NFKC normalization, trimming, internal whitespace collapse, and lowercase. Ignore null/invalid/empty titles and preserve original items and order without mutation. Input is an array of article objects. Preserve the export and add tests.",
+      "source_sha": "f29dc373056662131544fc749fb4a3ce592ccca1",
+      "source_file_sha256": "b93e2d232916b54d385f6a60bc4ae0ac5fed7d15237cecd9262c270103734c83",
+      "source_code": "export function dedupeHeadlines(items) {\n const seen=new Set();\n return items.filter(item=>{\n  if(!item||typeof item.title!==\"string\")return false;\n  if(seen.has(item.title))return false;\n  seen.add(item.title);return true;\n });\n}\n",
+      "visible_test_sha256": "3b5be9aafc3210aeb9503b3131fb5dbd5fc98de03cf5e54ab4fe31980b63b76a",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {dedupeHeadlines} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[[{\"title\":\"AI News\",\"id\":1},{\"title\":\"ai news\",\"id\":2}]],\"expected\":[{\"title\":\"AI News\",\"id\":1}]},{\"id\":5,\"input\":[[{\"title\":\"\",\"id\":1},{\"title\":\"New\",\"id\":2}]],\"expected\":[{\"title\":\"New\",\"id\":2}]},{\"id\":10,\"input\":[[{\"title\":null},{\"title\":\"Y\"}]],\"expected\":[{\"title\":\"Y\"}]},{\"id\":15,\"input\":[[{\"title\":\"𝐇𝐞𝐥𝐥𝐨\"},{\"title\":\"Hello\"}]],\"expected\":[{\"title\":\"𝐇𝐞𝐥𝐥𝐨\"}]},{\"id\":20,\"input\":[[{\"title\":\"case\",\"meta\":1},{\"title\":\"CASE\",\"meta\":2}]],\"expected\":[{\"title\":\"case\",\"meta\":1}]}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=dedupeHeadlines(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "0ce2d6b02d2edd9df5846781402202cee68d83a1efe6fbd9f90b7004bf01edb0",
+      "pre_model_hidden_grade": {
+        "passed": 4,
+        "total": 19
+      },
+      "frozen_arm_order": [
+        "baseline",
+        "preinjected",
+        "live_mcp"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "quant-max-drawdown",
+      "representative_domain": "AKzar1el/autonomous-quant-engine",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Repair the paper-research maxDrawdown metric. Given an equity-history array, ignore invalid/nonpositive observations. Compare each valid value to the highest valid equity so far and return largest peak-to-trough fractional decline in [0,1]. Return 0 when fewer than two valid observations; nonarrays throw TypeError. Never trade live. Preserve the export and write tests.",
+      "source_sha": "4e8266b1e14a29ce642c71e98ed123b8cb3d22f5",
+      "source_file_sha256": "f8667f50edc6a236a0c631de3bb2f54eb3c237b797a241b117f96ddbc4eb3168",
+      "source_code": "export function maxDrawdown(equity) {\n if(!Array.isArray(equity)||equity.length<2)return 0;\n const first=equity[0],last=equity.at(-1);\n return Math.max(0,(first-last)/first);\n}\n",
+      "visible_test_sha256": "11eba6c23125b5b2ebd4b6026180135c982319ccdb035f5b0f9b0ffe9cd05474",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {maxDrawdown} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[[100,110,90,120]],\"expected\":0.18181818181818182},{\"id\":5,\"input\":[[100,50]],\"expected\":0.5},{\"id\":10,\"input\":[[10,1,10,8,10]],\"expected\":0.9},{\"id\":15,\"input\":[[\"x\",100,90]],\"expected\":0.1},{\"id\":20,\"input\":[[]],\"expected\":0},{\"id\":25,\"input\":[\"bad\"],\"expected\":\"THROWS:TypeError\"}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=maxDrawdown(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "690cdee866b06f6242ee8fe0db8b40bd0b024978af2e44750fcf1bc44f171b94",
+      "pre_model_hidden_grade": {
+        "passed": 11,
+        "total": 20
+      },
+      "frozen_arm_order": [
+        "preinjected",
+        "live_mcp",
+        "baseline"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "apify-budget-gate",
+      "representative_domain": "AKzar1el/apify-web-validator",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Repair the pure Apify event-budget gate. Return true only when spent, price and limit are finite nonnegative numbers, and adding price is within limit (permit at most a tiny floating roundoff of min(1e-9,max(1e-12,limit*1e-12))). Reject invalid inputs. No real charging, money movement or external APIs. Preserve export and write tests.",
+      "source_sha": "50111e995d0d7a4f7573c9525cfe4b5f4ad00653",
+      "source_file_sha256": "640a42b17789624b54a4f137ef338f2adde74b3e14a01b50ff6074473195b509",
+      "source_code": "export function canCharge(spent,price,limit) {\n if(spent<0||price<0)return false;\n return spent+price<limit;\n}\n",
+      "visible_test_sha256": "bb01bebe644680d292bc6515a93a06f528295738ba98756abace49e655fac1aa",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {canCharge} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[0,0,0],\"expected\":true},{\"id\":5,\"input\":[0,0,10],\"expected\":true},{\"id\":10,\"input\":[-1,1,2],\"expected\":false},{\"id\":15,\"input\":[1,1,null],\"expected\":false},{\"id\":20,\"input\":[2.5,1.5,3.9],\"expected\":false},{\"id\":25,\"input\":[0.3,0.6,0.9],\"expected\":true}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=canCharge(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "9151c71ce709f9d2258d9dc9a12f3f7c4ff387bda5b6bdd31526f71adfaa7cb4",
+      "pre_model_hidden_grade": {
+        "passed": 9,
+        "total": 20
+      },
+      "frozen_arm_order": [
+        "live_mcp",
+        "baseline",
+        "preinjected"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "auditor-path-ignore",
+      "representative_domain": "AKzar1el/ai-crypto-auditor",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Repair GitHub code-review path exclusion matcher. Support literal patterns, '*.ext' matching at any basename, 'src/**' matching descendants of src/, and '**/*.md' matching Markdown files at any nesting including root. Normalize Windows backslashes to slashes; keep case-sensitive. Never match an unrelated substring like 'notreadme.md' for 'readme.md'. Preserve export, add offline tests.",
+      "source_sha": "49794eaf15b7b3a940e12833b35be73f695c78c6",
+      "source_file_sha256": "daa55fd5e2928d9671800a5cd98800dd3221b1f119807f9ef293e4ed1f58b96c",
+      "source_code": "export function shouldIgnorePath(file,patterns) {\n return patterns.some(pattern=>file.includes(pattern));\n}\n",
+      "visible_test_sha256": "44606169921a57034e24be7b916fcc28cbdceca101d9d993d5050b2028f68e4c",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {shouldIgnorePath} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"src/app.ts\",[\"src/**\"]],\"expected\":true},{\"id\":5,\"input\":[\"docs/readme.md\",[\"**/*.md\"]],\"expected\":true},{\"id\":10,\"input\":[\"folder/package.lock\",[\"*.lock\"]],\"expected\":true},{\"id\":15,\"input\":[\"src/file.js\",[\"src/**\",\"*.md\"]],\"expected\":true},{\"id\":20,\"input\":[\"src\\\\app.ts\",[\"src/**\"]],\"expected\":true},{\"id\":25,\"input\":[\"src/readme.md\",[\"docs/**\",\"**/*.md\"]],\"expected\":true}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=shouldIgnorePath(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "ceaed4e524a1710f7060bc855f3e1c2699eb8e60fa01808459592be7a9342b11",
+      "pre_model_hidden_grade": {
+        "passed": 10,
+        "total": 20
+      },
+      "frozen_arm_order": [
+        "baseline",
+        "preinjected",
+        "live_mcp"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "geo-host-boundary",
+      "representative_domain": "AKzar1el/geo-mcp",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Harden a pure URL hostname trust-boundary check. Return true only for absolute HTTPS URLs whose hostname equals allowedRoot or is a dot-delimited subdomain. Forbid URL credentials, fragments and nondefault ports; handle uppercase hostnames and reject invalid DNS roots. Never fetch or access network. Preserve export and add tests.",
+      "source_sha": "3c7b33c73d60a1a876cefe45d2033f3d542abb1b",
+      "source_file_sha256": "ab0d5042c12e55f7347ff5fcc4c97ceea8ddd35e30f094a98fb4ef74bbfcea37",
+      "source_code": "export function isAllowedUrl(raw,root) {\n try {const url=new URL(raw);return url.protocol===\"https:\"&&url.hostname.endsWith(root);}\n catch{return false;}\n}\n",
+      "visible_test_sha256": "f9d9a28f17a38cab400db211c8f5e3baddb6f2f9bed8262941aa591abacb89ce",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {isAllowedUrl} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"https://example.com/path\",\"example.com\"],\"expected\":true},{\"id\":5,\"input\":[\"https://example.com.evil.net/\",\"example.com\"],\"expected\":false},{\"id\":10,\"input\":[\"https://user@example.com\",\"example.com\"],\"expected\":false},{\"id\":15,\"input\":[\"https://localhost\",\"example.com\"],\"expected\":false},{\"id\":20,\"input\":[\"https://badexample.com\",\"example.com\"],\"expected\":false},{\"id\":25,\"input\":[\"https://example.com?x=1\",\"example.com\"],\"expected\":true}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=isAllowedUrl(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "713a4c170c0d3a54c3bec5c238d35c38cd489e2a374ec5cbad945d35a2dfa2ce",
+      "pre_model_hidden_grade": {
+        "passed": 12,
+        "total": 20
+      },
+      "frozen_arm_order": [
+        "preinjected",
+        "live_mcp",
+        "baseline"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "robots-indexability",
+      "representative_domain": "AKzar1el/digestseo-site (robots meta/header)",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Fix meta-robots/X-Robots indexability assessment. Return false only for exact standalone 'noindex' or 'none' directives (case-insensitive, comma or whitespace-separated). Header may prefix a directive with 'googlebot:' or another user agent: apply scoped directives only to the supplied agent (default googlebot), while unscoped directives apply to all. Do not treat 'noindexable' substrings as directives. No network calls. Preserve export and add tests.",
+      "source_sha": "05e931e96d92a8deb8f8e326b7295f654a3f1a7f",
+      "source_file_sha256": "7be55eb26287b85c2fd0ddec564529a5c2fe7a47aafe4752ee78ee2e6912659e",
+      "source_code": "export function isIndexable(meta,header,agent=\"googlebot\") {\n return ![meta,header].some(x=>typeof x===\"string\"&&x.toLowerCase().includes(\"noindex\"));\n}\n",
+      "visible_test_sha256": "74d90ca9e70f91e4ecc1415c57285009a5e11afd8d94de2be742517aee429814",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {isIndexable} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"index,follow\",\"\",\"googlebot\"],\"expected\":true},{\"id\":5,\"input\":[\"index, noindexer\",\"\",\"googlebot\"],\"expected\":true},{\"id\":10,\"input\":[\"\",\"bingbot: noindex\",\"googlebot\"],\"expected\":true},{\"id\":15,\"input\":[\"\",\"otherbot: noindex, googlebot: index\",\"googlebot\"],\"expected\":true},{\"id\":20,\"input\":[\"\",\"none\",\"bingbot\"],\"expected\":false},{\"id\":25,\"input\":[\"\",\"examplebot: noindex\",\"examplebot\"],\"expected\":false}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=isIndexable(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "f3dd2746b029fc91b66fb9f3a8a6e4e064de9ddee6ab143127939897619e5522",
+      "pre_model_hidden_grade": {
+        "passed": 13,
+        "total": 20
+      },
+      "frozen_arm_order": [
+        "live_mcp",
+        "baseline",
+        "preinjected"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "portfolio-heading-anchor",
+      "representative_domain": "AKzar1el/portfolio-master",
+      "note": "Locally synthesized seeded defect, not a patch to the referenced public repository",
+      "description": "Repair heading-to-anchor slug generation. Apply Unicode NFKD and strip combining accent marks; lowercase, strip HTML tags, keep only ASCII letters/digits joined by single hyphens for sequences of other characters, trim edge hyphens, and return 'section' for empty or nonstring values. Preserve export and add offline tests.",
+      "source_sha": "94f45917f69a4bc35f83884afa8d9a3dedf87ac7",
+      "source_file_sha256": "11cbf7b04ff751fd81ff2949401b899be07bc79136ee667f643a5553939441ea",
+      "source_code": "export function headingSlug(title) {\n return String(title).toLowerCase().replaceAll(\" \",\"-\");\n}\n",
+      "visible_test_sha256": "b89595e59e054e4d8b1d7a4f775b5f8544079fc34bb63de283c1c2a37a2c12e8",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {headingSlug} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"Hello World\"],\"expected\":\"hello-world\"},{\"id\":5,\"input\":[\"Résumé\"],\"expected\":\"resume\"},{\"id\":10,\"input\":[\"A/B Testing\"],\"expected\":\"a-b-testing\"},{\"id\":15,\"input\":[\"FOO_BAR\"],\"expected\":\"foo-bar\"},{\"id\":20,\"input\":[\"Ångström\"],\"expected\":\"angstrom\"},{\"id\":25,\"input\":[\"__A__B__\"],\"expected\":\"a-b\"}];\nfor(const c of cases){test('case '+c.id,()=>{let actual;try{actual=headingSlug(...c.input);}catch(e){actual='THROWS:'+e.name;}assert.deepEqual(actual,c.expected);});}\n",
+      "hidden_grader_sha256": "61e7c16e1bd8939b15596f9e37d969f09d3ef520760958fe14066912781e19e2",
+      "pre_model_hidden_grade": {
+        "passed": 3,
+        "total": 21
+      },
+      "frozen_arm_order": [
+        "baseline",
+        "preinjected",
+        "live_mcp"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    }
+  ]
+}
