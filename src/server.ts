@@ -9,7 +9,7 @@ export const SERVER_INFO = {
 } as const;
 
 export const SERVER_INSTRUCTIONS =
-  "For scoped engineering tasks, use classify_task to route the work and get_tailored_guidance to load only the needed phase. Use get_core_skill if the entire core protocol is needed, not on every request. Use review_code_change, audit_requirements and build_test_matrix for bounded caller-supplied evidence and draft test planning. Use diagnose_failure, assess_release_readiness, create_context_handoff and compare_evaluation_runs only for their respective supplied-evidence workflows. Use audit_agent_trajectory, trace_change_impact, review_mcp_tool_contracts, audit_agent_instructions and design_adversarial_tests only with explicit caller-supplied bounded inputs; they produce unverified review hints or test ideas. None of these tools run external checks, authenticate evidence, authorize release or independently verify work. Load get_protocols, get_gates, or get_anti_patterns only when focused guidance is insufficient. Use get_god_prompt only when the full single-file payload is preferable; request bounded start/maxChars chunks if an MCP bridge truncates large responses. All GodPrompt tools are read-only.";
+  "For scoped engineering tasks, use classify_task to route the work and get_tailored_guidance to load only the needed phase. For coding changes, call this server's get_tailored_guidance with phase=execute and max_chars=1800 (valid 200..4000) before editing; after code edits AND actual test commands, call get_tailored_guidance again with phase=verify and the same task_type/max_chars, and check the quality gates. Both calls are guidance only, not proof of execution or completed tests. Never substitute a similarly named connected app server for GodPrompt. Use get_core_skill if the entire core protocol is needed, not on every request. Use review_code_change, audit_requirements and build_test_matrix for bounded caller-supplied evidence and draft test planning. Use diagnose_failure, assess_release_readiness, create_context_handoff and compare_evaluation_runs only for their respective supplied-evidence workflows. Use audit_agent_trajectory, trace_change_impact, review_mcp_tool_contracts, audit_agent_instructions and design_adversarial_tests only with explicit caller-supplied bounded inputs; they produce unverified review hints or test ideas. None of these tools run external checks, authenticate evidence, authorize release or independently verify work. Load get_protocols, get_gates, or get_anti_patterns only when focused guidance is insufficient. Use get_god_prompt only when the full single-file payload is preferable; request bounded start/maxChars chunks if an MCP bridge truncates large responses. All GodPrompt tools are read-only.";
 
 const READ_ONLY_ANNOTATIONS = {
   readOnlyHint: true,
@@ -25,7 +25,7 @@ const TASK_TYPES = {
     description: "Creating new functionality",
   },
   DEBUG: {
-    triggers: ["fix", "debug", "debugging", "troubleshoot", "diagnose", "harden", "bug", "error", "broken", "crash", "fail", "issue", "wrong"],
+    triggers: ["fix", "debug", "debugging", "troubleshoot", "diagnose", "harden", "repair", "patch", "correct", "resolve", "address", "bug", "defect", "error", "broken", "crash", "fail", "issue", "wrong"],
     protocol: "Root cause → 4-layer defense",
     description: "Finding and fixing defects",
   },
@@ -83,6 +83,7 @@ type RouteType = TaskType | "UNCLASSIFIED";
 
 const ACTION_SIGNALS = new Set([
   "add",
+  "address",
   "analyze",
   "architect",
   "assess",
@@ -92,6 +93,7 @@ const ACTION_SIGNALS = new Set([
   "check",
   "compare",
   "clean",
+  "correct",
   "create",
   "deploy",
   "diagnose",
@@ -111,11 +113,14 @@ const ACTION_SIGNALS = new Set([
   "merge",
   "new",
   "optimize",
+  "patch",
   "plan",
   "publish",
   "push",
   "refactor",
+  "repair",
   "release",
+  "resolve",
   "reorganize",
   "review",
   "ship",
@@ -182,9 +187,9 @@ const PRIMARY_INSPECTION_ACTION =
 const PRIMARY_TEST_IMPLEMENTATION =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:write|add|create|implement)\s+(?:(?:a|an|the|new|unit|regression|integration|e2e)\s+){0,5}tests?\b(?!\s+(?:plan|report|matrix|strategy|summary|guide|results))/;
 const PRIMARY_MAINTENANCE =
-  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot|harden|refactor|optimize|simplify|improve|reorganize)\b/;
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot|harden|repair|patch|correct|resolve|refactor|optimize|simplify|improve|reorganize)\b/;
 const PRIMARY_DEBUG_ACTION =
-  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:fix|debug|diagnose|troubleshoot|harden)\b/;
+  /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(?:(?:fix|debug|diagnose|troubleshoot|harden|repair|patch|correct|resolve)\b|address\b.{0,100}\b(?:bug|defect|error|failure|issue|crash)\b)/;
 const PRIMARY_EXTENSION =
   /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*extend\b/;
 const FOLLOWUP_CONTENT =
@@ -290,8 +295,11 @@ function requestedFollowupBuildVerb(text: string): string | null {
   if (!match) return null;
   // Adding regression tests or diagnostics is part of fixing a bug, not an
   // independent feature-build request. A distinct new feature still wins.
-  const debugging = /^(?:(?:please|can you|could you|would you)\s+)*(?:fix|debug|diagnose|troubleshoot|harden)\b/.test(text);
-  const supportingWork = /^\s+(?:(?:a|an|new|more|extra|some|focused|targeted|additional|unit|integration|regression|e2e|error|robust)\s+){0,4}(?:tests?|checks?|coverage|logs?|logging|docs|documentation|error handling)\b/
+  const debugging = PRIMARY_DEBUG_ACTION.test(text);
+  // "add mocked SDK/AI fetch regression tests" is supporting validation,
+  // not a new feature. Stop at feature nouns so "add a new REST API" still
+  // counts as a separate BUILD instruction. Limit the scan to ten tokens.
+  const supportingWork = /^\s+(?:(?!(?:feature|api|endpoint|dashboard|service|workflow|pipeline|ui)\b)[a-z0-9/-]+\s+){0,10}(?:tests?|checks?|coverage|logs?|logging|docs?|documentation|error handling)\b/
     .test(text.slice(match.index + match[0].length));
   return debugging && supportingWork ? null : match[1];
 }
@@ -368,12 +376,13 @@ function classifyTask(description: string): {
     .trim().replace(/\s+/gu, " ").toLowerCase();
   const candidates: Candidate[] = [];
 
-  const debugActions = ["fix", "debug", "debugging", "troubleshoot", "diagnose", "harden"];
+  const debugActions = ["fix", "debug", "debugging", "troubleshoot", "diagnose", "harden", "repair", "patch", "correct", "resolve", "address"];
   const explicitlyNegatedDebug = debugActions.some(
     (trigger) => hasTrigger(normalized, trigger) && !hasAffirmativeActionTrigger(normalized, trigger),
   );
   const affirmativeDebug = debugActions.some(
-    (trigger) => hasAffirmativeActionTrigger(normalized, trigger),
+    (trigger) => (trigger !== "address" || PRIMARY_DEBUG_ACTION.test(normalized)) &&
+      hasAffirmativeActionTrigger(normalized, trigger),
   );
   const shippingAssessment = SHIPPING_READINESS_QUESTION.test(normalized);
   const inspectionRequested = shippingAssessment || TASK_TYPES.ANALYZE.triggers
@@ -456,10 +465,11 @@ function classifyTask(description: string): {
     // rather than request it. Keep explicit follow-up repair instructions.
     if (type === "DEBUG" && !primaryDebugRequested &&
       (primaryInspection || primaryPlanningIntent || contentRequested) &&
-      !/\b(?:and|then)\s+(?:fix|debug|diagnose|troubleshoot|harden)\b/.test(normalized)) continue;
+      !/\b(?:and|then)\s+(?:fix|debug|diagnose|troubleshoot|harden|repair|patch|correct|resolve)\b/.test(normalized)) continue;
     const matches: MatchedSignal[] = info.triggers
       .flatMap((trigger): MatchedSignal[] => {
-        if ((type === "AUTOMATE" &&
+        if ((type === "DEBUG" && trigger === "address" && !primaryDebugRequested) ||
+          (type === "AUTOMATE" &&
           ((trigger === "schedule" && !scheduleRequested) ||
            (trigger === "job" && !timeboundJobRequested && !followupAutomation) ||
            (trigger === "automated" && !automationRequested) ||
@@ -675,9 +685,10 @@ export function registerGodPromptTools(server: McpServer): void {
               ? "Ambiguous mixed intent — consider splitting the task or specifying the primary task type directly."
               : result.confidence < 0.5
             ? "Low confidence — consider providing more context or specifying the task type directly."
-            : `Classified as ${result.type}. Use get_protocols to load the detailed execution guide.`,
+            : `Classified as ${result.type}. On this same server call get_tailored_guidance with task_type=${result.type}, phase=execute, max_chars=1800 before coding; after edits and real tests call it again with phase=verify, max_chars=1800. Do not mistake guidance for executed verification.`,
       };
       return {
+        structuredContent: output,
         content: [
           {
             type: "text",
@@ -719,6 +730,14 @@ export function registerGodPromptTools(server: McpServer): void {
                 protocol: info.protocol,
                 description: info.description,
               })),
+              agent_coding_workflow: {
+                server_name: SERVER_INFO.name,
+                server_selection_rule: "Use only the connected server instance that returned this response. Client-side MCP aliases vary; do not substitute a similarly named connected app.",
+                before_code: { tool: "classify_task", then: "get_tailored_guidance", phase: "execute", max_chars: 1800 },
+                after_code_and_actual_tests: { tool: "get_tailored_guidance", phase: "verify", max_chars: 1800 },
+                maximum_max_chars: 4000,
+                note: "Both phase tools are guidance only; source edits and test commands need separate evidence. Do not use similarly named connected app servers.",
+              },
             },
             null,
             2

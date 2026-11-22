@@ -4,6 +4,8 @@ import { CONTENT } from "./content.js";
 
 const TYPES = ["BUILD", "DEBUG", "REFACTOR", "CONTENT", "DESIGN", "SHIP", "ANALYZE", "AUTOMATE", "PLAN"] as const;
 const PHASES = ["plan", "execute", "verify", "handoff"] as const;
+const RECOMMENDED_GUIDANCE_CHARS = 1800;
+const MAX_GUIDANCE_CHARS = 4000;
 
 type TaskType = (typeof TYPES)[number];
 type Phase = (typeof PHASES)[number];
@@ -38,7 +40,7 @@ function firstSubsection(section: string): string {
   return lines.slice(0, after < 0 ? undefined : after).join("\n").trim();
 }
 
-export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0, maxChars = 1800) {
+export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0, maxChars = RECOMMENDED_GUIDANCE_CHARS) {
   const protocol = headingSection(CONTENT.PROTOCOLS, `${taskType} Protocol`);
   const quality = headingSection(CONTENT.GATES, `${taskType} Quality Gate`);
   const universal = headingSection(CONTENT.GATES, "Universal Gate (EVERY task, no exceptions)");
@@ -66,6 +68,19 @@ export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0,
     truncated: start + selected.length < text.length,
     suggested_tools: start===0 ? [...TOOL_HINTS[taskType][phase]] : [],
     tool_selection_rule: start===0 ? "Only use a suggested tool when the caller supplies appropriate bounded evidence; tools are optional, not automatically invoked." : null,
+    // These are navigation hints, not execution receipts or automatic calls.
+    // Present the exact valid follow-up arguments where coding agents can see
+    // them, rather than relying only on global instructions to remember verify.
+    recommended_next_call: phase==="execute" ? {
+      tool: "get_tailored_guidance",
+      arguments: { task_type: taskType, phase: "verify", max_chars: RECOMMENDED_GUIDANCE_CHARS },
+    } : null,
+    next_step: phase==="execute"
+      ? "After scoped edits and actual test commands, call get_tailored_guidance for the verify phase on this same server; independently check the returned gates before claiming completion."
+      : phase==="verify"
+        ? "Review actual verification command receipts and the changed-file scope; guidance is not a substitute for running tests."
+        : "Use the phase guidance only within authorized task scope; retrieve execute and verify guidance separately for coding work.",
+    guidance_is_verification: false,
     warning: "Guidance only: the MCP did not inspect a codebase, execute checks, or verify results. Load additional chunks when truncated.",
   };
 }
@@ -73,12 +88,12 @@ export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0,
 export function registerTailoredGuidanceTool(server: McpServer): void {
   server.registerTool("get_tailored_guidance", {
     title: "Get phase-specific GodPrompt guidance",
-    description: "Return only the relevant task-type protocol or quality gate for one phase, paged into small bounded chunks. More efficient than loading the entire reference; no tool execution or verification.",
+    description: "Read-only phase-specific workflow instructions. Coding agents: call with phase='execute' and max_chars=1800 (valid integer 200..4000) before editing; AFTER editing and running real tests call again with the SAME task_type, phase='verify', max_chars=1800. The execute response contains recommended_next_call with exact valid verify arguments. Follow next_start if truncated. Guidance does not execute tests or independently verify work.",
     inputSchema: {
       task_type: z.enum(TYPES),
       phase: z.enum(PHASES).optional().default("execute"),
       start: z.number().int().min(0).max(60_000).optional().default(0),
-      max_chars: z.number().int().min(200).max(4_000).optional().default(1800),
+      max_chars: z.number().int().min(200).max(MAX_GUIDANCE_CHARS).optional().default(RECOMMENDED_GUIDANCE_CHARS),
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async ({ task_type, phase, start, max_chars }) => {

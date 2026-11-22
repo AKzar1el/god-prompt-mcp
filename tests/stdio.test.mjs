@@ -131,6 +131,9 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(initialized.instructions, /All GodPrompt tools are read-only/i);
   assert.match(initialized.instructions, /create_work_contract/i);
   assert.match(initialized.instructions, /review_work_evidence/i);
+  assert.match(initialized.instructions, /phase=execute.*phase=verify/i);
+  assert.match(initialized.instructions, /max_chars=1800.*200\.\.4000/i);
+  assert.match(initialized.instructions, /similarly named connected app server/i);
 
   child.stdin.write(
     `${JSON.stringify({
@@ -185,6 +188,12 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(classifyTool.description, /returns JSON/i);
   assert.match(classifyTool.description, /matched_signals/i);
   assert.match(classifyTool.description, /routing/i);
+
+  const guidanceTool = listed.tools.find((tool) => tool.name === "get_tailored_guidance");
+  assert.ok(guidanceTool);
+  assert.match(guidanceTool.description, /phase='execute'.*phase='verify'/i);
+  assert.match(guidanceTool.description, /200\.\.4000/);
+  assert.equal(guidanceTool.inputSchema?.properties?.max_chars?.maximum, 4000);
 
   const versionTool = listed.tools.find((tool) => tool.name === "get_version");
   assert.ok(versionTool, "get_version must be listed");
@@ -252,6 +261,8 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   });
   const planResult = JSON.parse(toolText(planClassification));
   assert.equal(planResult.task_type, "PLAN");
+  assert.deepEqual(planClassification.structuredContent, planResult);
+  assert.match(planResult.recommendation, /get_tailored_guidance.*phase=execute.*phase=verify/i);
 
   const clearCases = [
     ["build a REST API for user auth", "BUILD"],
@@ -509,6 +520,29 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     assert.equal(result.ambiguous, false, description);
   }
 
+  // Post-V4 genuine live-agent observations: descriptive test modifiers in a
+  // bug-fix request must not create a phantom independent BUILD intent.
+  // These are known regressions, not untouched classifier holdout evidence.
+  const liveAgentRoutingRegressions = [
+    ["Debug existing PR changed-file pagination; add mocked SDK/AI fetch regression tests", "DEBUG"],
+    ["Repair a pagination bug that skips the next 30 changed files; write tests", "DEBUG"],
+    ["Correct a date validation defect so malformed ISO snapshots keep their original fallback", "DEBUG"],
+    ["Patch an off-by-one error in JavaScript pagination and add regression tests", "DEBUG"],
+    ["Address a source_references truncation reporting bug in Python; add tests", "DEBUG"],
+    ["Fix the parser and add offline mocked integration tests", "DEBUG"],
+    ["Review whether to repair a pagination bug", "ANALYZE"],
+    ["Plan how to patch the parser", "PLAN"],
+    ["Build a new address-book editor and add unit tests", "BUILD"],
+    ["Fix the parser and add a new REST API endpoint", "BUILD"],
+    ["Fix the parser and then publish the approved package", "SHIP"],
+    ["Implement a new pagination UI and add mocked SDK tests", "BUILD"],
+  ];
+  for (const [i, [description, expected]] of liveAgentRoutingRegressions.entries()) {
+    const actual = await classify(child, pending, `live-agent-route-${i}`, description);
+    assert.equal(actual.task_type, expected, description);
+    assert.equal(actual.ambiguous, false, description);
+  }
+
   const planningIntentCases = [
     ["Plan a feature release without deploying anything", "PLAN"],
     ["Write a rollout plan for a new feature", "PLAN"],
@@ -754,6 +788,11 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.ok(version.files["references/02-GATES.md"]);
   assert.ok(version.files["references/03-ANTI-PATTERNS.md"]);
   assert.equal(version.files["core/00-THE-SKILL.md"], undefined);
+  assert.equal(version.agent_coding_workflow?.server_name, "god-prompt-mcp");
+  assert.match(version.agent_coding_workflow?.server_selection_rule, /Client-side MCP aliases vary/);
+  assert.equal(version.agent_coding_workflow?.before_code?.max_chars, 1800);
+  assert.equal(version.agent_coding_workflow?.after_code_and_actual_tests?.phase, "verify");
+  assert.equal(version.agent_coding_workflow?.maximum_max_chars, 4000);
 
   const { default: worker } = await import(`../dist/index.js?smoke=${Date.now()}`);
   const workerInitialize = new Request("https://example.test/mcp", {

@@ -44,3 +44,17 @@ test("one-phase retrieval is smaller than full protocol content", () => {
   assert.equal(eof.content, "");
   assert.equal(eof.next_start, null);
 });
+
+test("coding-agent execute guidance explicitly schedules bounded verify retrieval", () => {
+  const execute = getTailoredGuidance("DEBUG", "execute", 0, 1800);
+  assert.deepEqual(execute.recommended_next_call, {
+    tool: "get_tailored_guidance",
+    arguments: { task_type: "DEBUG", phase: "verify", max_chars: 1800 },
+  });
+  assert.match(execute.next_step, /after.*(?:edits|implementation).*actual.*test/i);
+  assert.equal(execute.guidance_is_verification, false);
+  const verify = getTailoredGuidance("DEBUG", "verify", 0, 1800);
+  assert.equal(verify.recommended_next_call, null);
+  assert.match(verify.next_step, /actual.*verification.*receipts/i);
+  assert.equal(verify.guidance_is_verification, false);
+});
