@@ -1,0 +1,121 @@
+{
+  "schema": "godprompt.v11.real-repository.calibrated-triarm.v1",
+  "study_id": "V11-real-issues-20261123",
+  "freeze_date": "2026-11-23",
+  "source_repository": "AKzar1el/mcp-trendpulse",
+  "source_origin": "https://github.com/AKzar1el/mcp-trendpulse.git",
+  "source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "godprompt_sha": "5937699e298aa32dc972f123f2d95ff38f1eb5a0",
+  "godprompt_version": "1.4.2",
+  "godprompt_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "grader_sha256": "e29e67afda3b457cc265eaad6b1d83abfe79b6c5e24586671381c06e5f2e2846",
+  "baseline_grade": {
+    "405": {
+      "passed": 4,
+      "checks": 23
+    },
+    "415": {
+      "passed": 7,
+      "checks": 14
+    }
+  },
+  "known_correct_grade": {
+    "405": {
+      "passed": 23,
+      "checks": 23
+    },
+    "415": {
+      "passed": 14,
+      "checks": 14
+    }
+  },
+  "known_correct_reference_is_separate_private_checkout": true,
+  "pypi_release_0_3_0_help_smoke": {
+    "rss-review": true,
+    "rss-compare": true
+  },
+  "cli": {
+    "version": "0.171.0",
+    "login": "existing ChatGPT CLI authentication",
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "high",
+    "sandbox": "workspace-write",
+    "inherit_authorized_windows_config": true,
+    "workspace_network_access": false,
+    "no_paid_api_keys": true,
+    "globally_configured_mcp_disabled_per_session": [
+      "node_repl",
+      "github",
+      "memory",
+      "firecrawl",
+      "cloudflare-api",
+      "context7",
+      "filesystem",
+      "mcp-gsc",
+      "shared-browser"
+    ]
+  },
+  "arms": [
+    "baseline",
+    "full_mcp",
+    "compact_mcp"
+  ],
+  "tasks": [
+    {
+      "id": "published-rss-docs-415",
+      "issue": 415,
+      "url": "https://github.com/AKzar1el/mcp-trendpulse/issues/415",
+      "order": [
+        "baseline",
+        "compact_mcp",
+        "full_mcp"
+      ],
+      "timeout_seconds": 480,
+      "allowed_paths": [
+        "README.md"
+      ],
+      "description": "Correct only README availability language for the shipped PyPI 0.3.0 offline rss-review and rss-compare commands. Remove source-checkout-only assertions for the five RSS review/compare sections, add pinned uvx --from mcp-trendpulse==0.3.0 commands for both installed-package help flows, preserve existing evidence/demand limitations and unrelated source-only labels. A sealed independent PyPI 0.3.0 smoke preflight already verified both command help flows. Do not publish packages or edit source code."
+    },
+    {
+      "id": "rss-topic-filter-405",
+      "issue": 405,
+      "url": "https://github.com/AKzar1el/mcp-trendpulse/issues/405",
+      "order": [
+        "full_mcp",
+        "baseline",
+        "compact_mcp"
+      ],
+      "timeout_seconds": 720,
+      "allowed_paths": [
+        "src/mcp_trendpulse/rss_compare.py",
+        "src/mcp_trendpulse/cli.py",
+        "tests/test_rss_compare.py"
+      ],
+      "description": "Implement opt-in rss-compare --contains TEXT for saved-RSS offline snapshot comparison using case-insensitive literal title matching (trim printable 1-120 characters) and union of URLs matching either older or newer title before exact-URL status classification. Preserve capture-wide quality alerts for excluded titles, classify retained URLs correctly when retitled outside the filter, expose filter method/matched counts/scope in JSON/Markdown/CSV, require review on zero matches, preserve default output byte-for-byte with no flag. Add real offline tests, no provider calls."
+    }
+  ],
+  "safety": {
+    "genuine_issues": true,
+    "all_first_attempts_original_and_no_replays": true,
+    "run_sequentially": true,
+    "freeze_before_agent_runs": true,
+    "precalibrated_red_and_green": true,
+    "isolated_clone_per_arm_no_local_hardlinks": true,
+    "hidden_graders_not_copied_to_agent_clones": true,
+    "same_user_windows_isolation_not_cryptographically_attested": true,
+    "no_live_service_restart": true,
+    "no_git_push_from_trial": true,
+    "no_package_release": true,
+    "no_merge": true,
+    "disable_shell_network": true,
+    "forbid_cache_cleanup_and_recursive_deletion": true,
+    "full_denominator_including_timeouts": true
+  },
+  "qualifications": [
+    "Two open owner-reported issues, not a random population draw",
+    "Model/effort and effective sandbox requested but not independently attested",
+    "Both reference patch and grader authored in same study process; calibration establishes consistency not independence of test author",
+    "Model can potentially read outside checkout under Windows same-user constraints; strict non-access not independently proven",
+    "Issue #405 substantial and may timeout at bound; those attempts remain failures under frozen cap"
+  ]
+}

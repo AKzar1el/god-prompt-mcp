@@ -1,0 +1,121 @@
+{
+  "schema": "godprompt.v11.stopped-public-evidence.v1",
+  "date": "2026-11-23",
+  "study": "V11-real-issues-20261123",
+  "manifest_file": "benchmarks/agent-ab/real-repos/v11-frozen-study-20261123.json",
+  "manifest_sha256": "e5006a6fa97a227c0879f6f3d947cde44a78f8a29540f66bf815afc2202a6750",
+  "runner_sha256": "a7bd2062d566de8422f59582ab2fcb0a9757331050f42a65c76f096d5f37a3ac",
+  "grader_sha256": "e29e67afda3b457cc265eaad6b1d83abfe79b6c5e24586671381c06e5f2e2846",
+  "pinned_source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "planned": 6,
+  "original_first_run_count": 1,
+  "status": "STOPPED_FROZEN_GRADER_LAYOUT_BIAS",
+  "red_reference": {
+    "405": {
+      "passed": 4,
+      "checks": 23
+    },
+    "415": {
+      "passed": 7,
+      "checks": 14
+    }
+  },
+  "known_correct_reference": {
+    "405": {
+      "passed": 23,
+      "checks": 23
+    },
+    "415": {
+      "passed": 14,
+      "checks": 14
+    }
+  },
+  "raw_first_run": [
+    {
+      "issue": 415,
+      "task_id": "published-rss-docs-415",
+      "arm": "baseline",
+      "status": "VALID_INCORRECT",
+      "accepted": false,
+      "elapsed_seconds": 122.736,
+      "model_exit": 0,
+      "model_turns": 1,
+      "successful_native_commands": 6,
+      "successful_file_edits": 0,
+      "reported_input_tokens": 170417,
+      "reported_cached_input_tokens": 127616,
+      "reported_output_tokens": 2214,
+      "policy_denial": false,
+      "protocol_valid": true,
+      "changed_paths": [
+        "README.md"
+      ],
+      "outside_scope_paths": [],
+      "hidden_checks_passed": 11,
+      "hidden_checks_total": 14,
+      "ordinary_tests_exit": 0,
+      "ordinary_tests_passed": 10,
+      "raw_jsonl_sha256": "726c12ec89940767dc49dffcffbf3de222dc52083f3e938a426d412c84af4097",
+      "raw_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "failed_case_ids": [
+        "415-release-pinned-command",
+        "415-explicit-installed-wheel-boundary",
+        "415-does-not-change-earlier-readme"
+      ],
+      "manual_review": "Likely valid issue-contract fix; README explicitly labels PyPI 0.3.0 and provides both pinned uvx commands in a short heading immediately BEFORE the original Saved headline-only JSON paragraph. All five source-checkout-only qualifiers were corrected, source caveats retained and no unrelated files altered. Frozen grader incorrectly required the added heading to appear AFTER the original paragraph and required its earlier section to remain byte-identical. No retroactive change to original 11/14 grader verdict."
+    },
+    {
+      "issue": 415,
+      "task_id": "published-rss-docs-415",
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "issue": 415,
+      "task_id": "published-rss-docs-415",
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "issue": 405,
+      "task_id": "rss-topic-filter-405",
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "issue": 405,
+      "task_id": "rss-topic-filter-405",
+      "arm": "baseline",
+      "status": "NOT_RUN"
+    },
+    {
+      "issue": 405,
+      "task_id": "rss-topic-filter-405",
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    }
+  ],
+  "productivity": {
+    "baseline_accepted": 0,
+    "full_mcp_accepted": null,
+    "compact_mcp_accepted": null,
+    "seconds_per_accepted_fix": null,
+    "model_reported_input_tokens_per_accepted_fix": null,
+    "causal_speed_or_accuracy_uplift_established": false,
+    "reason": "Frozen grader rejected a legitimate alternative placement; treatment arms deliberately not run and denominator remains incomplete."
+  },
+  "release_effects": {
+    "merged": false,
+    "published": false,
+    "cloudflare_deployed": false,
+    "live_service_restarted": false,
+    "changed_shared_source": false
+  },
+  "caveats": [
+    "Manual code review is by the experiment author, not an independent blinded referee.",
+    "Calibration against one reference implementation missed a plausible, semantically equivalent docs layout.",
+    "The original baseline receipt was preserved unchanged and never replayed.",
+    "Same-user Windows private-grader isolation is not independently attested.",
+    "V11 contributes no valid treatment-vs-baseline productivity evidence."
+  ]
+}
