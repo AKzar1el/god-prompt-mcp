@@ -126,7 +126,9 @@ function eventSummary(text) {
       turns++;
       for (const k of Object.keys(usage)) usage[k] += e.usage?.[k] || 0;
     }
-    if (e.type === "item.completed" && ["command_execution","file_change"].includes(e.item?.type)) {
+    if (e.type === "item.completed" && ["command_execution","file_change"].includes(e.item?.type) &&
+        e.item?.status === "completed" && !e.item?.error &&
+        (e.item?.exit_code === undefined || e.item.exit_code === 0)) {
       editsOrCommands++;
     }
     if (e.type === "item.completed" && e.item?.type === "mcp_tool_call" &&
@@ -145,6 +147,18 @@ function changedPaths(path) {
     });
 }
 async function run(task, arm) {
+  // The first actual V9 run hit an explicit host policy denial. Never sidestep
+  // that restriction by launching treatment arms or replaying the failed control.
+  // A new preregistered study requires a legitimately enabled command tool.
+  const firstTask = manifest.tasks[0];
+  const firstReceipt = receiptPath(firstTask, firstTask.order[0]);
+  if (existsSync(firstReceipt)) {
+    const first = JSON.parse(readFileSync(firstReceipt, "utf8"));
+    check(!(first.accepted === false && first.command_or_edit_events === 0),
+      "V9 halted: native coding commands were blocked by host policy. " +
+      "Do not bypass or replay the frozen control; create a NEW study " +
+      "only after the authorized tool execution policy is repaired.");
+  }
   const pos = task.order.indexOf(arm);
   check(pos >= 0, "Arm not in frozen order");
   for (const prev of task.order.slice(0, pos)) {
@@ -200,13 +214,15 @@ async function run(task, arm) {
   const outside = changed_files.filter(name => !task.allowed_paths.includes(name));
   const grader = spawnSync("python", [GRADER, String(task.issue_number), dir], {
     cwd: PROJECT, encoding: "utf8", windowsHide: true, timeout: 120000,
-    env: { ...env, PYTHONNOUSERSITE: "1", PYTHONDONTWRITEBYTECODE: "1" },
+    // Python tooling lives in the user's Python user site; hiding it turns
+    // correctly failing RED grader checks into a spurious import error.
+    env: { ...env, PYTHONDONTWRITEBYTECODE: "1" },
   });
   let grade = null;
   try { grade = JSON.parse(grader.stdout); } catch { /* An invalid result stays invalid. */ }
   const tests = spawnSync("python", ["-m","pytest","-q","tests/test_rss_compare.py"], {
     cwd: dir, encoding: "utf8", windowsHide: true, timeout: 120000,
-    env: { ...env, PYTHONPATH: "src", PYTHONNOUSERSITE: "1", PYTHONDONTWRITEBYTECODE: "1" },
+    env: { ...env, PYTHONPATH: "src", PYTHONDONTWRITEBYTECODE: "1" },
   });
   const mcpValid = arm === "baseline" ? ev.godprompt_calls.length === 0 :
     ["classify_task", "get_tailored_guidance"].every(name =>

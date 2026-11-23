@@ -1,0 +1,94 @@
+{
+  "schema": "godprompt.v9.public-first-run-evidence.v1",
+  "date": "2026-11-23",
+  "manifest_sha256": "a80e86bed8efa8dee515f62962da19bc28728010cf08b39e5bd745c40ab208ad",
+  "manifest_path": "benchmarks/agent-ab/real-repos/v9-frozen-public-issues-20261123.json",
+  "frozen_source_repo": "AKzar1el/mcp-trendpulse",
+  "frozen_source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "frozen_grader_sha256": "3b4fa7c924b0f7d141e13a1051fa50bdc95c38495bda70b1948e1a21611557cc",
+  "planned_trials": 6,
+  "original_first_run_count": 1,
+  "status": "STOPPED_TOOL_EXECUTION_POLICY",
+  "trials": [
+    {
+      "task_id": "rss-sort-url-408",
+      "arm": "baseline",
+      "status": "INVALID_TOOL_POLICY",
+      "original_exit_code": 0,
+      "original_wall_seconds": 30.856,
+      "reported_input_tokens": 96441,
+      "reported_cached_input_tokens": 81792,
+      "reported_output_tokens": 461,
+      "completed_model_turns": 1,
+      "observed_successful_command_or_file_changes": 0,
+      "original_jsonl_sha256": "c83683ae113b0e10dd970402b8771c77d107fd872bd7f5a1c1471303e92a2f80",
+      "original_prompt_sha256": "87e251b9b2417f19b8deb5a7ac08d3d234ec292f5b25bd4aad19f0d058e89c6f",
+      "accepted": false,
+      "native_policy_error": "CreateProcess rejected: blocked by policy",
+      "independent_offline_regrade": {
+        "passed": 3,
+        "checks": 19,
+        "red_confirmed": true
+      },
+      "ordinary_existing_tests": {
+        "passed": 10,
+        "failed": 0
+      },
+      "note": "The first-run grader sub-process hid the Python user site and therefore emitted no valid grade. A separate offline regrade of unchanged first-run sources confirmed the original 3/19 RED; the original receipt and verdict were not modified."
+    },
+    {
+      "task_id": "rss-sort-url-408",
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-sort-url-408",
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410",
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410",
+      "arm": "baseline",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410",
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    }
+  ],
+  "productivity": {
+    "accepted_fixes": 0,
+    "seconds_per_accepted_fix": null,
+    "input_tokens_per_accepted_fix": null,
+    "treatment_speed_delta_percent": null,
+    "causal_uplift_proven": false
+  },
+  "verified_preflight": {
+    "codex_cli_version": "0.171.0",
+    "model_requested": "gpt-6.1-sol",
+    "effort_requested": "high",
+    "authenticated_through": "ChatGPT",
+    "godprompt_mcp_version": "1.4.2",
+    "local_mcp_get_version_call_succeeded": true,
+    "native_coding_tool_execution_succeeded": false
+  },
+  "release_effects": {
+    "merged": false,
+    "deployed": false,
+    "published": false,
+    "live_service_restarted": false
+  },
+  "limitations": [
+    "Only one model coding attempt was performed; it was tool-policy blocked and never patched code.",
+    "A separate MCP get_version probe succeeded but does not imply native coding-command permission.",
+    "Host CLI model/effort settings were requested but not independently attested.",
+    "The frozen private grader and raw first-run transcript remain in ignored local storage.",
+    "No A/B productivity, cost, or correctness uplift can be calculated from this stopped study."
+  ]
+}
