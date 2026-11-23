@@ -1,0 +1,300 @@
+{
+  "schema": "godprompt.v18.sanitized-original-matched-study.v1",
+  "study_id": "V18-shared-failing-checkpoint-randomized-A-B-20261123",
+  "date": "2026-11-23",
+  "frozen_sha256": {
+    "manifest": "7583270dfca93665581a308d3bc3b180ad27767dec361868809c2d0ecd2ec4f3",
+    "runner": "cc96023860094be631e962029b760ade66c18ab9b747aa643b46e7d37739eea4",
+    "private_grader": "1b8bdf3ccf4e0a43e990b94223d80d39058ac6ef46d1914ffe25d2a125642b86",
+    "event_helper": "e1a239c815e068eab75be9eb0ae8c339823a709cf2a86375a8b17533dd1ada90",
+    "unchanged_stdio": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b"
+  },
+  "randomized_run_order": [
+    "pytest-15335",
+    "anyio-1486",
+    "rich-4264"
+  ],
+  "preregistered_tasks": [
+    {
+      "id": "pytest-15335",
+      "issue": 15335,
+      "repo": "pytest-dev/pytest",
+      "issue_url": "https://github.com/pytest-dev/pytest/issues/15335",
+      "upstream_revision": "718929265449ca33040264152ba5e7022e766a52",
+      "source_sha256": "700eee7332b203ea135472e150dac88ccf6387481e5636db23931da1141fb046",
+      "frozen_regression_sha256": "7ddd6c68f2989665cbd6f177eb341ced4f86ec0180b69fdfc589f1d659abbfe7",
+      "original_hidden_red": 5,
+      "hidden_checks": 13,
+      "reference_a_passed": 13,
+      "reference_b_passed": 13,
+      "mutant_passed": 5,
+      "arm_order": [
+        "baseline",
+        "guided_mcp"
+      ]
+    },
+    {
+      "id": "anyio-1486",
+      "issue": 1486,
+      "repo": "agronholm/anyio",
+      "issue_url": "https://github.com/agronholm/anyio/issues/1486",
+      "upstream_revision": "37ba52b9137d72764d3bcbd31842b58a1e1ea992",
+      "source_sha256": "36afb31c5cf0eab86639246371ebf60455d4a51153e7fcc328e747d2267858d4",
+      "frozen_regression_sha256": "7582ee838dd3b6cc4ca555a6eec25c0a51f2372ab855cd5745ccabc2bec41896",
+      "original_hidden_red": 2,
+      "hidden_checks": 6,
+      "reference_a_passed": 6,
+      "reference_b_passed": 6,
+      "mutant_passed": 2,
+      "arm_order": [
+        "baseline",
+        "guided_mcp"
+      ]
+    },
+    {
+      "id": "rich-4264",
+      "issue": 4264,
+      "repo": "Textualize/rich",
+      "issue_url": "https://github.com/Textualize/rich/issues/4264",
+      "upstream_revision": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "source_sha256": "9989aad308d790ce45966f405fabb1b60ca08cb1eae01370f373926afb4afae0",
+      "frozen_regression_sha256": "fe4d5c75358d8c9912c31471b18939d3f522d79f6d056c204f144df9e085b28d",
+      "original_hidden_red": 9,
+      "hidden_checks": 19,
+      "reference_a_passed": 19,
+      "reference_b_passed": 19,
+      "mutant_passed": 4,
+      "arm_order": [
+        "guided_mcp",
+        "baseline"
+      ]
+    }
+  ],
+  "original_rows": [
+    {
+      "task": "pytest-15335",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "model_wall_seconds": 217.305,
+      "hidden_passed": 13,
+      "hidden_total": 13,
+      "grader_process_exit_code": 0,
+      "grader_process_error": null,
+      "native_tests_count": 3,
+      "native_tests_exit_code": 0,
+      "model_reported_usage": {
+        "input_tokens": 297935,
+        "cached_input_tokens": 274944,
+        "output_tokens": 2300
+      },
+      "original_mcp_calls": [],
+      "original_changed_paths": [
+        "src/_pytest/approx.py",
+        "v18_native_tests/test_recovery.py"
+      ],
+      "original_receipt_sha256": "d9674fad799aae28bd5e7c78eb6ee26c239f3be3c2237add161b4a5877a2fffe",
+      "original_jsonl_sha256": "42ccae6a442d4cc0d20c92f8f9dc3ae5e188a933985cb2ccaf92fbaa47fce702",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    {
+      "task": "pytest-15335",
+      "arm": "guided_mcp",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "model_wall_seconds": 179.255,
+      "hidden_passed": 13,
+      "hidden_total": 13,
+      "grader_process_exit_code": 0,
+      "grader_process_error": null,
+      "native_tests_count": 3,
+      "native_tests_exit_code": 0,
+      "model_reported_usage": {
+        "input_tokens": 294373,
+        "cached_input_tokens": 253824,
+        "output_tokens": 2951
+      },
+      "original_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_edit": true,
+          "arguments_valid": true
+        }
+      ],
+      "original_changed_paths": [
+        "src/_pytest/approx.py",
+        "v18_native_tests/test_recovery.py"
+      ],
+      "original_receipt_sha256": "aabd1dbc6f1fef3596fbee5e93a8a8ffbe6c8f11c68917b651ba6e29a6d1b61d",
+      "original_jsonl_sha256": "af7dc5fde4f1d110887e6ecfe728277d0af70d2ff2bea0f8b439ca9ff3f06951",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    {
+      "task": "anyio-1486",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "model_wall_seconds": 230.244,
+      "hidden_passed": 6,
+      "hidden_total": 6,
+      "grader_process_exit_code": 0,
+      "grader_process_error": null,
+      "native_tests_count": 3,
+      "native_tests_exit_code": 0,
+      "model_reported_usage": {
+        "input_tokens": 312024,
+        "cached_input_tokens": 282752,
+        "output_tokens": 3491
+      },
+      "original_mcp_calls": [],
+      "original_changed_paths": [
+        "src/anyio/_backends/_asyncio.py",
+        "v18_native_tests/test_recovery.py"
+      ],
+      "original_receipt_sha256": "a9620c780ed3a569b3b0bf6a801a1ceae1578139a45e06250edf8ffceed4d223",
+      "original_jsonl_sha256": "47f080699ef0cc280cabed55dba46016f09b54a3f1208dbe9e1620abd0ba52ff",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    {
+      "task": "anyio-1486",
+      "arm": "guided_mcp",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "model_wall_seconds": 234.131,
+      "hidden_passed": 6,
+      "hidden_total": 6,
+      "grader_process_exit_code": 0,
+      "grader_process_error": null,
+      "native_tests_count": 3,
+      "native_tests_exit_code": 0,
+      "model_reported_usage": {
+        "input_tokens": 493085,
+        "cached_input_tokens": 447872,
+        "output_tokens": 4646
+      },
+      "original_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_edit": true,
+          "arguments_valid": true
+        }
+      ],
+      "original_changed_paths": [
+        "src/anyio/_backends/_asyncio.py",
+        "v18_native_tests/test_recovery.py"
+      ],
+      "original_receipt_sha256": "86072ae1e13dc5745f0d894d6a43d3c22281dcdb68efcf8daa7cdb6f6dc0c833",
+      "original_jsonl_sha256": "8612d46f3081bdfc567e9e08b3ad2a6213a0bd0985adc396c9af0ccd42d87dcd",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    {
+      "task": "rich-4264",
+      "arm": "guided_mcp",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "model_wall_seconds": 125.954,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "grader_process_exit_code": 0,
+      "grader_process_error": null,
+      "native_tests_count": 3,
+      "native_tests_exit_code": 0,
+      "model_reported_usage": {
+        "input_tokens": 296983,
+        "cached_input_tokens": 259712,
+        "output_tokens": 2532
+      },
+      "original_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_edit": true,
+          "arguments_valid": true
+        }
+      ],
+      "original_changed_paths": [
+        "rich/segment.py",
+        "v18_native_tests/test_recovery.py"
+      ],
+      "original_receipt_sha256": "8cf0104b93311734beeda881b50b96332ace7ca5d5b26924445559508dcda714",
+      "original_jsonl_sha256": "92849762555fb61e4712d7e8be57963366decc23617ae18d16b928adf0b4921a",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    {
+      "task": "rich-4264",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "model_wall_seconds": 135.153,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "grader_process_exit_code": 0,
+      "grader_process_error": null,
+      "native_tests_count": 3,
+      "native_tests_exit_code": 0,
+      "model_reported_usage": {
+        "input_tokens": 241045,
+        "cached_input_tokens": 188800,
+        "output_tokens": 2848
+      },
+      "original_mcp_calls": [],
+      "original_changed_paths": [
+        "rich/segment.py",
+        "v18_native_tests/test_recovery.py"
+      ],
+      "original_receipt_sha256": "5ab7ee47f47b474c729facf542a0a0c0867488bb9645da978b117bf604ee5a3b",
+      "original_jsonl_sha256": "07c00f3e1abd2b3880e211b8b94862f90dd832d890e0ffac7bd27ba4f74cff0b",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    }
+  ],
+  "by_arm": {
+    "baseline": {
+      "attempts": 3,
+      "accepted": 3,
+      "all_original_seconds": 582.702,
+      "seconds_per_accepted_fix": 194.234,
+      "known_input_tokens": 851004,
+      "missing_usage": 0,
+      "actual_mcp_calls": 0
+    },
+    "guided_mcp": {
+      "attempts": 3,
+      "accepted": 3,
+      "all_original_seconds": 539.34,
+      "seconds_per_accepted_fix": 179.78,
+      "known_input_tokens": 1084441,
+      "missing_usage": 0,
+      "actual_mcp_calls": 3
+    }
+  },
+  "comparison": {
+    "guided_wall_seconds_per_accepted_fix_relative_percent": -7.44,
+    "original_guided_mcp_calls": 3,
+    "correct_guided_mcp_calls_required_per_arm": 1,
+    "original_matched_trials_complete": true,
+    "replicated_productivity_gain_proven": false,
+    "production_guidance_change": "NO_GO"
+  },
+  "evidence_integrity": {
+    "independent_raw_audit_original_receipts": 6,
+    "original_session_jsonl_committed": false,
+    "original_stderr_committed": false,
+    "private_hidden_grader_committed": false,
+    "private_calibration_sources_committed": false,
+    "independent_blinded_human_adjudication_completed": false,
+    "immutable_original_receipt_ids": true
+  },
+  "limitations": [
+    "Three new public issue reports selected by one researcher with same-author graders and reference/mutant patches, not independent blinded review.",
+    "Each of two randomized arms began with identical source and frozen failing regression tests; one first-run agent per arm, insufficient for a repeatable population claim.",
+    "The guided arm invokes general short GodPrompt DEBUG execute guidance once; no additional repository-specific diagnostic information was supplied to the MCP tool.",
+    "Original attempts, timeouts, policy denials and grader process errors are counted in the full denominator; postflight checks do not convert failed original receipts to accepted.",
+    "Reported model input tokens include cached content, are not billed-token attestations, and model effort is requested rather than independently verified.",
+    "Private raw logs, graders, test fixtures and isolated code remain off GitHub; public receipt digests alone cannot reproduce private hidden grading."
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "schema": "godprompt.v18.matched-failing-checkpoint.v1",
+  "id": "V18-shared-failing-checkpoint-randomized-A-B-20261123",
+  "date": "2026-11-23",
+  "parent_draft_pr": "https://github.com/AKzar1el/god-prompt-mcp/pull/260",
+  "research_head": "c6030dcc15066a32abfe9ce18ce07dbbf3db07e1",
+  "runtime_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "private_behavior_grader_sha256": "1b8bdf3ccf4e0a43e990b94223d80d39058ac6ef46d1914ffe25d2a125642b86",
+  "behavior_grader_schema": "godprompt.v18.private-behavioral-grade.v1",
+  "event_helper_sha256": "e1a239c815e068eab75be9eb0ae8c339823a709cf2a86375a8b17533dd1ada90",
+  "git_path_helper_sha256": "5780d6d9efe8df1d11a8c27b371553e9725fa7053354e4060c535e428bfcb223",
+  "random_seed": "52992aa4028d4b1fbea1fed40f26414e",
+  "randomization_rule": "Sort task IDs by ascending SHA256(random_seed + id). First two get baseline first, remaining task gets guided_mcp first. Both clones of each task receive byte-identical code and fixed failing regression test.",
+  "run_order": [
+    "pytest-15335",
+    "anyio-1486",
+    "rich-4264"
+  ],
+  "arms": [
+    "baseline",
+    "guided_mcp"
+  ],
+  "intervention": {
+    "treatment": "One real godprompt.get_tailored_guidance invocation, task_type=DEBUG, phase=execute, compact=true, max_chars=600, completed BEFORE first source edit; no other GodPrompt or MCP calls.",
+    "baseline": "No active MCP servers or GodPrompt prompt/skills. Same task context, tests, code and permission profile.",
+    "note": "Treatment text is a short general process guide, not independently verified source-specific diagnosis; compare combined tool-invocation policy, not isolated model reasoning."
+  },
+  "environment": {
+    "codex_cli_version": "0.171.0",
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "high",
+    "sandbox": "workspace-write",
+    "network_access": false,
+    "executor": "Windows PowerShell; Node 22; Python 3.13",
+    "unrelated_mcp_disabled": [
+      "node_repl",
+      "github",
+      "memory",
+      "firecrawl",
+      "cloudflare-api",
+      "context7",
+      "filesystem",
+      "mcp-gsc",
+      "shared-browser",
+      "chrome-devtools",
+      "god-prompt-mcp",
+      "godprompt-checkpoint-pilot",
+      "mcp-trendpulse",
+      "mcp-web-validator"
+    ],
+    "native_test_args": [
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "v18_native_tests",
+      "-p",
+      "test_recovery.py",
+      "-v"
+    ],
+    "test_minimum": 2
+  },
+  "tasks": [
+    {
+      "id": "pytest-15335",
+      "repo": "pytest-dev/pytest",
+      "issue": 15335,
+      "issue_url": "https://github.com/pytest-dev/pytest/issues/15335",
+      "checkpoint_dir": "pytest",
+      "source_sha": "718929265449ca33040264152ba5e7022e766a52",
+      "source_url": "https://github.com/pytest-dev/pytest.git",
+      "code_paths": [
+        "src/_pytest/approx.py"
+      ],
+      "code_file_sha256": "700eee7332b203ea135472e150dac88ccf6387481e5636db23931da1141fb046",
+      "regression_file": "v18_native_tests/test_recovery.py",
+      "regression_sha256": "7ddd6c68f2989665cbd6f177eb341ced4f86ec0180b69fdfc589f1d659abbfe7",
+      "pythonpath": "src",
+      "checkpoint_source_state": "Untouched upstream source, independently executed failing regression tests",
+      "known_native_tests_total": 3,
+      "known_native_exit_nonzero": true,
+      "hidden_total": 13,
+      "checkpoint_hidden_passed": 5,
+      "reference_a_passed": 13,
+      "reference_b_passed": 13,
+      "mutant_passed": 5,
+      "order": [
+        "baseline",
+        "guided_mcp"
+      ],
+      "timeout_seconds": 300,
+      "description": "Repair pytest approx comparison when the ACTUAL value is Decimal('NaN') and the expected value is a finite Decimal or number. Currently a decimal.InvalidOperation escapes instead of yielding an unequal comparison. Also handle nested sequence/mapping comparisons, nan_ok semantics, and avoid regressing finite decimal tolerances."
+    },
+    {
+      "id": "anyio-1486",
+      "repo": "agronholm/anyio",
+      "issue": 1486,
+      "issue_url": "https://github.com/agronholm/anyio/issues/1486",
+      "checkpoint_dir": "anyio",
+      "source_sha": "37ba52b9137d72764d3bcbd31842b58a1e1ea992",
+      "source_url": "https://github.com/agronholm/anyio.git",
+      "code_paths": [
+        "src/anyio/_backends/_asyncio.py"
+      ],
+      "code_file_sha256": "36afb31c5cf0eab86639246371ebf60455d4a51153e7fcc328e747d2267858d4",
+      "regression_file": "v18_native_tests/test_recovery.py",
+      "regression_sha256": "7582ee838dd3b6cc4ca555a6eec25c0a51f2372ab855cd5745ccabc2bec41896",
+      "pythonpath": "src",
+      "checkpoint_source_state": "Untouched upstream source, independently executed failing regression tests",
+      "known_native_tests_total": 3,
+      "known_native_exit_nonzero": true,
+      "hidden_total": 6,
+      "checkpoint_hidden_passed": 2,
+      "reference_a_passed": 6,
+      "reference_b_passed": 6,
+      "mutant_passed": 2,
+      "order": [
+        "baseline",
+        "guided_mcp"
+      ],
+      "timeout_seconds": 420,
+      "description": "Repair AnyIO asyncio task-group cancellation: a helper spawned into an ALREADY CANCELLED task group during shielded cleanup can continue forever after prior cancellation delivery stops, while its parent waits for completion. Restart cancellation delivery safely for new tasks, preserving regular task starts and nested cancellation."
+    },
+    {
+      "id": "rich-4264",
+      "repo": "Textualize/rich",
+      "issue": 4264,
+      "issue_url": "https://github.com/Textualize/rich/issues/4264",
+      "checkpoint_dir": "rich",
+      "source_sha": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "source_url": "https://github.com/Textualize/rich.git",
+      "code_paths": [
+        "rich/segment.py"
+      ],
+      "code_file_sha256": "9989aad308d790ce45966f405fabb1b60ca08cb1eae01370f373926afb4afae0",
+      "regression_file": "v18_native_tests/test_recovery.py",
+      "regression_sha256": "fe4d5c75358d8c9912c31471b18939d3f522d79f6d056c204f144df9e085b28d",
+      "pythonpath": ".",
+      "checkpoint_source_state": "Untouched upstream source, independently executed failing regression tests",
+      "known_native_tests_total": 3,
+      "known_native_exit_nonzero": true,
+      "hidden_total": 19,
+      "checkpoint_hidden_passed": 9,
+      "reference_a_passed": 19,
+      "reference_b_passed": 19,
+      "mutant_passed": 4,
+      "order": [
+        "guided_mcp",
+        "baseline"
+      ],
+      "timeout_seconds": 300,
+      "description": "Repair Rich Segment.split_cells so combining marks and emoji grapheme clusters stay with their base character across cell-boundary splits. Preserve styles/control behavior, proper splitting of double-width characters into spaces when a cut crosses one, and ASCII fast path."
+    }
+  ],
+  "limits": {
+    "original_denominator": 6,
+    "one_model_attempt_per_arm": true,
+    "no_retries_or_postflight_upgrade": true,
+    "baseline_and_treatment_same_checkpoint_bytes": true,
+    "no_external_network_or_paid_keys": true,
+    "no_global_trust_disable": true,
+    "no_upstream_writes": true,
+    "same_author_reference_graders": true,
+    "blinded_human_review": false,
+    "grader_process_capture_required": true,
+    "production_changes_forbidden": true,
+    "minimum_meaningful_uplift_percent": 15
+  },
+  "caveats": [
+    "Preexisting externally reported defects and independently verified failing tests, not independently sampled genuine failed-agent repair trajectories; prior V17 partial AnyIO candidate was excluded for nonreproducible native RED.",
+    "No independent blinded human reviewer; two correct patch references are same-researcher authored, not independent adjudication.",
+    "Treatment invokes the actual GodPrompt tool once before editing. The compact text is generic; this evaluates the joint call-and-instruction policy.",
+    "Only three paired tasks, one first run per arm; sampling noise, prompt differences and order effects prevent population causal claims.",
+    "Do not merge, publish, deploy, restart or change live GodPrompt based on this research."
+  ]
+}
