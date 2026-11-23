@@ -1,0 +1,167 @@
+{
+  "schema": "godprompt.v12.stopped-public-evidence.v1",
+  "date": "2026-11-23",
+  "study": "V12-real-issues-20261123",
+  "frozen_manifest_sha256": "303e8524eadb1049538f73e77d40acba0e19261925a979ed26b993c425dd6bc4",
+  "frozen_runner_sha256": "71d599470b31a2ec722d7909d27b7799d3179c1fd52a94eafb5cdefa2f246b8a",
+  "frozen_grader_sha256": "cb46cb42173c8c5be1c2a3b22a6ff9ad5593419330aad17224000a0fd710bb08",
+  "source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "status": "STOPPED_FROZEN_RUBRIC_OPTIONAL_UVX_PYTHON_FALSE_NEGATIVE",
+  "planned": 6,
+  "original_first_runs": 2,
+  "intentionally_unrun": 4,
+  "calibration": {
+    "red": {
+      "405": "4/23",
+      "415": "7/14"
+    },
+    "green_reference_a": {
+      "405": "23/23",
+      "415": "14/14"
+    },
+    "green_reference_b": {
+      "405": "23/23",
+      "415": "14/14"
+    },
+    "intentional_doc_mutants": [
+      "13/14",
+      "13/14"
+    ]
+  },
+  "trials": [
+    {
+      "issue": 415,
+      "task_id": "published-rss-docs-415-v12",
+      "arm": "full_mcp",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "wall_seconds": 142.034,
+      "hidden_passed": 14,
+      "hidden_total": 14,
+      "tests_passed": 10,
+      "tests_failed": 0,
+      "reported_input_tokens": 401171,
+      "reported_cached_input_tokens": 356736,
+      "reported_output_tokens": 2947,
+      "model_exit": 0,
+      "model_turns": 1,
+      "policy_denial": false,
+      "changed_paths": [
+        "README.md"
+      ],
+      "outside_scope_paths": [],
+      "godprompt_calls": [
+        {
+          "tool": "classify_task",
+          "success": true
+        },
+        {
+          "tool": "get_tailored_guidance",
+          "success": true
+        },
+        {
+          "tool": "get_tailored_guidance",
+          "success": true
+        },
+        {
+          "tool": "get_tailored_guidance",
+          "success": true
+        }
+      ],
+      "original_jsonl_sha256": "016cbd5938b71a76c7bd38854a6cbda8163c26eaa0b4a49183c724ec34a8e400"
+    },
+    {
+      "issue": 415,
+      "task_id": "published-rss-docs-415-v12",
+      "arm": "baseline",
+      "original_status": "VALID_INCORRECT",
+      "accepted": false,
+      "wall_seconds": 108.725,
+      "hidden_passed": 13,
+      "hidden_total": 14,
+      "tests_passed": 10,
+      "tests_failed": 0,
+      "reported_input_tokens": 230378,
+      "reported_cached_input_tokens": 202368,
+      "reported_output_tokens": 2299,
+      "model_exit": 0,
+      "model_turns": 1,
+      "policy_denial": false,
+      "changed_paths": [
+        "README.md"
+      ],
+      "outside_scope_paths": [],
+      "godprompt_calls": [],
+      "failed_case_ids": [
+        "415-release-pinned-command"
+      ],
+      "original_jsonl_sha256": "072086688a9a2b4d77470d79af3d408c13f73f0ecd1c5559cbd58bbd87389b9b"
+    },
+    {
+      "issue": 415,
+      "task_id": "published-rss-docs-415-v12",
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "issue": 405,
+      "task_id": "rss-topic-filter-405-v12",
+      "arm": "baseline",
+      "status": "NOT_RUN"
+    },
+    {
+      "issue": 405,
+      "task_id": "rss-topic-filter-405-v12",
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "issue": 405,
+      "task_id": "rss-topic-filter-405-v12",
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    }
+  ],
+  "rubric_audit": {
+    "failed_baseline_case": "415-release-pinned-command",
+    "reason": "The frozen hidden test demanded the exact substring 'uvx --from mcp-trendpulse==0.3.0 ...', whereas the baseline supplied a legitimate optional interpreter selection: 'uvx --python 3.11 --from mcp-trendpulse==0.3.0 ...'. Both review and compare examples were present; all other hidden contract checks passed.",
+    "uvx_cli_supports_python_option": true,
+    "uvx_cli_supports_from_option": true,
+    "package_help_executed_from_published_0_3_0": true,
+    "independent_peer_adjudication": false,
+    "original_score_unchanged": true
+  },
+  "descriptive_only": {
+    "full_seconds": 142.034,
+    "baseline_seconds": 108.725,
+    "full_reported_input_tokens": 401171,
+    "baseline_reported_input_tokens": 230378,
+    "valid_randomized_productivity_comparison": false,
+    "note": "The pair used the same task and pinned source, but the frozen acceptance test itself was unsound and four planned trials were not run."
+  },
+  "productivity": {
+    "accepted_full": 1,
+    "accepted_baseline_by_original_frozen_grade": 0,
+    "accepted_compact": null,
+    "verified_speed_advantage": null,
+    "verified_accuracy_advantage": null,
+    "seconds_per_accepted_fix": null,
+    "input_tokens_per_accepted_fix": null,
+    "proven_causal_productivity_uplift": false
+  },
+  "release_effects": {
+    "merged": false,
+    "published": false,
+    "deployed": false,
+    "restarted": false,
+    "shared_source_modified": false
+  },
+  "caveats": [
+    "No revised baseline correctness is asserted in the frozen original receipt.",
+    "Grader calibration on two valid layouts still missed an optional uvx CLI flag order.",
+    "Model-reported input tokens include cached context and are not billed costs.",
+    "Windows same-user private-grade isolation and model identity are not independently attested.",
+    "The issue was a disclosed V11 follow-up, not a fully fresh unseen bug.",
+    "No population-level coding-productivity claim is supported."
+  ]
+}

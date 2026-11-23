@@ -1,0 +1,139 @@
+{
+  "schema": "godprompt.v12.real-repo.multireference-triarm.v1",
+  "study_id": "V12-real-issues-20261123",
+  "date": "2026-11-23",
+  "source_repository": "AKzar1el/mcp-trendpulse",
+  "source_origin": "https://github.com/AKzar1el/mcp-trendpulse.git",
+  "source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "godprompt_sha": "4dbfb69e73c747ef6f1067b3d6d08dca82576671",
+  "godprompt_version": "1.4.2",
+  "godprompt_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "grader_sha256": "cb46cb42173c8c5be1c2a3b22a6ff9ad5593419330aad17224000a0fd710bb08",
+  "baseline_grade": {
+    "405": {
+      "passed": 4,
+      "checks": 23
+    },
+    "415": {
+      "passed": 7,
+      "checks": 14
+    }
+  },
+  "known_correct_grade": {
+    "405": {
+      "passed": 23,
+      "checks": 23
+    },
+    "415": {
+      "passed": 14,
+      "checks": 14
+    }
+  },
+  "alternate_correct_grade": {
+    "405": {
+      "passed": 23,
+      "checks": 23
+    },
+    "415": {
+      "passed": 14,
+      "checks": 14
+    }
+  },
+  "docs_known_correct_variants": [
+    "Intro and pinned commands after original RSS paragraph",
+    "Pinned PyPI command heading before original RSS paragraph (the V11 original baseline alternate)"
+  ],
+  "intentional_docs_mutants": {
+    "missing_pinned_compare_command": {
+      "passed": 13,
+      "checks": 14
+    },
+    "reintroduced_source_only_label": {
+      "passed": 13,
+      "checks": 14
+    }
+  },
+  "pypi_release_0_3_0_help_smoke": {
+    "rss-review": true,
+    "rss-compare": true
+  },
+  "cli": {
+    "version": "0.171.0",
+    "login": "authenticated ChatGPT Codex CLI",
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "high",
+    "sandbox": "workspace-write",
+    "inherit_authorized_windows_config": true,
+    "workspace_network_access": false,
+    "no_paid_api_keys": true,
+    "globally_configured_mcp_disabled_per_session": [
+      "node_repl",
+      "github",
+      "memory",
+      "firecrawl",
+      "cloudflare-api",
+      "context7",
+      "filesystem",
+      "mcp-gsc",
+      "shared-browser"
+    ]
+  },
+  "arms": [
+    "baseline",
+    "full_mcp",
+    "compact_mcp"
+  ],
+  "tasks": [
+    {
+      "id": "published-rss-docs-415-v12",
+      "issue": 415,
+      "url": "https://github.com/AKzar1el/mcp-trendpulse/issues/415",
+      "order": [
+        "full_mcp",
+        "baseline",
+        "compact_mcp"
+      ],
+      "timeout_seconds": 480,
+      "allowed_paths": [
+        "README.md"
+      ],
+      "description": "Correct ONLY README availability language for the shipped PyPI 0.3.0 offline rss-review and rss-compare commands. Remove inaccurate source-checkout-only assertions for RSS review/compare, provide pinned uvx --from mcp-trendpulse==0.3.0 commands for BOTH installed-package help workflows, preserve original offline evidence limitations and unrelated source-only labels. An independent fixed offline preflight already verified both published help flows. The new command block may be anywhere inside the RSS documentation subsection. Do not publish or edit code."
+    },
+    {
+      "id": "rss-topic-filter-405-v12",
+      "issue": 405,
+      "url": "https://github.com/AKzar1el/mcp-trendpulse/issues/405",
+      "order": [
+        "baseline",
+        "compact_mcp",
+        "full_mcp"
+      ],
+      "timeout_seconds": 720,
+      "allowed_paths": [
+        "src/mcp_trendpulse/rss_compare.py",
+        "src/mcp_trendpulse/cli.py",
+        "tests/test_rss_compare.py"
+      ],
+      "description": "Implement opt-in rss-compare --contains TEXT for saved RSS offline snapshot comparisons. Match case-insensitive literal title text, trim and validate printable nonblank 1-120 characters; select union of exact URLs where either older or newer title matches before membership classification so a retitle out of filter stays retained. Preserve original quality totals/alerts, source authenticity caveats, matched counts and explicit filter method in JSON/Markdown/CSV, review-required when no matches. With flag omitted, preserve ALL outputs exactly; add provider-free offline tests and do not contact external APIs."
+    }
+  ],
+  "safeguards": {
+    "six_original_first_runs_preplanned": true,
+    "preregister_before_trials": true,
+    "no_replays": true,
+    "serial_execution": true,
+    "source_independent_git_clones": true,
+    "grader_not_in_model_clone": true,
+    "non_destructive_test_caches": true,
+    "default_guidance_unchanged": true,
+    "no_merge_release_deploy_restart": true,
+    "full_denominator": true
+  },
+  "limitations": [
+    "This is an explicitly disclosed replication of previously examined issues; not fully fresh problems.",
+    "V11 baseline implementation was used as one VALID calibration variant before V12 freeze; it is never supplied to model arms.",
+    "Alternative correct references for code issue #405 share the same primary implementation and do not establish exhaustive acceptance robustness.",
+    "Model identity/effort/Windows same-user private grader isolation cannot be independently attested.",
+    "Small, owner-reported issues cannot establish population causal productivity improvement."
+  ]
+}
