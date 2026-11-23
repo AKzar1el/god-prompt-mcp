@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { posix } from "node:path";
 import { inflateSync } from "node:zlib";
 
 const packageJson = JSON.parse(
@@ -121,6 +122,7 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
     "dist/work-contract.js",
     "dist/public-engineering.js",
     "dist/tailored-guidance.js",
+    "dist/compact-guidance.js",
     "dist/decision-support.js",
     "dist/agent-trajectory.js",
     "dist/change-impact.js",
@@ -146,6 +148,17 @@ test("exposes a public npm-installable stdio binary with a bounded package surfa
   assert.equal(packageJson.scripts?.prepare, "npm run build");
   assert.equal(packageJson.scripts?.prepublishOnly, "npm test");
   assert.match(stdioSource, /^#!\/usr\/bin\/env node\r?\n/);
+});
+
+test("npm allowlist includes runtime modules imported by bundled JavaScript", async () => {
+  const shipped = new Set(packageJson.files);
+  for (const file of packageJson.files.filter((value) => value.startsWith("dist/") && value.endsWith(".js"))) {
+    const code = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
+    for (const [, specifier] of code.matchAll(/\bfrom\s+["'](\.[^"']+\.js)["']/g)) {
+      const dependency = posix.normalize(posix.join(posix.dirname(file), specifier));
+      assert.ok(shipped.has(dependency), `${file} imports ${dependency}, missing from npm files`);
+    }
+  }
 });
 
 test("keeps package and Registry discovery metadata aligned with the shipped Agent Skill", () => {

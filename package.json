@@ -12,6 +12,7 @@
     "dist/work-contract.js",
     "dist/public-engineering.js",
     "dist/tailored-guidance.js",
+    "dist/compact-guidance.js",
     "dist/decision-support.js",
     "dist/agent-trajectory.js",
     "dist/change-impact.js",
