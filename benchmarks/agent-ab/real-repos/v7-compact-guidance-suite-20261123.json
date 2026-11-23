@@ -1,0 +1,92 @@
+{
+  "schema": "godprompt.v7.public-fresh-seeded-suite.v1",
+  "frozen_manifest_sha256": "7ad4641a2fa1d92e21ecadbd45ef087e71b5420635be6e04626efed3e4ace912",
+  "purpose": "Three brand-new first-party standalone seeded bugs; not real GitHub production bugs",
+  "task_count": 3,
+  "arms": [
+    "baseline",
+    "live_full",
+    "live_compact"
+  ],
+  "tasks": [
+    {
+      "task_id": "safe-json-pointer",
+      "domain": "MCP/JSON structured result routing",
+      "description": "Repair a pure RFC6901-like JSON Pointer reader. Empty pointer selects entire document; nonempty pointers must start with '/'. Decode ~1 to '/' and ~0 to '~', reject invalid ~ escapes. Traverse only own object properties; array indexes must be canonical nonnegative decimal indexes (no leading zero except 0). Return {found:true,value} when present including null/false/zero, otherwise {found:false}. Never mutate any input, never traverse inherited properties. Preserve export and write offline tests.",
+      "source_sha": "720d85624423ada67e81889b558fcaec5f5085d7",
+      "source_code": "export function resolvePointer(doc,pointer) {\n if(pointer==='')return {found:true,value:doc};\n let v=doc;for(const s of String(pointer).slice(1).split('/'))v=v[s];\n return {found:true,value:v??null};\n}\n",
+      "source_file_sha256": "70d4bf1e5d63e09c401aba44230ab062c107bb90ae886bf58360352578b74079",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {resolvePointer} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[{\"a\":{\"b\":1,\"c\":null},\"items\":[{\"id\":\"x\"},{\"id\":\"y\"}],\"/\":\"slash\",\"~\":\"tilde\",\"\":\"empty\",\"nested\":{\"a/b\":12,\"t~n\":13},\"zero\":0,\"flag\":false},\"\"],\"expected\":{\"found\":true,\"value\":{\"a\":{\"b\":1,\"c\":null},\"items\":[{\"id\":\"x\"},{\"id\":\"y\"}],\"/\":\"slash\",\"~\":\"tilde\",\"\":\"empty\",\"nested\":{\"a/b\":12,\"t~n\":13},\"zero\":0,\"flag\":false}}},{\"id\":6,\"input\":[{\"a\":{\"b\":1,\"c\":null},\"items\":[{\"id\":\"x\"},{\"id\":\"y\"}],\"/\":\"slash\",\"~\":\"tilde\",\"\":\"empty\",\"nested\":{\"a/b\":12,\"t~n\":13},\"zero\":0,\"flag\":false},\"/items/2/id\"],\"expected\":{\"found\":false}},{\"id\":12,\"input\":[{\"a\":{\"b\":1,\"c\":null},\"items\":[{\"id\":\"x\"},{\"id\":\"y\"}],\"/\":\"slash\",\"~\":\"tilde\",\"\":\"empty\",\"nested\":{\"a/b\":12,\"t~n\":13},\"zero\":0,\"flag\":false},\"/\"],\"expected\":{\"found\":true,\"value\":\"empty\"}},{\"id\":18,\"input\":[{\"a\":{\"b\":1,\"c\":null},\"items\":[{\"id\":\"x\"},{\"id\":\"y\"}],\"/\":\"slash\",\"~\":\"tilde\",\"\":\"empty\",\"nested\":{\"a/b\":12,\"t~n\":13},\"zero\":0,\"flag\":false},\"/zero\"],\"expected\":{\"found\":true,\"value\":0}},{\"id\":24,\"input\":[{\"a\":{\"b\":1,\"c\":null},\"items\":[{\"id\":\"x\"},{\"id\":\"y\"}],\"/\":\"slash\",\"~\":\"tilde\",\"\":\"empty\",\"nested\":{\"a/b\":12,\"t~n\":13},\"zero\":0,\"flag\":false},\"/__proto__\"],\"expected\":{\"found\":false}},{\"id\":30,\"input\":[42,\"\"],\"expected\":{\"found\":true,\"value\":42}}];\nfor(const c of cases){test('public-'+c.id,()=>{let value;try{value=resolvePointer(...c.input);}catch(e){value='THROWS:'+e.name;}assert.deepEqual(value,c.expected);});}\n",
+      "visible_test_sha256": "ef7c14b74c481f55214118188f006f3699433964ebd6d75ab6c17ff0424a2eb5",
+      "private_grader_sha256": "9a216cea3c342f99919603fc71972ec5d5961f23f62e4bc298cfd98fa978ca08",
+      "initial_hidden": {
+        "passed": 7,
+        "total": 29
+      },
+      "frozen_arm_order": [
+        "baseline",
+        "live_full",
+        "live_compact"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "rfc4180-csv-record",
+      "domain": "Data import and exported analysis CSV",
+      "description": "Repair a single-record RFC4180-compatible CSV parser. Return array of strings for comma-separated fields. Quoted fields may contain commas, doubled quotes become one quote, and newline inside quotes is valid. A quote may only open at the beginning of a field. After a closing quote, only a delimiter or end-of-input is allowed; any stray quote or trailing character is invalid. Newlines outside quotes and unterminated quoted fields return null. Empty record is one empty field. Nonstring input returns null. Preserve export and add offline tests.",
+      "source_sha": "17558e9c67c84afae7ba64b45631f04c01ede5b4",
+      "source_code": "export function parseCsvRecord(line) {\n if(typeof line!=='string')return null;\n return line.split(',');\n}\n",
+      "source_file_sha256": "0402e5c0d31e8723b5339c11bf03ebd765eaeb3584382e8013638cd2617f3689",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {parseCsvRecord} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"\"],\"expected\":[\"\"]},{\"id\":6,\"input\":[\"a,,c\"],\"expected\":[\"a\",\"\",\"c\"]},{\"id\":12,\"input\":[\"\\\"\\\"\\\"hello\\\"\\\"\\\"\"],\"expected\":[\"\\\"hello\\\"\"]},{\"id\":18,\"input\":[\"\\\"a\"],\"expected\":null},{\"id\":24,\"input\":[\"x\\rb\"],\"expected\":null},{\"id\":30,\"input\":[\"\\\"a\\\"\\t,b\"],\"expected\":null},{\"id\":36,\"input\":[\"x,y\\nz\"],\"expected\":null}];\nfor(const c of cases){test('public-'+c.id,()=>{let value;try{value=parseCsvRecord(...c.input);}catch(e){value='THROWS:'+e.name;}assert.deepEqual(value,c.expected);});}\n",
+      "visible_test_sha256": "54a4d9d43550e1d10784698d1dfb029d2cfef5318214469ea4660a9d8bf19d32",
+      "private_grader_sha256": "2240d1d1fd5d24a46f133fc227efc2dcc3b38b08ecb317469af30b177095e1ed",
+      "initial_hidden": {
+        "passed": 7,
+        "total": 32
+      },
+      "frozen_arm_order": [
+        "live_compact",
+        "baseline",
+        "live_full"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    },
+    {
+      "task_id": "safe-repo-relative-path",
+      "domain": "Local code-review workspace path handling",
+      "description": "Repair a pure repository-relative path canonicalizer. Accept strings only. Convert Windows backslashes to '/', drop duplicate slash and '.' segments, reject ANY '..' segment even if normalization could cancel it, reject absolute paths (Unix slash, UNC backslash or Windows drive), NUL bytes and empty/only-dot paths. Keep other characters and case intact. Return normalized forward-slash-relative path or null for invalid input. Never read or modify filesystem. Preserve export and add offline tests.",
+      "source_sha": "b031655baf3aa52e0c8dec52e7dd214fe8cae741",
+      "source_code": "export function normalizeRelativePath(p) {\n if(typeof p!=='string')return null;\n return p.replaceAll('\\\\','/').replace(/\\/+/g,'/');\n}\n",
+      "source_file_sha256": "e5a18e20ef21cad4e745a58b074da88e2e5db626c1c18317134eff79f93f93a7",
+      "visible_test_source": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport {normalizeRelativePath} from '../src/index.mjs';\nconst cases=[{\"id\":0,\"input\":[\"src/index.js\"],\"expected\":\"src/index.js\"},{\"id\":6,\"input\":[\"./a/./b\"],\"expected\":\"a/b\"},{\"id\":12,\"input\":[\"a/.../b\"],\"expected\":\"a/.../b\"},{\"id\":18,\"input\":[\"D:relative.txt\"],\"expected\":null},{\"id\":24,\"input\":[\"///\"],\"expected\":null},{\"id\":30,\"input\":[\"a\\u0000b\"],\"expected\":null},{\"id\":36,\"input\":[\"a\\\\b\\\\c\"],\"expected\":\"a/b/c\"}];\nfor(const c of cases){test('public-'+c.id,()=>{let value;try{value=normalizeRelativePath(...c.input);}catch(e){value='THROWS:'+e.name;}assert.deepEqual(value,c.expected);});}\n",
+      "visible_test_sha256": "6b5229199d46a8ae68ab548094e7a8c7e04b75c1a3f3f95b9f70d4efb7942ce1",
+      "private_grader_sha256": "f5fa652df3b49f7b8e97b2c6ed4c1638646d55af6c015db3702283f761ebe283",
+      "initial_hidden": {
+        "passed": 11,
+        "total": 32
+      },
+      "frozen_arm_order": [
+        "live_full",
+        "live_compact",
+        "baseline"
+      ],
+      "allowed_paths": [
+        "src/index.mjs",
+        "tests/public.test.mjs"
+      ]
+    }
+  ],
+  "limitations": [
+    "First-party seeded standalone bugs, not unmodified production issues",
+    "Private hidden graders and full agent transcripts withheld; their hashes are published",
+    "Windows unelevated sandbox does not prove physical hidden-input read isolation",
+    "One compact arm timed out at the 205-second limit; no replay",
+    "Model server-side effort and actual billed cost not independently verified"
+  ]
+}

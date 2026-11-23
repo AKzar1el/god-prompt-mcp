@@ -1,11 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { CONTENT } from "./content.js";
+import { getCompactGuidance } from "./compact-guidance.js";
 
 const TYPES = ["BUILD", "DEBUG", "REFACTOR", "CONTENT", "DESIGN", "SHIP", "ANALYZE", "AUTOMATE", "PLAN"] as const;
 const PHASES = ["plan", "execute", "verify", "handoff"] as const;
 const RECOMMENDED_GUIDANCE_CHARS = 1800;
 const MAX_GUIDANCE_CHARS = 4000;
+const COMPACT_GUIDANCE_CHARS = 600;
 
 type TaskType = (typeof TYPES)[number];
 type Phase = (typeof PHASES)[number];
@@ -40,7 +42,7 @@ function firstSubsection(section: string): string {
   return lines.slice(0, after < 0 ? undefined : after).join("\n").trim();
 }
 
-export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0, maxChars = RECOMMENDED_GUIDANCE_CHARS) {
+export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0, maxChars = RECOMMENDED_GUIDANCE_CHARS, compact = false) {
   const protocol = headingSection(CONTENT.PROTOCOLS, `${taskType} Protocol`);
   const quality = headingSection(CONTENT.GATES, `${taskType} Quality Gate`);
   const universal = headingSection(CONTENT.GATES, "Universal Gate (EVERY task, no exceptions)");
@@ -56,6 +58,12 @@ export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0,
     text = defaultGate;
     source = "references/02-GATES.md";
   }
+  if (compact) {
+    // An explicit opt-in. The full content and paging remain unchanged for
+    // existing clients; concise prompts do not silently lower quality gates.
+    text = getCompactGuidance(taskType, phase);
+    source = "src/compact-guidance.ts";
+  }
   const selected = text.slice(start, start + maxChars);
   return {
     task_type: taskType,
@@ -66,38 +74,46 @@ export function getTailoredGuidance(taskType: TaskType, phase: Phase, start = 0,
     next_start: start + selected.length < text.length ? start + selected.length : null,
     total_chars: text.length,
     truncated: start + selected.length < text.length,
-    suggested_tools: start===0 ? [...TOOL_HINTS[taskType][phase]] : [],
-    tool_selection_rule: start===0 ? "Only use a suggested tool when the caller supplies appropriate bounded evidence; tools are optional, not automatically invoked." : null,
+    suggested_tools: compact ? [] : start===0 ? [...TOOL_HINTS[taskType][phase]] : [],
+    tool_selection_rule: compact ? null : start===0 ? "Only use a suggested tool when the caller supplies appropriate bounded evidence; tools are optional, not automatically invoked." : null,
     // These are navigation hints, not execution receipts or automatic calls.
     // Present the exact valid follow-up arguments where coding agents can see
     // them, rather than relying only on global instructions to remember verify.
     recommended_next_call: phase==="execute" ? {
       tool: "get_tailored_guidance",
-      arguments: { task_type: taskType, phase: "verify", max_chars: RECOMMENDED_GUIDANCE_CHARS },
+      arguments: compact
+        ? { task_type: taskType, phase: "verify", max_chars: COMPACT_GUIDANCE_CHARS, compact: true }
+        : { task_type: taskType, phase: "verify", max_chars: RECOMMENDED_GUIDANCE_CHARS },
     } : null,
-    next_step: phase==="execute"
+    next_step: compact ? (phase === "execute"
+      ? "After real edits and tests, request compact verify guidance and inspect evidence."
+      : "Guidance only; evidence and approval are separate.") : phase==="execute"
       ? "After scoped edits and actual test commands, call get_tailored_guidance for the verify phase on this same server; independently check the returned gates before claiming completion."
       : phase==="verify"
         ? "Review actual verification command receipts and the changed-file scope; guidance is not a substitute for running tests."
         : "Use the phase guidance only within authorized task scope; retrieve execute and verify guidance separately for coding work.",
     guidance_is_verification: false,
-    warning: "Guidance only: the MCP did not inspect a codebase, execute checks, or verify results. Load additional chunks when truncated.",
+    warning: compact
+      ? "Guidance only: no checks were run or independently verified."
+      : "Guidance only: the MCP did not inspect a codebase, execute checks, or verify results. Load additional chunks when truncated.",
+    ...(compact ? { compact: true } : {}),
   };
 }
 
 export function registerTailoredGuidanceTool(server: McpServer): void {
   server.registerTool("get_tailored_guidance", {
     title: "Get phase-specific GodPrompt guidance",
-    description: "Read-only phase-specific workflow instructions. Coding agents: call with phase='execute' and max_chars=1800 (valid integer 200..4000) before editing; AFTER editing and running real tests call again with the SAME task_type, phase='verify', max_chars=1800. The execute response contains recommended_next_call with exact valid verify arguments. Follow next_start if truncated. Guidance does not execute tests or independently verify work.",
+    description: "Read-only phase-specific workflow instructions. For a low-risk, bounded routine fix, optionally set compact=true, max_chars=600 to reduce context; full guidance remains default for complex or high-risk tasks. Coding agents: call with phase='execute' and max_chars=1800 (valid integer 200..4000) before editing; AFTER editing and running real tests call again with the SAME task_type, phase='verify', max_chars=1800 (or compact=true and max_chars=600 for both phases). The execute response contains recommended_next_call with exact valid verify arguments. Follow next_start if truncated. Guidance does not execute tests or independently verify work.",
     inputSchema: {
       task_type: z.enum(TYPES),
       phase: z.enum(PHASES).optional().default("execute"),
       start: z.number().int().min(0).max(60_000).optional().default(0),
       max_chars: z.number().int().min(200).max(MAX_GUIDANCE_CHARS).optional().default(RECOMMENDED_GUIDANCE_CHARS),
+      compact: z.boolean().optional().default(false),
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-  }, async ({ task_type, phase, start, max_chars }) => {
-    const result = getTailoredGuidance(task_type, phase, start, max_chars);
+  }, async ({ task_type, phase, start, max_chars, compact }) => {
+    const result = getTailoredGuidance(task_type, phase, start, max_chars, compact);
     return {
       structuredContent: result,
       content: [{ type: "text" as const, text: JSON.stringify(result) }],

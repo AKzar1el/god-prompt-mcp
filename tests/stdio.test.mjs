@@ -194,6 +194,19 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
   assert.match(guidanceTool.description, /phase='execute'.*phase='verify'/i);
   assert.match(guidanceTool.description, /200\.\.4000/);
   assert.equal(guidanceTool.inputSchema?.properties?.max_chars?.maximum, 4000);
+  assert.equal(guidanceTool.inputSchema?.properties?.compact?.type, "boolean");
+  const compactGuidance = await request(child, pending, "compact-guidance", "tools/call", {
+    name: "get_tailored_guidance",
+    arguments: { task_type: "DEBUG", phase: "execute", compact: true, max_chars: 600 },
+  });
+  assert.notEqual(compactGuidance.isError, true);
+  const compactResult = JSON.parse(toolText(compactGuidance));
+  assert.deepEqual(compactGuidance.structuredContent, compactResult);
+  assert.equal(compactResult.compact, true);
+  assert.equal(compactResult.truncated, false);
+  assert.ok(compactResult.content.length <= 600);
+  assert.equal(compactResult.recommended_next_call.arguments.compact, true);
+  assert.equal(compactResult.recommended_next_call.arguments.phase, "verify");
 
   const versionTool = listed.tools.find((tool) => tool.name === "get_version");
   assert.ok(versionTool, "get_version must be listed");

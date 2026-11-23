@@ -1,0 +1,338 @@
+{
+  "schema": "godprompt.v7.public-optin-compact-results.v1",
+  "source": "Fresh real authenticated coding-agent trials on private first-party seeded fixtures",
+  "frozen_manifest_sha256": "7ad4641a2fa1d92e21ecadbd45ef087e71b5420635be6e04626efed3e4ace912",
+  "private_independent_analysis_sha256": "1315ad9e13dda3af44d96981302ccd40cbb1302bff5a5907b19a993a9a61cc66",
+  "requested_model": "gpt-6.1-sol",
+  "effort_requested": "high",
+  "per_arm_timeout_seconds": 205,
+  "count": {
+    "expected": 9,
+    "first_run_receipts": 9,
+    "valid_correct": 8,
+    "valid_incorrect": 0,
+    "invalid": 1,
+    "not_run": 0,
+    "by_arm": {
+      "baseline": {
+        "correct": 3,
+        "valid_incorrect": 0,
+        "invalid": 0
+      },
+      "live_full": {
+        "correct": 3,
+        "valid_incorrect": 0,
+        "invalid": 0
+      },
+      "live_compact": {
+        "correct": 2,
+        "valid_incorrect": 0,
+        "invalid": 1
+      }
+    }
+  },
+  "protocol": "Baseline no MCP; live_full exact pinned GodPrompt execute+verify compact=false max_chars=1800; live_compact exact pinned GodPrompt execute+verify compact=true max_chars=600",
+  "measured_payload_bytes": {
+    "DEBUG": {
+      "full_json_bytes": 5276,
+      "compact_json_bytes": 1762,
+      "reduction_percent": 66.6
+    },
+    "BUILD": {
+      "full_json_bytes": 5050,
+      "compact_json_bytes": 1762,
+      "reduction_percent": 65.11
+    },
+    "REFACTOR": {
+      "full_json_bytes": 4314,
+      "compact_json_bytes": 1759,
+      "reduction_percent": 59.23
+    },
+    "CONTENT": {
+      "full_json_bytes": 5233,
+      "compact_json_bytes": 1760,
+      "reduction_percent": 66.37
+    },
+    "DESIGN": {
+      "full_json_bytes": 5099,
+      "compact_json_bytes": 1761,
+      "reduction_percent": 65.46
+    },
+    "SHIP": {
+      "full_json_bytes": 4543,
+      "compact_json_bytes": 1729,
+      "reduction_percent": 61.94
+    },
+    "ANALYZE": {
+      "full_json_bytes": 3473,
+      "compact_json_bytes": 1726,
+      "reduction_percent": 50.3
+    },
+    "AUTOMATE": {
+      "full_json_bytes": 4811,
+      "compact_json_bytes": 1751,
+      "reduction_percent": 63.6
+    },
+    "PLAN": {
+      "full_json_bytes": 3616,
+      "compact_json_bytes": 1739,
+      "reduction_percent": 51.91
+    }
+  },
+  "comparison": {
+    "vs_baseline": {
+      "live_full": {
+        "paired_correct": 3,
+        "wins": 1,
+        "aggregate_percent_delta": -7.334713146205896,
+        "paired": [
+          {
+            "task": "safe-json-pointer",
+            "baseline_time": 200.83,
+            "treatment_time": 135.21,
+            "baseline_input": 81371,
+            "treatment_input": 275995
+          },
+          {
+            "task": "rfc4180-csv-record",
+            "baseline_time": 97.65,
+            "treatment_time": 115.82,
+            "baseline_input": 261064,
+            "treatment_input": 233003
+          },
+          {
+            "task": "safe-repo-relative-path",
+            "baseline_time": 131.53,
+            "treatment_time": 147.44,
+            "baseline_input": 140986,
+            "treatment_input": 287060
+          }
+        ]
+      },
+      "live_compact": {
+        "paired_correct": 2,
+        "wins": 1,
+        "aggregate_percent_delta": -17.632672205842947,
+        "paired": [
+          {
+            "task": "safe-json-pointer",
+            "baseline_time": 200.83,
+            "treatment_time": 139.88,
+            "baseline_input": 81371,
+            "treatment_input": 218461
+          },
+          {
+            "task": "rfc4180-csv-record",
+            "baseline_time": 97.65,
+            "treatment_time": 105.97,
+            "baseline_input": 261064,
+            "treatment_input": 273912
+          }
+        ]
+      }
+    },
+    "live_full_vs_live_compact": {
+      "n": 2,
+      "compact_faster": 1,
+      "full_faster": 1,
+      "aggregate_percent_delta": -2.0634983866470225,
+      "input_token_percent_delta": -3.2662210853480755,
+      "pairs": [
+        {
+          "task": "safe-json-pointer",
+          "full_seconds": 135.21,
+          "compact_seconds": 139.88,
+          "full_input": 275995,
+          "compact_input": 218461
+        },
+        {
+          "task": "rfc4180-csv-record",
+          "full_seconds": 115.82,
+          "compact_seconds": 105.97,
+          "full_input": 233003,
+          "compact_input": 273912
+        }
+      ]
+    }
+  },
+  "records": [
+    {
+      "task_id": "safe-json-pointer",
+      "arm": "baseline",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 29,
+      "hidden_total": 29,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 200.83,
+      "reported_input_tokens": 81371,
+      "reported_cached_input_tokens": 73984,
+      "reported_output_tokens": 3768,
+      "recorded_successful_shell": 6,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 1,
+      "frozen_source_sha": "720d85624423ada67e81889b558fcaec5f5085d7",
+      "original_transcript_sha256": "56c1b117ff6fb8d31e15bbacf8251eb0b90d45728367fc511e8179220331dbd1",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "safe-json-pointer",
+      "arm": "live_full",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 29,
+      "hidden_total": 29,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 135.21,
+      "reported_input_tokens": 275995,
+      "reported_cached_input_tokens": 241152,
+      "reported_output_tokens": 3863,
+      "recorded_successful_shell": 5,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 2,
+      "frozen_source_sha": "720d85624423ada67e81889b558fcaec5f5085d7",
+      "original_transcript_sha256": "f88c8f6847603c62b0a69fadbdf587635ed12dc16e2fb8df611e2e92af12c2d8",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "safe-json-pointer",
+      "arm": "live_compact",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 29,
+      "hidden_total": 29,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 139.88,
+      "reported_input_tokens": 218461,
+      "reported_cached_input_tokens": 175488,
+      "reported_output_tokens": 3553,
+      "recorded_successful_shell": 5,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 1,
+      "frozen_source_sha": "720d85624423ada67e81889b558fcaec5f5085d7",
+      "original_transcript_sha256": "cd810afb9b2b49555d63954fc6fab81f017d31c709df3a6c0f5887a57737554f",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "rfc4180-csv-record",
+      "arm": "live_compact",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 32,
+      "hidden_total": 32,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 105.97,
+      "reported_input_tokens": 273912,
+      "reported_cached_input_tokens": 222208,
+      "reported_output_tokens": 2593,
+      "recorded_successful_shell": 6,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 2,
+      "frozen_source_sha": "17558e9c67c84afae7ba64b45631f04c01ede5b4",
+      "original_transcript_sha256": "1870b4d7aef7d3b3cc8583f0223743c95ef249a43763e34876ed982671580f27",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "rfc4180-csv-record",
+      "arm": "baseline",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 32,
+      "hidden_total": 32,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 97.65,
+      "reported_input_tokens": 261064,
+      "reported_cached_input_tokens": 228608,
+      "reported_output_tokens": 2354,
+      "recorded_successful_shell": 6,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 2,
+      "frozen_source_sha": "17558e9c67c84afae7ba64b45631f04c01ede5b4",
+      "original_transcript_sha256": "a86c7bc846d84505044e7c6b2f2291dc23651a6b1e004bc5389a76c57a96570b",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "rfc4180-csv-record",
+      "arm": "live_full",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 32,
+      "hidden_total": 32,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 115.82,
+      "reported_input_tokens": 233003,
+      "reported_cached_input_tokens": 209536,
+      "reported_output_tokens": 2343,
+      "recorded_successful_shell": 5,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 1,
+      "frozen_source_sha": "17558e9c67c84afae7ba64b45631f04c01ede5b4",
+      "original_transcript_sha256": "59a45f26545d2028a0c15f8074e5ed388fab0d6dc0268ac9fc4310f7c26d822e",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "safe-repo-relative-path",
+      "arm": "live_full",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 32,
+      "hidden_total": 32,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 147.44,
+      "reported_input_tokens": 287060,
+      "reported_cached_input_tokens": 262144,
+      "reported_output_tokens": 2253,
+      "recorded_successful_shell": 3,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 1,
+      "frozen_source_sha": "b031655baf3aa52e0c8dec52e7dd214fe8cae741",
+      "original_transcript_sha256": "86813f8e1e899bf1e70e159320df2e7eb8e59864f6e0a5311623a8c08ffe2391",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "safe-repo-relative-path",
+      "arm": "live_compact",
+      "status": "INVALID",
+      "hidden_passed": 32,
+      "hidden_total": 32,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 221.01,
+      "reported_input_tokens": 430982,
+      "reported_cached_input_tokens": 366592,
+      "reported_output_tokens": 2936,
+      "recorded_successful_shell": 10,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 3,
+      "frozen_source_sha": "b031655baf3aa52e0c8dec52e7dd214fe8cae741",
+      "original_transcript_sha256": "6f38cc4f1ff0a8a9cb9b4bde04b17b79c51b7ccc6228b76542d1f275216b7d65",
+      "risk_indicator_count": 0
+    },
+    {
+      "task_id": "safe-repo-relative-path",
+      "arm": "baseline",
+      "status": "VALID_CORRECT",
+      "hidden_passed": 32,
+      "hidden_total": 32,
+      "independently_checked_code_correct": true,
+      "protocol_valid": true,
+      "elapsed_seconds": 131.53,
+      "reported_input_tokens": 140986,
+      "reported_cached_input_tokens": 124160,
+      "reported_output_tokens": 2161,
+      "recorded_successful_shell": 4,
+      "recorded_test_commands": 1,
+      "recorded_edit_events": 1,
+      "frozen_source_sha": "b031655baf3aa52e0c8dec52e7dd214fe8cae741",
+      "original_transcript_sha256": "f860328515600dcddb5aadd89850e5a214a74b725dba0c8372c5477e17449208",
+      "risk_indicator_count": 0
+    }
+  ],
+  "caveats": [
+    "Three tasks and two complete compact/full pairs cannot establish population productivity",
+    "Compact path-safety session received valid MCP guidance, passed 32/32 hidden tests after offline regrade, but was INVALID for timing because the original session exceeded timeout",
+    "Strict valid-pair results exclude that timeout, which biases conditional comparisons",
+    "Bytes are serialized MCP JSON, not billed model input tokens",
+    "No production site or other project repository was modified"
+  ]
+}
