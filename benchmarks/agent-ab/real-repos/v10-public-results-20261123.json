@@ -1,0 +1,131 @@
+{
+  "schema": "godprompt.v10.stopped-public-first-run-evidence.v1",
+  "date": "2026-11-23",
+  "status": "STOPPED_TIMEOUT_POLICY_AND_FROZEN_GRADER_DEFECT",
+  "study": "V10-20261123-new-env",
+  "manifest_sha256": "8070acce25491619ee6c3c2ca3875a7a4dcf486f2c48d7ba59d5b871e0ed08e7",
+  "frozen_source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "frozen_godprompt_sha": "e888c9fb2537ca8df6b0ded84abe7d3e4a810765",
+  "frozen_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "private_grader_sha256": "a0ec6abc89b86b865d4591ec62d0b7fac02a166bfdf5f1ad889596ffe4629f52",
+  "planned": 6,
+  "original_first_run_attempts": 2,
+  "not_run": 4,
+  "accepted_fixes": 0,
+  "checks_per_issue": 19,
+  "attempts": [
+    {
+      "task_id": "rss-ordering-408-v10",
+      "issue": 408,
+      "arm": "baseline",
+      "status": "INVALID_TIMEOUT",
+      "accepted": false,
+      "observed_wall_seconds": 360.019,
+      "model_exit_code": null,
+      "model_error": "ETIMEDOUT",
+      "completed_model_turns": 0,
+      "successful_shell_events": 11,
+      "successful_edit_events": 4,
+      "successful_godprompt_mcp_calls": 0,
+      "ordinary_original_tests_passed": 29,
+      "ordinary_original_tests_failed": 0,
+      "private_grader_passed": 18,
+      "private_grader_checks": 19,
+      "model_reported_input_tokens": null,
+      "policy_rejected": false,
+      "raw_jsonl_sha256": "f4a462f08846db2c75d996eec8c3524e162d7d9ef8848ab109ecd95a264813b3",
+      "original_receipt_sha256": "6c0d0e36c31852899d4aaed8171c92f406fab02e626cd3329e8809989127068b",
+      "original_receipt_path_note": "An original porcelain parser accidentally truncated the leading s of the first src/ path, creating a false out-of-scope flag; independent later git status confirms the only three changed tracked paths are the allowed cli.py, rss_compare.py and test_rss_compare.py. Original receipt retained unchanged."
+    },
+    {
+      "task_id": "rss-ordering-408-v10",
+      "issue": 408,
+      "arm": "full_mcp",
+      "status": "INVALID_TIMEOUT_AND_POLICY_DENIAL",
+      "accepted": false,
+      "observed_wall_seconds": 360.024,
+      "model_exit_code": null,
+      "model_error": "ETIMEDOUT",
+      "completed_model_turns": 0,
+      "successful_shell_events": 20,
+      "successful_edit_events": 4,
+      "successful_godprompt_mcp_calls": 4,
+      "ordinary_original_tests_passed": 37,
+      "ordinary_original_tests_failed": 0,
+      "private_grader_passed": 18,
+      "private_grader_checks": 19,
+      "model_reported_input_tokens": null,
+      "policy_rejected": true,
+      "policy_context": "A model-initiated recursive forced removal of test artifacts was rejected by the host policy; no workaround or replay attempted.",
+      "raw_jsonl_sha256": "d161df57ce34f5aeb3a904a667a78aeb38ca068a99ab1ffc8a0f2fa2ca6136dc",
+      "original_receipt_sha256": "5d50de95b36d8255b6b6c465d364c630b5ff674bc6019b3c4119699471951ec4"
+    },
+    {
+      "task_id": "rss-ordering-408-v10",
+      "issue": 408,
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410-v10",
+      "issue": 410,
+      "arm": "compact_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410-v10",
+      "issue": 410,
+      "arm": "baseline",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410-v10",
+      "issue": 410,
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    }
+  ],
+  "frozen_grader_defect": {
+    "discovered_after_first_runs": true,
+    "affected_case": "408-duplicates-same-semantics",
+    "error": "The frozen acceptance helper required Click CLI exit 0 for duplicate saved URL evidence, although the correct documented review-needed contract exits 2. Both original model implementations were penalized by that false-negative case.",
+    "original_grader_rewritten": false,
+    "original_model_receipts_rewritten": false,
+    "retroactively_promoted_successes": false,
+    "resolution": "Retire V10; create independently calibrated new V11 grader and new study ID before any new original model trials."
+  },
+  "measurements": {
+    "seconds_per_accepted_fix": null,
+    "input_tokens_per_accepted_fix": null,
+    "causal_productivity_uplift": false,
+    "token_telemetry_missing_for_interrupted_sessions": true,
+    "candidate_successes_not_claimed": true
+  },
+  "preflight": {
+    "normal_config_native_shell_command_succeeded": true,
+    "minimal_config_native_shell_command_succeeded": true,
+    "live_godprompt_version_classify_guidance_all_succeeded": true,
+    "original_trendpulse_tests_passed": 10,
+    "full_godprompt_repository_tests_passed": 352,
+    "full_godprompt_repository_tests_skipped": 2,
+    "full_godprompt_repository_tests_failed": 0
+  },
+  "release_effects": {
+    "merged": false,
+    "published": false,
+    "deployed": false,
+    "live_mcp_restarted": false,
+    "shared_source_repo_modified": false
+  },
+  "limitations": [
+    "Two first-party open issues, not independent third-party production fixes",
+    "Both model trials timed out at their frozen 360-second limits",
+    "Frozen V10 private grader contained one false-negative check; scores must not be reinterpreted as accepted",
+    "Original raw sessions and grader remain private/ignored; public hashes alone do not reconstruct hidden tests",
+    "Model-reported tokens were not emitted by interrupted sessions and are unknown, not zero",
+    "An attempted destructive cleanup was rejected by host policy; study stopped instead of bypassing it",
+    "Same-user Windows isolation does not independently prove grader unreadability by model",
+    "Requested model/effort not independently attested",
+    "No valid full-denominator A/B productivity estimate from stopped/incomplete trials"
+  ]
+}

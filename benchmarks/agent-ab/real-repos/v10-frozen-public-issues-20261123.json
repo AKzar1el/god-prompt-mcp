@@ -1,0 +1,97 @@
+{
+  "schema": "godprompt.v10.real-issues.triarm.first-run.v1",
+  "study_id": "V10-20261123-new-env",
+  "frozen_on": "2026-11-23",
+  "source": {
+    "repository": "AKzar1el/mcp-trendpulse",
+    "remote": "https://github.com/AKzar1el/mcp-trendpulse.git",
+    "sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc"
+  },
+  "godprompt": {
+    "repository": "AKzar1el/god-prompt-mcp",
+    "source_sha": "e888c9fb2537ca8df6b0ded84abe7d3e4a810765",
+    "stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+    "version": "1.4.2"
+  },
+  "grader": {
+    "sha256": "a0ec6abc89b86b865d4591ec62d0b7fac02a166bfdf5f1ad889596ffe4629f52",
+    "checks_per_issue": 19
+  },
+  "cli": {
+    "version": "0.171.0",
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "high",
+    "login": "ChatGPT",
+    "sandbox": "workspace-write",
+    "user_config_inherited": true,
+    "disable_unrelated_servers": [
+      "node_repl",
+      "github",
+      "memory",
+      "firecrawl",
+      "cloudflare-api",
+      "context7",
+      "filesystem",
+      "mcp-gsc",
+      "shared-browser"
+    ],
+    "no_paid_api_keys": true,
+    "network_shell": false,
+    "exit_after_s": 360
+  },
+  "arms": [
+    "baseline",
+    "full_mcp",
+    "compact_mcp"
+  ],
+  "tasks": [
+    {
+      "issue": 408,
+      "id": "rss-ordering-408-v10",
+      "url": "https://github.com/AKzar1el/mcp-trendpulse/issues/408",
+      "order": [
+        "baseline",
+        "full_mcp",
+        "compact_mcp"
+      ],
+      "allowed_paths": [
+        "src/mcp_trendpulse/rss_compare.py",
+        "src/mcp_trendpulse/cli.py",
+        "tests/test_rss_compare.py"
+      ],
+      "instruction": "Implement opt-in --sort-url for rss-compare: sort URL rows inside each original membership/status group for JSON/CSV/Markdown, deterministic if capture input row permutations only. Leave default outputs byte-identical and keep summary counts, duplicate, metadata, safety, caveat and attention semantics. Tests provider-free."
+    },
+    {
+      "issue": 410,
+      "id": "rss-retitles-410-v10",
+      "url": "https://github.com/AKzar1el/mcp-trendpulse/issues/410",
+      "order": [
+        "compact_mcp",
+        "baseline",
+        "full_mcp"
+      ],
+      "allowed_paths": [
+        "src/mcp_trendpulse/rss_compare.py",
+        "src/mcp_trendpulse/cli.py",
+        "tests/test_rss_compare.py"
+      ],
+      "instruction": "Implement opt-in --show-retitles for rss-compare: when enabled JSON includes retitled_urls [{url,older_title,newer_title}] for the exact same saved URL with changed title, and Markdown includes escaped old/new retitle comparison table. CSV unchanged, default output byte-identical, no inference of publisher edits or other changed semantics. Tests provider-free."
+    }
+  ],
+  "safeguards": {
+    "isolated_source_clones": true,
+    "hidden_grader_read_only_to_agent": false,
+    "private_grader_excluded_from_trial_clones": true,
+    "no_first_run_replay": true,
+    "no_merge_release_deploy": true,
+    "exclude_original_v9_failed_attempt": true,
+    "full_denominator": true,
+    "avoid_main_checkout": true
+  },
+  "limitations": [
+    "Same-user Windows workspace-write isolation does not independently prove private grader inaccessibility",
+    "Model and reasoning effort requested, not independently attested",
+    "Two first-party public issues, tiny sample, likely cannot establish broad population productivity",
+    "V9 original task 408 was previously attempted unsuccessfully under different policy; V10 is a new, transparently separate study"
+  ]
+}
