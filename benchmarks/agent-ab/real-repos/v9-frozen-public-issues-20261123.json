@@ -1,0 +1,63 @@
+{
+  "schema": "godprompt.v9.frozen-public-issues.triarm.v1",
+  "frozen_on": "2026-11-23",
+  "purpose": "Independent real-repository coding productivity pilot; experimental, not release evidence alone",
+  "repository": "AKzar1el/mcp-trendpulse",
+  "remote": "https://github.com/AKzar1el/mcp-trendpulse.git",
+  "source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "godprompt_revision": "f0b220791267017866ba04aad6b1adc59d7cf173",
+  "godprompt_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "private_grader_sha256": "3b4fa7c924b0f7d141e13a1051fa50bdc95c38495bda70b1948e1a21611557cc",
+  "grader_instructions": "Private frozen acceptance script in ignored, inaccessible-to-model benchmark storage. Score all 19 checks per issue; no retries or post-hoc edits to scoring rules.",
+  "cli_version": "0.171.0",
+  "provider_login": "ChatGPT",
+  "model_requested": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "sandbox": "workspace-write",
+  "shell_network": "forbidden_by_protocol",
+  "max_wall_seconds_per_arm": 360,
+  "arms": [
+    "baseline",
+    "full_mcp",
+    "compact_mcp"
+  ],
+  "technical_note": "The CI and model probe do not demonstrate a coding productivity benefit. Windows workspace-write sandbox isolation and effective model identity are not independently attested. No paid API key, release, deploy or live service change.",
+  "tasks": [
+    {
+      "task_id": "rss-sort-url-408",
+      "issue_url": "https://github.com/AKzar1el/mcp-trendpulse/issues/408",
+      "issue_number": 408,
+      "red_passed_checks": 3,
+      "hidden_checks": 19,
+      "order": [
+        "baseline",
+        "full_mcp",
+        "compact_mcp"
+      ],
+      "allowed_paths": [
+        "src/mcp_trendpulse/rss_compare.py",
+        "src/mcp_trendpulse/cli.py",
+        "tests/test_rss_compare.py"
+      ],
+      "description": "Implement open issue #408 in this pinned real repository. Add opt-in `rss-compare --sort-url` CLI flag (off by default), and `compare_saved_rss_headlines(..., sort_url=False)` keyword. When true, sort rows within `newly_seen`, `still_seen`, `not_seen_in_newer` by exact string `url` independently for JSON, CSV and Markdown reports. Permuting input RSS rows must not change sorted reports; default behavior and JSON schema/CSV header/Markdown content must stay unchanged without flag. Keep membership/counts, retitle detection, first-seen deduplication, missing-metadata attention, formula/Markdown escaping, no-overwrite output, provenance/caveats, and offline operation. Add focused tests and run the existing offline RSS comparison tests."
+    },
+    {
+      "task_id": "rss-retitles-410",
+      "issue_url": "https://github.com/AKzar1el/mcp-trendpulse/issues/410",
+      "issue_number": 410,
+      "red_passed_checks": 4,
+      "hidden_checks": 19,
+      "order": [
+        "compact_mcp",
+        "baseline",
+        "full_mcp"
+      ],
+      "allowed_paths": [
+        "src/mcp_trendpulse/rss_compare.py",
+        "src/mcp_trendpulse/cli.py",
+        "tests/test_rss_compare.py"
+      ],
+      "description": "Implement open issue #410 in this pinned real repository. Add opt-in `rss-compare --show-retitles` CLI flag (off by default), and `compare_saved_rss_headlines(..., show_retitles=False)` keyword. With flag, JSON adds `retitled_urls` array only for exact shared URLs whose first-seen deduplicated title differs, with keys `url`, `older_title`, `newer_title`; Markdown adds a clearly labeled, escaped older/newer title table. Default JSON/Markdown must not change; CSV output remains unchanged even with flag because it already has old/new fields. Preserve quality/attention, counts, provenance, no-overwrite, no network, and safe Markdown/CSV output. Add focused offline tests and run existing RSS comparison tests."
+    }
+  ]
+}
