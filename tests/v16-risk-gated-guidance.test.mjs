@@ -36,6 +36,22 @@ test("V16 diagnoses an actual failing native test rather than claiming verificat
   assert.match(x.guidance,/first actual failing check/);
   assert.equal(x.automatic_execution,false);
 });
+test("V16 does not spend GodPrompt context on an intentionally red pre-fix regression",()=>{
+  const x=adviseFromEvidence(make({
+    stage:"pre-fix",
+    changed_paths:[],
+    test_results:[{name:"frozen regression before patch",exit_code:1}]
+  }));
+  assert.equal(x.decision,"EXPECTED_RED_IMPLEMENT_FIX");
+  assert.equal(x.consult_godprompt,false);
+  assert.equal(x.requires_scope_reconciliation,false);
+  assert.match(x.guidance,/before the fix is expected/);
+  assert.equal(adviseFromEvidence(make({
+    stage:"post-fix",
+    test_results:[{name:"frozen regression after patch",exit_code:1}]
+  })).consult_godprompt,true);
+  assert.throws(()=>adviseFromEvidence(make({stage:"maybe"})),/stage must/);
+});
 test("V16 missing or incomplete native checks demand a test receipt",()=>{
   assert.equal(adviseFromEvidence(make({test_results:[]})).decision,"RUN_REAL_TEST");
   assert.equal(adviseFromEvidence(make({test_results:[]})).consult_godprompt,false);

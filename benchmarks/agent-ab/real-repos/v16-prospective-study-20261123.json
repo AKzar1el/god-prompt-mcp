@@ -1,0 +1,164 @@
+{
+  "schema": "godprompt.v16.prospective-multirepo-study.v1",
+  "study_id": "V16-prospective-3repos-20261123",
+  "created": "2026-11-23",
+  "purpose": "First prospective 3-repository coding-agent comparison of baseline, full GodPrompt live MCP, and evidence-triggered conditional GodPrompt. Pilot only, not credible population proof.",
+  "fresh_external_issues": true,
+  "godprompt_revision": "e91c0f8337097857a7c63a44e6a8827cfbe7e357",
+  "godprompt_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "risk_gate_prototype_sha256": "45b52a8f090dde7ec33e06b973a67294dd5c9e5c423b9780bdd5bca29853fd6e",
+  "event_audit_helper_sha256": "3366397c1f07fb5ace72d516e79c9e4144050c6d9ef310698e7361d18b1d31ea",
+  "risk_gate_mode": "research prompt-mediated conditional tool-call behavior; prototype function not executable inside agent, no independent trigger attestation",
+  "private_grader_sha256": "6d8624c8ab1ee7dd250ffb474ef91e84f956c581304d2ae58cedea2e19b7e935",
+  "private_grader_schema": "godprompt.v16.private-behavioral-grader.v1",
+  "git_changed_paths_helper_sha256": "5780d6d9efe8df1d11a8c27b371553e9725fa7053354e4060c535e428bfcb223",
+  "arms": [
+    "baseline",
+    "full_mcp",
+    "conditional_mcp"
+  ],
+  "environment": {
+    "codex_cli_version": "0.171.0",
+    "auth": "existing ChatGPT login (no API keys passed)",
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "high",
+    "sandbox": "workspace-write",
+    "sandbox_network": false,
+    "configured_mcp_disabled_per_run": [
+      "node_repl",
+      "github",
+      "memory",
+      "firecrawl",
+      "cloudflare-api",
+      "context7",
+      "filesystem",
+      "mcp-gsc",
+      "shared-browser",
+      "chrome-devtools",
+      "god-prompt-mcp",
+      "godprompt-checkpoint-pilot",
+      "mcp-trendpulse",
+      "mcp-web-validator"
+    ],
+    "native_shell": "Windows PowerShell",
+    "runtime": "node22; Python3.13",
+    "non_model_mcp_preflight_each_arm": true,
+    "no_global_git_security_disable": true
+  },
+  "tasks": [
+    {
+      "id": "tenacity-780-v16",
+      "repo": "jd/tenacity",
+      "issue": 780,
+      "issue_url": "https://github.com/jd/tenacity/issues/780",
+      "source_dir": "tenacity",
+      "source_sha": "aac059c906170ee7b6ce1aa086a226f3aded5c99",
+      "source_origin": "https://github.com/jd/tenacity.git",
+      "code_path": "tenacity/wait.py",
+      "allowed_paths": [
+        "tenacity/wait.py",
+        "tests/test_tenacity.py",
+        "tests/test_wait.py"
+      ],
+      "native_py_path": ".",
+      "native_test_args": [
+        "tests/test_tenacity.py"
+      ],
+      "hidden_checks": 9,
+      "untouched_passed": 5,
+      "reference_a_passed": 9,
+      "reference_b_passed": 9,
+      "mutant_passed": 7,
+      "order": [
+        "conditional_mcp",
+        "baseline",
+        "full_mcp"
+      ],
+      "timeout_seconds": 300,
+      "description": "Fix the public wait_chain bug: a plain callable wait strategy whose single positional argument is named something other than retry_state must work, matching wait_combine's positional behavior. Keep fixed/class-based wait strategies, retry attempt ordering, exhaustion and empty-strategy rejection unchanged. Add focused native regression tests; no network or publication."
+    },
+    {
+      "id": "requests-7648-v16",
+      "repo": "psf/requests",
+      "issue": 7648,
+      "issue_url": "https://github.com/psf/requests/issues/7648",
+      "source_dir": "requests",
+      "source_sha": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
+      "source_origin": "https://github.com/psf/requests.git",
+      "code_path": "src/requests/auth.py",
+      "allowed_paths": [
+        "src/requests/auth.py",
+        "tests/test_requests.py",
+        "tests/test_utils.py",
+        "tests/test_lowlevel.py"
+      ],
+      "native_py_path": "src",
+      "native_test_args": [
+        "tests/test_utils.py"
+      ],
+      "hidden_checks": 10,
+      "untouched_passed": 6,
+      "reference_a_passed": 10,
+      "reference_b_passed": 10,
+      "mutant_passed": 8,
+      "order": [
+        "full_mcp",
+        "conditional_mcp",
+        "baseline"
+      ],
+      "timeout_seconds": 300,
+      "description": "Fix HTTPDigestAuth.build_digest_header to recognize the supported auth qop token when a challenge advertises comma-separated alternatives with ordinary spaces or tabs around tokens. Do not accept auth-int-only or partial tokens such as authorization; do not implement auth-int. Preserve nonce, URI, algorithm and digest handling, no network requests. Add focused native regression tests."
+    },
+    {
+      "id": "rich-4250-v16",
+      "repo": "Textualize/rich",
+      "issue": 4250,
+      "issue_url": "https://github.com/Textualize/rich/issues/4250",
+      "source_dir": "rich",
+      "source_sha": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "source_origin": "https://github.com/Textualize/rich.git",
+      "code_path": "rich/file_proxy.py",
+      "allowed_paths": [
+        "rich/file_proxy.py",
+        "tests/test_file_proxy.py",
+        "tests/test_live.py"
+      ],
+      "native_py_path": ".",
+      "native_test_args": [
+        "tests/test_file_proxy.py",
+        "tests/test_live.py"
+      ],
+      "hidden_checks": 10,
+      "untouched_passed": 2,
+      "reference_a_passed": 10,
+      "reference_b_passed": 10,
+      "mutant_passed": 7,
+      "order": [
+        "baseline",
+        "full_mcp",
+        "conditional_mcp"
+      ],
+      "timeout_seconds": 300,
+      "description": "Fix FileProxy.write return value to report the count of input Python string characters, including newlines and Unicode, while preserving existing buffered console output, ANSI handling and non-string TypeError. Add focused regression tests. Do not send a pull request to upstream or publish anything."
+    }
+  ],
+  "security": {
+    "independent_checkout_per_arm": true,
+    "never_replay_original_attempt": true,
+    "pinned_manifest_and_runner_sha256_before_trials": true,
+    "private_grader_not_in_model_checkout": true,
+    "no_api_keys_or_external_network": true,
+    "no_merge_deploy_publish_restart": true,
+    "no_global_safe_directory_change": true,
+    "no_edits_to_unrelated_workers": true,
+    "model_sha_not_independently_attested": true
+  },
+  "limitations": [
+    "Three genuine independently reported upstream issues, but selection is small, public issue narratives can leak solutions, and no independent blinded review has occurred.",
+    "Two distinct reference implementations per task were constructed by the same evaluation author, not independently authored by human reviewers.",
+    "Human adjudication has not been commissioned; grading is automated executable behavior and native regression suites.",
+    "An adaptive condition described in a prompt is not itself an independently verified runtime-integrated policy implementation.",
+    "Model authentication, effective reasoning effort, host sandbox identity and actual metered cost are not independently attested.",
+    "Results are exploratory; a 15% or greater replicated improvement on unseen tasks and an external review would be needed before promotion."
+  ]
+}

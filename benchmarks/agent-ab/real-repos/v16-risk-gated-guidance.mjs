@@ -9,6 +9,7 @@
 const ACTIONS = Object.freeze({
   SCOPE_HOLD: "HOLD_SCOPE",
   NO_CHANGE: "NO_CHANGE_EVIDENCE",
+  EXPECTED_RED: "EXPECTED_RED_IMPLEMENT_FIX",
   INVESTIGATE: "DIAGNOSE_FAILED_CHECK",
   RUN_TEST: "RUN_REAL_TEST",
   REVIEW_DIFF: "REVIEW_DIFF",
@@ -17,6 +18,7 @@ const ACTIONS = Object.freeze({
 const SHORT = Object.freeze({
   HOLD_SCOPE: "Found changed files outside declared allowed paths. Stop additional edits and reconcile scope before proceeding.",
   NO_CHANGE_EVIDENCE: "No changed files were supplied. Confirm whether the requested coding fix exists before claiming a result.",
+  EXPECTED_RED_IMPLEMENT_FIX: "A reproduced failure before the fix is expected. Implement the scoped fix and run the regression again before requesting more guidance.",
   DIAGNOSE_FAILED_CHECK: "Inspect the first actual failing check and its exit status. Reproduce and isolate cause; fix only in scope, then rerun the affected test.",
   RUN_REAL_TEST: "Run the relevant native test command, capture its real exit code and output. Do not present guidance as execution evidence.",
   REVIEW_DIFF: "Inspect the actual changed-file diff and paths. Confirm only intended code changed; report any unresolved scope risk.",
@@ -38,7 +40,7 @@ export function adviseFromEvidence(input) {
   if(!input || typeof input!=="object" || Array.isArray(input))
     throw new TypeError("Bounded evidence object required");
   const {allowed_paths:allowed,changed_paths:changed,test_results:runs,
-    diff_reviewed:reviewed}=input;
+    diff_reviewed:reviewed,stage="post-fix"}=input;
   if(!Array.isArray(allowed)||!allowed.length||allowed.length>50||
      !Array.isArray(changed)||changed.length>50 ||
      !allowed.every(safePath)||!changed.every(safePath))
@@ -51,11 +53,14 @@ export function adviseFromEvidence(input) {
     throw new TypeError("Bounded native-test exit receipts required");
   if(typeof reviewed!=="boolean")
     throw new TypeError("diff_reviewed must be explicit boolean");
+  if(stage!=="pre-fix" && stage!=="post-fix")
+    throw new TypeError("stage must be pre-fix or post-fix");
   const outside=changed.some(p=>!allowed.includes(p));
   const noChanges=changed.length===0;
   const failing=runs.some(r=>r.exit_code!==null&&r.exit_code!==0);
   const noEvidence=!runs.length||runs.some(r=>r.exit_code===null);
   const code=outside?ACTIONS.SCOPE_HOLD:
+    stage==="pre-fix" && failing?ACTIONS.EXPECTED_RED:
     noChanges?ACTIONS.NO_CHANGE:
     failing?ACTIONS.INVESTIGATE:
     noEvidence?ACTIONS.RUN_TEST:
