@@ -1,0 +1,118 @@
+{
+    "schema":  "godprompt.v15.behavioral-verify-once-study.v1",
+    "study_id":  "V15-preflighted-git-paths-verify-once-20261123",
+    "frozen_on":  "2026-11-23",
+    "purpose":  "Fresh V15 matched first-run replication after V13 Git porcelain bug and V14 baseline no-model invalid-transport startup. New runner preflights every MCP config without starting model and disables all existing unrelated MCPs. Original first-run failures remain untouched.",
+    "source_repository":  "AKzar1el/mcp-trendpulse",
+    "source_origin":  "https://github.com/AKzar1el/mcp-trendpulse.git",
+    "source_sha":  "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+    "godprompt_revision":  "f914a8fe09e6c0ff36e517343f2df7f42765b7e9",
+    "godprompt_stdio_sha256":  "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+    "private_grader_sha256":  "b4a44d2d473ae309884c57a0c3cf609f6521324de90eef12b81732b02dcbce23",
+    "grader_schema":  "godprompt.v10.hidden-grade.v1",
+    "calibration":  {
+                        "issue408":  {
+                                         "untouched_passed":  4,
+                                         "original_v10_baseline_correct_patch":  19,
+                                         "original_v10_full_correct_patch":  19,
+                                         "checks":  19
+                                     },
+                        "issue410":  {
+                                         "untouched_passed":  4,
+                                         "independently_authored_reference":  19,
+                                         "wrong_newer_title_mutant":  18,
+                                         "checks":  19
+                                     }
+                    },
+    "environment":  {
+                        "cli_version":  "0.171.0",
+                        "provider_login":  "ChatGPT",
+                        "model_requested":  "gpt-6.1-sol",
+                        "reasoning_effort_requested":  "high",
+                        "sandbox":  "workspace-write",
+                        "workspace_network_access":  false,
+                        "authorized_windows_config_inherited":  true,
+                        "no_api_keys":  true,
+                        "disabled_unrelated_mcp":  [
+                                                       "node_repl",
+                                                       "github",
+                                                       "memory",
+                                                       "firecrawl",
+                                                       "cloudflare-api",
+                                                       "context7",
+                                                       "filesystem",
+                                                       "mcp-gsc",
+                                                       "shared-browser",
+                                                       "chrome-devtools",
+                                                       "god-prompt-mcp",
+                                                       "godprompt-checkpoint-pilot",
+                                                       "mcp-trendpulse",
+                                                       "mcp-web-validator"
+                                                   ],
+                        "explicit_all_arm_mcp_config_preflight":  true
+                    },
+    "arms":  [
+                 "baseline",
+                 "full_mcp",
+                 "verify_once_mcp"
+             ],
+    "tasks":  [
+                  {
+                      "id":  "rss-retitles-410-v15",
+                      "issue":  410,
+                      "issue_url":  "https://github.com/AKzar1el/mcp-trendpulse/issues/410",
+                      "order":  [
+                                    "baseline",
+                                    "verify_once_mcp",
+                                    "full_mcp"
+                                ],
+                      "timeout_seconds":  420,
+                      "allowed_paths":  [
+                                            "src/mcp_trendpulse/rss_compare.py",
+                                            "src/mcp_trendpulse/cli.py",
+                                            "tests/test_rss_compare.py"
+                                        ],
+                      "description":  "Implement opt-in rss-compare --show-retitles (off by default), including compare_saved_rss_headlines(..., show_retitles=False). With flag, JSON adds retitled_urls only for shared exact URLs whose first-seen title differs, entries with url, older_title, newer_title; Markdown includes a readable escaped older/newer title table. Without flag preserve existing JSON/Markdown/CSV bytes; CSV remains unchanged even with flag. Preserve existing counts, duplicate/missing-metadata review exit codes, offline provider-free behavior, no-overwrite guarantees and evidence provenance. Add scoped regression tests."
+                  },
+                  {
+                      "id":  "rss-sort-url-408-v15",
+                      "issue":  408,
+                      "issue_url":  "https://github.com/AKzar1el/mcp-trendpulse/issues/408",
+                      "order":  [
+                                    "full_mcp",
+                                    "baseline",
+                                    "verify_once_mcp"
+                                ],
+                      "timeout_seconds":  420,
+                      "allowed_paths":  [
+                                            "src/mcp_trendpulse/rss_compare.py",
+                                            "src/mcp_trendpulse/cli.py",
+                                            "tests/test_rss_compare.py"
+                                        ],
+                      "description":  "Implement opt-in rss-compare --sort-url (off by default), including compare_saved_rss_headlines(..., sort_url=False). When true sort each newly_seen, still_seen, not_seen_in_newer list by exact URL consistently in JSON/CSV/Markdown; changes in source row order must not change sorted output. Without flag preserve all existing output bytes, membership, counts, duplicates/missing-metadata review exit 2, CSV formula and Markdown escaping, no-overwrite, and offline evidence caveats. Add scoped regression tests."
+                  }
+              ],
+    "safeguards":  {
+                       "six_first_runs_preregistered":  true,
+                       "original_attempts_never_replayed":  true,
+                       "source_clones_independent_no_hardlinks":  true,
+                       "grader_not_visible_to_model":  true,
+                       "stop_on_rubric_bias_or_host_policy_rejection":  true,
+                       "one_agent_at_a_time":  true,
+                       "all_failed_attempts_count_in_efficiency":  true,
+                       "token_telemetry_missing_not_zero":  true,
+                       "production_defaults_unchanged":  true,
+                       "no_merge_release_deploy_restart":  true,
+                       "no_shared_checkout_or_other_worker_modifications":  true
+                   },
+    "limitations":  [
+                        "Both user-owned public issues were examined in V9/V10; no unseen-task or population-level causal claim.",
+                        "Behavioral grader was calibrated by the same investigation team, independent blinded adjudication not provided.",
+                        "V13 uses one independent reference patch for #410 and two historical model-produced patches for #408.",
+                        "Model identity, effective effort, Windows host policy and same-user private grader isolation cannot be independently attested.",
+                        "Token metrics are model-reported (some cached), not independently billed cost.",
+                        "V13 first original run was stopped after one first run due Git porcelain parser defect. V14 does not replay the V13 arm; all V14 arms are new independent clones.",
+                        "V14 baseline was unable to load a newly defined disabled MCP source and exited 1 before any model turn. V15 omits the undefined source and checks all active configurations before starting a model."
+                    ],
+    "git_helper_sha256":  "5780d6d9efe8df1d11a8c27b371553e9725fa7053354e4060c535e428bfcb223"
+}

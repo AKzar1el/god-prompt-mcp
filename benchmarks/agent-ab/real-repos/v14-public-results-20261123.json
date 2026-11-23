@@ -1,0 +1,87 @@
+{
+  "schema": "godprompt.v14.stopped-public-evidence.v1",
+  "date": "2026-11-23",
+  "study": "V14-git-paths-repaired-verify-once-20261123",
+  "frozen_manifest_sha256": "2d970150dc7de67c6b4e6d0198248f2b1f59c1dbe9df24d1db5327d53a5179df",
+  "frozen_runner_sha256": "cd638f4fd3737b2c0005e6ed1bb3661149e065948697ca4bdf774f554b08c51b",
+  "frozen_grader_sha256": "b4a44d2d473ae309884c57a0c3cf609f6521324de90eef12b81732b02dcbce23",
+  "source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "status": "STOPPED_FIRST_BASELINE_CODEX_CLI_CONFIG_INVALID_TRANSPORT_NO_MODEL_TURN",
+  "planned": 6,
+  "original_first_runs": 1,
+  "intentionally_unrun": 5,
+  "original_first_run": {
+    "task_id": "rss-retitles-410-v14",
+    "issue": 410,
+    "arm": "baseline",
+    "original_status": "INVALID_OTHER",
+    "original_accepted": false,
+    "wall_seconds": 0.614,
+    "model_exit_code": 1,
+    "model_turns": 0,
+    "successful_native_commands": 0,
+    "successful_file_edits": 0,
+    "hidden_passed": 4,
+    "hidden_total": 19,
+    "ordinary_tests_passed": 10,
+    "model_reported_input_tokens": null,
+    "mcp_calls": [],
+    "changed_paths": [],
+    "original_jsonl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "original_stderr_sha256": "9b06ed1aeaef54c91504db4632499a6c36c78cd3701a78454cf05adc2129d915",
+    "original_receipt_sha256": "be511d0f7c5cdc21a6f57a4501f9c9772bf4fa16d0508a838938d34f2a639c7e",
+    "stderr_explanation": "Error loading config.toml: invalid transport in mcp_servers.godprompt"
+  },
+  "unrun_slots": [
+    {
+      "task_id": "rss-retitles-410-v14",
+      "issue": 410,
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410-v14",
+      "issue": 410,
+      "arm": "verify_once_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-sort-url-408-v14",
+      "issue": 408,
+      "arm": "verify_once_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-sort-url-408-v14",
+      "issue": 408,
+      "arm": "baseline",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-sort-url-408-v14",
+      "issue": 408,
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    }
+  ],
+  "lessons": [
+    "The original V14 runner disabled mcp_servers.godprompt on baseline without declaring a command/transport; Codex rejected config before any model turn. This transport failure remains a frozen invalid attempt.",
+    "Pinning a runner and grader does not prove that Codex's effective MCP config parses: a separate model-free --help/config preflight must precede new trials.",
+    "Never replay V14 baseline or substitute post-hoc corrected results. V15 must use a new study ID and new independent clones."
+  ],
+  "productivity": {
+    "baseline_elapsed_per_correct_fix": null,
+    "verify_once_elapsed_per_correct_fix": null,
+    "full_mcp_elapsed_per_correct_fix": null,
+    "verified_speed_advantage": null,
+    "verified_correctness_advantage": null,
+    "causal_productivity_uplift_proven": false
+  },
+  "effects": {
+    "shared_source_modified": false,
+    "original_receipts_rewritten": false,
+    "merged": false,
+    "deployed": false,
+    "restarted": false
+  }
+}

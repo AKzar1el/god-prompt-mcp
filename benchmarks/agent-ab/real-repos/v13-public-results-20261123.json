@@ -1,0 +1,127 @@
+{
+  "schema": "godprompt.v13.stopped-public-evidence.v1",
+  "date": "2026-11-23",
+  "study": "V13-behavioral-verify-once-20261123",
+  "frozen_manifest_sha256": "4af95231f98d8cc25aad67a0672f1f7656d4d713dd06131e84af6bb69e9d2fdb",
+  "frozen_runner_sha256": "864fc69bf1d36f2052308369a3fb413f2615480b1e86fa08aacb5f0afe0d836c",
+  "frozen_grader_sha256": "b4a44d2d473ae309884c57a0c3cf609f6521324de90eef12b81732b02dcbce23",
+  "source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "status": "STOPPED_AFTER_ONE_FIRST_RUN_GIT_PORCELAIN_LEADING_SPACE_PARSER_BUG",
+  "planned": 6,
+  "original_first_runs": 1,
+  "intentionally_unrun": 5,
+  "calibration": {
+    "issue408": {
+      "red": 4,
+      "reference_a": 19,
+      "reference_b": 19,
+      "checks": 19
+    },
+    "issue410": {
+      "red": 4,
+      "reference": 19,
+      "intentional_wrong_title_mutant": 18,
+      "checks": 19
+    }
+  },
+  "trials": [
+    {
+      "task_id": "rss-retitles-410-v13",
+      "issue": 410,
+      "arm": "verify_once_mcp",
+      "original_status": "INVALID_OTHER",
+      "original_accepted": false,
+      "wall_seconds": 313.001,
+      "model_exit": 0,
+      "model_turns": 1,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "original_repository_tests_passed": 20,
+      "original_repository_tests_failed": 0,
+      "original_test_warning_count": 1,
+      "reported_input_tokens": 630912,
+      "reported_cached_input_tokens": 590848,
+      "reported_output_tokens": 5712,
+      "successful_native_commands": 6,
+      "successful_file_edits": 3,
+      "godprompt_calls": [
+        {
+          "tool": "get_tailored_guidance",
+          "success": true
+        }
+      ],
+      "policy_denial": false,
+      "timeout": false,
+      "frozen_runner_changed_paths": [
+        "rc/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "independently_observed_git_diff_paths": [
+        "src/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "original_jsonl_sha256": "6f69a8ef7078ecdc4d3d7913e97c48daccbc1be37b7c85bec534b429d74547b8",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "original_receipt_sha256": "cb16a476c3e1ea76983cb42e8fca2afaf6395ace8d5855112a2b2066b647bc74"
+    },
+    {
+      "task_id": "rss-retitles-410-v13",
+      "issue": 410,
+      "arm": "baseline",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-retitles-410-v13",
+      "issue": 410,
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-sort-url-408-v13",
+      "issue": 408,
+      "arm": "baseline",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-sort-url-408-v13",
+      "issue": 408,
+      "arm": "full_mcp",
+      "status": "NOT_RUN"
+    },
+    {
+      "task_id": "rss-sort-url-408-v13",
+      "issue": 408,
+      "arm": "verify_once_mcp",
+      "status": "NOT_RUN"
+    }
+  ],
+  "parser_audit": {
+    "original_code": "The git() helper trimmed leading whitespace from git status --porcelain=v1 before changedPaths consumed fixed-width XY status. The first tracked line ` M src/...` became `M src/...`, and line.slice(3) dropped the initial `s`.",
+    "false_out_of_scope": "rc/mcp_trendpulse/cli.py",
+    "actual_changed_paths_within_allowlist": true,
+    "original_status_unchanged": true,
+    "new_followup_should_use": "git diff HEAD --name-only -z plus git ls-files --others -z with no trimming; preflight working-tree edit and rename fixtures before freezing.",
+    "independent_human_adjudication": false
+  },
+  "productivity": {
+    "verified_relative_baseline_speed_advantage": null,
+    "verified_relative_baseline_correctness_advantage": null,
+    "full_denominator_seconds_per_accepted_fix": null,
+    "causal_improvement_proven": false
+  },
+  "effects": {
+    "shared_source_modified": false,
+    "original_receipts_rewritten": false,
+    "merged": false,
+    "deployed": false,
+    "restarted": false
+  },
+  "limitations": [
+    "Model first-run code passes all 19 hidden checks and 20 repository tests, but frozen original accepted=false due a real instrument defect.",
+    "One isolated model run cannot support any baseline or treatment productivity comparison.",
+    "Same-owner issues and hidden grader lack an independent blinded reviewer.",
+    "Windows effective model profile and private grader isolation are not independently attested."
+  ]
+}

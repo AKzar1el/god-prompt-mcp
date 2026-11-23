@@ -1,0 +1,322 @@
+{
+  "schema": "godprompt.v15.public-first-run-results.v1",
+  "date": "2026-11-23",
+  "study": "V15-preflighted-git-paths-verify-once-20261123",
+  "frozen_manifest_sha256": "c7d148d7b5a68234b94a190b7dd3ee098b16bfabbe8b9c03840e6d6305a809dc",
+  "frozen_runner_sha256": "dc70513dbcad5f67909618ed39b6bc6d0670be35916531ab3bcfa2e41b4456e9",
+  "frozen_grader_sha256": "b4a44d2d473ae309884c57a0c3cf609f6521324de90eef12b81732b02dcbce23",
+  "frozen_source_sha": "3a742c73d0bd7b44e3493129412eb2ca40f474cc",
+  "godprompt_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "planned": 6,
+  "original_first_runs": 6,
+  "not_run": 0,
+  "calibration": {
+    "issue_410": {
+      "untouched": 4,
+      "correct_reference": 19,
+      "wrong_newer_title_mutant": 18
+    },
+    "issue_408": {
+      "untouched": 4,
+      "historic_reference_a": 19,
+      "historic_reference_b": 19
+    }
+  },
+  "rows": [
+    {
+      "task_id": "rss-retitles-410-v15",
+      "issue": 410,
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "wall_seconds": 299.272,
+      "model_exit_code": 0,
+      "model_turns": 1,
+      "timeout": false,
+      "policy_denial": false,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "ordinary_tests_passed": 20,
+      "ordinary_tests_exit_code": 0,
+      "reported_input_tokens": 482777,
+      "reported_cached_input_tokens": 418688,
+      "reported_output_tokens": 5618,
+      "mcp_calls": [],
+      "changed_paths": [
+        "src/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "out_of_scope_paths": [],
+      "original_jsonl_sha256": "75c847492d3e15d844e0ba0c7c26d628573b11a15c1ee6a8ee3003dfa9c424d7",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "original_receipt_sha256": "561cfe581343f633cde9fbad533e09c0fde6fd722644688e3895813f8e01003e"
+    },
+    {
+      "task_id": "rss-retitles-410-v15",
+      "issue": 410,
+      "arm": "verify_once_mcp",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "wall_seconds": 292.86,
+      "model_exit_code": 0,
+      "model_turns": 1,
+      "timeout": false,
+      "policy_denial": false,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "ordinary_tests_passed": 20,
+      "ordinary_tests_exit_code": 0,
+      "reported_input_tokens": 800885,
+      "reported_cached_input_tokens": 753536,
+      "reported_output_tokens": 5424,
+      "mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        }
+      ],
+      "changed_paths": [
+        "src/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "out_of_scope_paths": [],
+      "original_jsonl_sha256": "030c61d2d9725c0a389e9bd5315a9a945f11d79bd6d74a72ea2ff2c2a869d897",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "original_receipt_sha256": "b98fc0c12e2d799c5ccbeedb39f426d78dcaa2459b8d18553b00dd3a7626b7dc"
+    },
+    {
+      "task_id": "rss-retitles-410-v15",
+      "issue": 410,
+      "arm": "full_mcp",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "wall_seconds": 247.691,
+      "model_exit_code": 0,
+      "model_turns": 1,
+      "timeout": false,
+      "policy_denial": false,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "ordinary_tests_passed": 22,
+      "ordinary_tests_exit_code": 0,
+      "reported_input_tokens": 594923,
+      "reported_cached_input_tokens": 553216,
+      "reported_output_tokens": 6011,
+      "mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "classify_task",
+          "success": true
+        },
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        },
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        },
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        }
+      ],
+      "changed_paths": [
+        "src/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "out_of_scope_paths": [],
+      "original_jsonl_sha256": "a3634173eb37aac4b487a54a39707036ea4cc406f39a01ddd3cbaa80e0578add",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "original_receipt_sha256": "d7dc884f414bbedba9d59a0f761962e507b2f2690da569042e48c256b5945a56"
+    },
+    {
+      "task_id": "rss-sort-url-408-v15",
+      "issue": 408,
+      "arm": "full_mcp",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "wall_seconds": 309.531,
+      "model_exit_code": 0,
+      "model_turns": 1,
+      "timeout": false,
+      "policy_denial": false,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "ordinary_tests_passed": 16,
+      "ordinary_tests_exit_code": 0,
+      "reported_input_tokens": 731005,
+      "reported_cached_input_tokens": 680064,
+      "reported_output_tokens": 6176,
+      "mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "classify_task",
+          "success": true
+        },
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        },
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        },
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        }
+      ],
+      "changed_paths": [
+        "src/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "out_of_scope_paths": [],
+      "original_jsonl_sha256": "7161cdf18fbc527853204ed035ac325e6b8d55db2224e588d93242c3a883ab48",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "original_receipt_sha256": "64b08eeda7380338043688ae12a4a87a2e615e210474905bd12c5c7886bf3e55"
+    },
+    {
+      "task_id": "rss-sort-url-408-v15",
+      "issue": 408,
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "accepted": true,
+      "wall_seconds": 271.574,
+      "model_exit_code": 0,
+      "model_turns": 1,
+      "timeout": false,
+      "policy_denial": false,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "ordinary_tests_passed": 20,
+      "ordinary_tests_exit_code": 0,
+      "reported_input_tokens": 511734,
+      "reported_cached_input_tokens": 473728,
+      "reported_output_tokens": 5173,
+      "mcp_calls": [],
+      "changed_paths": [
+        "src/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "out_of_scope_paths": [],
+      "original_jsonl_sha256": "22c2641687e4dc174830b409ca46f938c9db2c6d2e406e6533dd3eda263fe0b7",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "original_receipt_sha256": "eefa0b93055798b3ab64804bd26d85037c70785f7492fed109ec8a7d48c2cfd8"
+    },
+    {
+      "task_id": "rss-sort-url-408-v15",
+      "issue": 408,
+      "arm": "verify_once_mcp",
+      "original_status": "INVALID_TIMEOUT",
+      "accepted": false,
+      "wall_seconds": 420.07,
+      "model_exit_code": null,
+      "model_turns": 0,
+      "timeout": true,
+      "policy_denial": false,
+      "hidden_passed": 19,
+      "hidden_total": 19,
+      "ordinary_tests_passed": 19,
+      "ordinary_tests_exit_code": 0,
+      "reported_input_tokens": null,
+      "reported_cached_input_tokens": null,
+      "reported_output_tokens": null,
+      "mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true
+        }
+      ],
+      "changed_paths": [
+        "src/mcp_trendpulse/cli.py",
+        "src/mcp_trendpulse/rss_compare.py",
+        "tests/test_rss_compare.py"
+      ],
+      "out_of_scope_paths": [],
+      "original_jsonl_sha256": "3559550a04240a6e4b28ee52dc5623184f18aa78197ce7f54f34c6f890e7e00e",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "original_receipt_sha256": "ee45ed67862af11803d7f79e9f47b9aeeaf298a532fac8355b427c82542e0fca"
+    }
+  ],
+  "by_arm": {
+    "baseline": {
+      "attempts": 2,
+      "accepted": 2,
+      "total_seconds": 570.846,
+      "seconds_per_accepted_fix": 285.423,
+      "model_reported_input_tokens_known": 994511,
+      "missing_input_token_attempts": 0,
+      "input_tokens_per_accepted_fix": 497256
+    },
+    "full_mcp": {
+      "attempts": 2,
+      "accepted": 2,
+      "total_seconds": 557.222,
+      "seconds_per_accepted_fix": 278.611,
+      "model_reported_input_tokens_known": 1325928,
+      "missing_input_token_attempts": 0,
+      "input_tokens_per_accepted_fix": 662964
+    },
+    "verify_once_mcp": {
+      "attempts": 2,
+      "accepted": 1,
+      "total_seconds": 712.93,
+      "seconds_per_accepted_fix": 712.93,
+      "model_reported_input_tokens_known": 800885,
+      "missing_input_token_attempts": 1,
+      "input_tokens_per_accepted_fix": null
+    }
+  },
+  "independent_secondary_audit": {
+    "six_original_receipts_checked": true,
+    "raw_stdout_stderr_sha_checked": true,
+    "expected_mcp_calls_reconstructed": true,
+    "native_events_reconstructed": true,
+    "all_clone_head_pins_checked": true,
+    "incomplete_scope_inventory": [
+      {
+        "issue": 408,
+        "arm": "verify_once_mcp",
+        "inaccessible_sandbox_owned_temporary_test_directories": 2,
+        "independent_out_of_scope_absence_fully_verified": false
+      }
+    ]
+  },
+  "productivity": {
+    "repeatable_general_improvement_proven": false,
+    "meaningful_accuracy_superiority_proven": false,
+    "verified_speed_advantage": null,
+    "verified_cost_advantage": null,
+    "comparison_limited_to_two_previously_examined_issues": true
+  },
+  "effects": {
+    "shared_source_modified": false,
+    "original_receipts_rewritten": false,
+    "merged": false,
+    "published": false,
+    "deployed": false,
+    "restarted": false
+  },
+  "limitations": [
+    "These are two owner-reported issues examined in earlier studies; no independent population-level causal claim.",
+    "One study arm timed out despite 19/19 behavior checks and passing repository tests; immutable original verdict is INVALID_TIMEOUT, not an accepted fix.",
+    "The timed-out arm has incomplete token telemetry; it is unknown, never zero.",
+    "Model input tokens include cached input and are not independently billed costs.",
+    "Same-team hidden grader and Windows sandbox identity lack independent blinded attestation.",
+    "Git could not traverse two sandbox-owned temporary test directories in the timed-out checkout; scope inventory there is not independently exhaustive."
+  ]
+}
