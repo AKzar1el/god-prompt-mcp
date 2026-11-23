@@ -1,0 +1,171 @@
+{
+  "schema": "godprompt.v17.difficult-failure-recovery-study.v1",
+  "study_id": "V17-prospective-repeated-failure-3repos-20261123",
+  "created": "2026-11-23",
+  "purpose": "Test whether a single compact on-demand GodPrompt diagnostic call only after two genuine nonzero native test results with an intervening repair edit improves recovery correctness and elapsed time on difficult external bugs.",
+  "parent_research_pr": "https://github.com/AKzar1el/god-prompt-mcp/pull/259",
+  "godprompt_revision": "a121756811d88090c560aadd4603d9b22472e6a8",
+  "godprompt_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "private_grader_sha256": "1011879a7e13c39784e7f5c5c57ffca09a0edb22646ff1c6e6045411689a2535",
+  "private_grader_schema": "godprompt.v17.private-behavioral-grader.v1",
+  "event_audit_helper_sha256": "535993ad171e6ae1c056baa6ef3a92048970ce6b3b1999462fd6094f4560541e",
+  "git_changed_paths_helper_sha256": "5780d6d9efe8df1d11a8c27b371553e9725fa7053354e4060c535e428bfcb223",
+  "arms": [
+    "baseline",
+    "repeated_failure_mcp"
+  ],
+  "protocol": {
+    "trigger": "At least two distinct failed post-edit `python -m unittest discover` command executions, separated by a successful file edit; pre-edit RED, setup/Git failures, and repeated tests without repair do not count.",
+    "treatment_action": "Exactly one successful `godprompt.get_tailored_guidance` call with task_type DEBUG, phase verify, compact true, max_chars 600 after meeting trigger, otherwise zero GodPrompt calls.",
+    "acceptance": "Only independently graded behavior, two or more genuinely executed native unittest tests, permitted paths, source code change, protocol conformance, and completed original model run count.",
+    "primary": "Total original wall seconds across all attempted tasks / independently accepted bugfix, with invalids/timeouts counted in denominator.",
+    "limitations": "Sample n=3, public owner bug reports, same-author refs/hidden graders, not human blinded review, prompt-mediated trigger rather than production-integrated automatic gate."
+  },
+  "environment": {
+    "cli_version": "0.171.0",
+    "requested_model": "gpt-6.1-sol",
+    "reasoning_effort_requested": "high",
+    "sandbox": "workspace-write",
+    "network_access": false,
+    "shell": "PowerShell 7",
+    "runtime": "Node 22, Python 3.13",
+    "disabled_unrelated_mcp": [
+      "node_repl",
+      "github",
+      "memory",
+      "firecrawl",
+      "cloudflare-api",
+      "context7",
+      "filesystem",
+      "mcp-gsc",
+      "shared-browser",
+      "chrome-devtools",
+      "god-prompt-mcp",
+      "godprompt-checkpoint-pilot",
+      "mcp-trendpulse",
+      "mcp-web-validator"
+    ],
+    "model_auth": "Existing Codex session, no API key passed",
+    "ordinary_native_test_args": [
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "v17_native_tests",
+      "-p",
+      "test_fix.py",
+      "-v"
+    ],
+    "minimum_native_tests": 2
+  },
+  "tasks": [
+    {
+      "id": "anyio-1498-v17",
+      "repo": "agronholm/anyio",
+      "issue": 1498,
+      "url": "https://github.com/agronholm/anyio/issues/1498",
+      "source_dir": "anyio",
+      "source_sha": "37ba52b9137d72764d3bcbd31842b58a1e1ea992",
+      "source_origin": "https://github.com/agronholm/anyio.git",
+      "code_paths": [
+        "src/anyio/_core/_synchronization.py"
+      ],
+      "allowed_paths": [
+        "src/anyio/_core/_synchronization.py",
+        "v17_native_tests/test_fix.py"
+      ],
+      "test_file": "v17_native_tests/test_fix.py",
+      "pythonpath": "src",
+      "original_behavior_passed": 2,
+      "behavior_checks": 4,
+      "reference_a_passed": 4,
+      "reference_b_passed": 4,
+      "mutant_passed": 2,
+      "order": [
+        "baseline",
+        "repeated_failure_mcp"
+      ],
+      "timeout_seconds": 420,
+      "description": "Fix the real asynchronous cancellation race in AnyIO Condition.wait: after notify(1) a waiting consumer can be cancelled while reacquiring the condition lock, producing RuntimeError and losing the notification so another consumer stalls. Preserve underlying lock ownership on cancellation, propagate cancellation, hand the unused notification to the next waiter, maintain normal waits, and ensure unnotified cancelled waiters clean up. Add at least two meaningful stdlib unittest tests to the single allowed test file."
+    },
+    {
+      "id": "rich-4255-v17",
+      "repo": "Textualize/rich",
+      "issue": 4255,
+      "url": "https://github.com/Textualize/rich/issues/4255",
+      "source_dir": "rich",
+      "source_sha": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "source_origin": "https://github.com/Textualize/rich.git",
+      "code_paths": [
+        "rich/text.py",
+        "rich/syntax.py"
+      ],
+      "allowed_paths": [
+        "rich/text.py",
+        "rich/syntax.py",
+        "v17_native_tests/test_fix.py"
+      ],
+      "test_file": "v17_native_tests/test_fix.py",
+      "pythonpath": ".",
+      "original_behavior_passed": 2,
+      "behavior_checks": 15,
+      "reference_a_passed": 15,
+      "reference_b_passed": 15,
+      "mutant_passed": 6,
+      "order": [
+        "repeated_failure_mcp",
+        "baseline"
+      ],
+      "timeout_seconds": 420,
+      "description": "Fix the tabular-layout bug in Rich: Text and Syntax measurement underestimates the terminal cell width when there are tabs, causing tables and panels to wrap or clip. Measure widths consistently with rendering, respect custom tab sizes and double-width Unicode, preserve no-tab and explicit width behavior. Add at least two meaningful stdlib unittest tests to the single allowed test file."
+    },
+    {
+      "id": "pytest-15287-v17",
+      "repo": "pytest-dev/pytest",
+      "issue": 15287,
+      "url": "https://github.com/pytest-dev/pytest/issues/15287",
+      "source_dir": "pytest",
+      "source_sha": "718929265449ca33040264152ba5e7022e766a52",
+      "source_origin": "https://github.com/pytest-dev/pytest.git",
+      "code_paths": [
+        "src/_pytest/monkeypatch.py"
+      ],
+      "allowed_paths": [
+        "src/_pytest/monkeypatch.py",
+        "v17_native_tests/test_fix.py"
+      ],
+      "test_file": "v17_native_tests/test_fix.py",
+      "pythonpath": "src",
+      "original_behavior_passed": 5,
+      "behavior_checks": 10,
+      "reference_a_passed": 10,
+      "reference_b_passed": 10,
+      "mutant_passed": 8,
+      "order": [
+        "baseline",
+        "repeated_failure_mcp"
+      ],
+      "timeout_seconds": 420,
+      "description": "Fix pytest MonkeyPatch.setattr/undo on unittest.mock.MagicMock and Mock child attributes: the original lazily-created child must survive undo and remain identical, including consecutive/nested patches. Avoid regressing inherited descriptors, dynamically computed attributes and genuinely new attributes which should not become instance shadows. Add at least two meaningful stdlib unittest tests to the single allowed test file."
+    }
+  ],
+  "security": {
+    "distinct_nonhardlinked_trial_clone_per_arm": true,
+    "all_original_first_runs_count_no_retry": true,
+    "private_grader_not_in_agent_checkout": true,
+    "no_network_or_external_apis_or_paid_keys": true,
+    "no_global_git_safe_directory_disable": true,
+    "no_repo_upstream_writes_or_pull_requests": true,
+    "no_production_merge_deploy_publish_restart": true,
+    "declaration_precedes_model_trials": true,
+    "calibration_contains_two_same_author_distinct_reference_patches_and_mutant_each": true,
+    "independent_blinded_human_review": false
+  },
+  "caveats": [
+    "Candidate tests reproduce the untouched-source reported behavior; selection was based on external issue difficulty and reproduction, never on observed baseline-agent failure.",
+    "AnyIO upstream native pytest suite requires missing trustme; pytest checkout requires generated _pytest._version; Rich syntax snapshots differ due local pygments. All arms instead use the same self-contained stdlib unittest regression mandate plus an independently executed hidden behavioral grader.",
+    "Two reference implementations and mutants were constructed by one researcher, not independent humans. The deterministic AnyIO reference/mutant grader was rerun seven times per variant.",
+    "Any failure, timeout, policy denial, incomplete tool events, or native test environment mismatch remains an original failed/invalid attempt, not silently replayed.",
+    "Three tasks and one run per condition cannot prove a population productivity effect or causality. No production feature is released based on this pilot."
+  ]
+}
