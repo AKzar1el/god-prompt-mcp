@@ -1,0 +1,218 @@
+{
+  "schema": "godprompt.v19.candidate-screening-register.v1",
+  "date": "2026-11-23",
+  "parent_review_pr": "https://github.com/AKzar1el/god-prompt-mcp/pull/261",
+  "owner_head": "821b7f26e5a06820118146ce3903720b200d8e43",
+  "status": "CANDIDATE_SCREENING_ONLY_NO_MODEL_RUNS_NO_FROZEN_SUCCESS_CLAIM",
+  "target_count": 12,
+  "repositories": 5,
+  "selection_rule": "New open external bug issues not used in V13-V18 evaluation; issue body and proposed solution are NOT copied into candidate coding prompts. Each candidate must be reproduced on the pinned untouched source and calibrated with an independent grader before it becomes an active trial.",
+  "reject_if": [
+    "not consistently reproducible",
+    "needs network or paid API",
+    "environment-specific and unavailable",
+    "ambiguous correct behavior without independent reviewer",
+    "source revision already fixed",
+    "requires modifying production or secrets",
+    "overlaps previously evaluated bug behavior"
+  ],
+  "candidate_tasks": [
+    {
+      "id": "rich-4270",
+      "repo": "Textualize/rich",
+      "issue": 4270,
+      "url": "https://github.com/Textualize/rich/issues/4270",
+      "source_directory": "rich",
+      "source_revision": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "candidate_source_files": [
+        "rich/cells.py"
+      ],
+      "brief_symptom": "Leading Unicode ZWJ must not swallow a following printable grapheme",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "rich-4269",
+      "repo": "Textualize/rich",
+      "issue": 4269,
+      "url": "https://github.com/Textualize/rich/issues/4269",
+      "source_directory": "rich",
+      "source_revision": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "candidate_source_files": [
+        "rich/color.py"
+      ],
+      "brief_symptom": "Invalid empty RGB components must raise the documented ColorParseError",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "rich-4265",
+      "repo": "Textualize/rich",
+      "issue": 4265,
+      "url": "https://github.com/Textualize/rich/issues/4265",
+      "source_directory": "rich",
+      "source_revision": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "candidate_source_files": [
+        "rich/text.py"
+      ],
+      "brief_symptom": "Right crop must preserve cached length and spans at zero, negative and oversized counts",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "rich-4257",
+      "repo": "Textualize/rich",
+      "issue": 4257,
+      "url": "https://github.com/Textualize/rich/issues/4257",
+      "source_directory": "rich",
+      "source_revision": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "candidate_source_files": [
+        "rich/filesize.py"
+      ],
+      "brief_symptom": "Rounded decimal units must roll over at displayed unit boundaries",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "pytest-15410",
+      "repo": "pytest-dev/pytest",
+      "issue": 15410,
+      "url": "https://github.com/pytest-dev/pytest/issues/15410",
+      "source_directory": "pytest",
+      "source_revision": "718929265449ca33040264152ba5e7022e766a52",
+      "candidate_source_files": [
+        "src/_pytest/_io/terminalwriter.py"
+      ],
+      "brief_symptom": "PYTEST_THEME must actually control the chosen Pygments style",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "pytest-13331",
+      "repo": "pytest-dev/pytest",
+      "issue": 13331,
+      "url": "https://github.com/pytest-dev/pytest/issues/13331",
+      "source_directory": "pytest",
+      "source_revision": "718929265449ca33040264152ba5e7022e766a52",
+      "candidate_source_files": [
+        "src/_pytest/pytester.py"
+      ],
+      "brief_symptom": "makepyfile must honor declared encoding",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "tenacity-748",
+      "repo": "jd/tenacity",
+      "issue": 748,
+      "url": "https://github.com/jd/tenacity/issues/748",
+      "source_directory": "tenacity",
+      "source_revision": "aac059c906170ee7b6ce1aa086a226f3aded5c99",
+      "candidate_source_files": [
+        "tenacity/wait.py"
+      ],
+      "brief_symptom": "Large left-associated sums of wait strategies must avoid recursion overflow",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "tenacity-710",
+      "repo": "jd/tenacity",
+      "issue": 710,
+      "url": "https://github.com/jd/tenacity/issues/710",
+      "source_directory": "tenacity",
+      "source_revision": "aac059c906170ee7b6ce1aa086a226f3aded5c99",
+      "candidate_source_files": [
+        "tenacity/wait.py"
+      ],
+      "brief_symptom": "Zero exponential multiplier must not overflow to maximum wait",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "requests-6102",
+      "repo": "psf/requests",
+      "issue": 6102,
+      "url": "https://github.com/psf/requests/issues/6102",
+      "source_directory": "requests",
+      "source_revision": "3c7baaa05ab4aa49cc819d260de19c157",
+      "candidate_source_files": [
+        "src/requests/auth.py"
+      ],
+      "brief_symptom": "Digest authentication must encode non-Latin credentials correctly without byte repr",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "requests-4965",
+      "repo": "psf/requests",
+      "issue": 4965,
+      "url": "https://github.com/psf/requests/issues/4965",
+      "source_directory": "requests",
+      "source_revision": "3c7baaa05ab4aa49cc819d260de19c157",
+      "candidate_source_files": [
+        "src/requests/models.py"
+      ],
+      "brief_symptom": "Repeated response.content reads should not silently erase a prior stream failure",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "click-3914",
+      "repo": "pallets/click",
+      "issue": 3914,
+      "url": "https://github.com/pallets/click/issues/3914",
+      "source_directory": "click",
+      "source_revision": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+      "candidate_source_files": [
+        "src/click/core.py"
+      ],
+      "brief_symptom": "Auto-prefixed environment variables should appear in required-option error hints",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    },
+    {
+      "id": "click-2614",
+      "repo": "pallets/click",
+      "issue": 2614,
+      "url": "https://github.com/pallets/click/issues/2614",
+      "source_directory": "click",
+      "source_revision": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+      "candidate_source_files": [
+        "src/click/core.py"
+      ],
+      "brief_symptom": "Shell completion must not execute expensive dynamic default callbacks",
+      "status": "UNSCREENED",
+      "independent_grade": "NOT_RUN",
+      "blinded_human_review": "NOT_PERFORMED"
+    }
+  ],
+  "arm_proposal": [
+    "baseline: zero GodPrompt or other MCP calls, same source, failure checkpoint and native tests",
+    "generic_godprompt: one genuine existing get_tailored_guidance(DEBUG/execute/compact/600) MCP call",
+    "evidence_specific: one genuine research-only scoped diagnostic tool that consumes only frozen caller-independent failing native test evidence and source lines, with no hidden grader or prewritten solution access"
+  ],
+  "primary_metric": "Total original wall time over all attempted arms divided by independently accepted bug fixes, including timeouts/invalids.",
+  "guardrails": [
+    "At least 15% improvement over baseline replicated on second unseen cohort",
+    "no correctness regression",
+    "model-reported token overhead explicitly disclosed and measured",
+    "independent blinded reviewer required for a formal gain claim"
+  ],
+  "limitations": [
+    "Open GitHub issue reports are external evidence, but some contain suggested fixes; selected test graders will still be same-author unless independent review is obtained.",
+    "12 candidates is not the same as 12 reproduced/graded cases or 36 real model runs.",
+    "No production changes permitted."
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "schema": "godprompt.v19.source-evidence-five-repo-pilot.v1",
+  "id": "V19-source-evidence-5-repos-15-first-runs-20261123",
+  "date": "2026-11-23",
+  "parent_review_pr": "https://github.com/AKzar1el/god-prompt-mcp/pull/261",
+  "godprompt_research_head": "821b7f26e5a06820118146ce3903720b200d8e43",
+  "candidate_register": "v19-candidate-screening-20261123.json",
+  "candidate_register_note": "12 distinct issue candidates screened across five repositories; ten reproducible via read-only screen. Only five independently graded tasks advanced to this frozen pilot; 7 other candidates are not model trials.",
+  "random_seed": "2e0436513be74920a1d730da06762d68",
+  "randomization": "Sort selected task IDs ascending SHA256(seed+ID), then rotate [baseline,generic_godprompt,evidence_mcp] by ordered index modulo 3. This was fixed before all 15 model trials.",
+  "task_order": [
+    "tenacity-710",
+    "rich-4270",
+    "requests-4965",
+    "pytest-15410",
+    "click-3914"
+  ],
+  "arms": [
+    "baseline",
+    "generic_godprompt",
+    "evidence_mcp"
+  ],
+  "native_test_rel_path": "v19_native_tests/test_recovery.py",
+  "private_grader_schema": "godprompt.v19.private-behavior-grade.v1",
+  "private_grader_sha256": "6f6a1442c5a2789bd0daf85acdef9c59107196d2c51c09e46d5e0b6ce48c0c00",
+  "research_evidence_format_sha256": "4e16b4d06d84af9df1c526dafee1778ee77abca8c26b734c5700fbc087495fdc",
+  "research_evidence_stdio_sha256": "30bda060a4113c0a672018728e55870b95067a024983e260c3e2d757302eb944",
+  "event_audit_sha256": "9cacd9d7efb2dbd255093e7cd7ea0f9bdfd915a8a640d65059fc95cd6e35bfdb",
+  "git_helper_sha256": "5780d6d9efe8df1d11a8c27b371553e9725fa7053354e4060c535e428bfcb223",
+  "live_godprompt_stdio_sha256": "1024943fc2ece7743c5cde9a3b1485396ec37e43fd694d25ae6c6b6ee91fe51b",
+  "environment": {
+    "codex_cli_version": "0.171.0",
+    "requested_model": "gpt-6.1-sol",
+    "requested_reasoning_effort": "high",
+    "sandbox": "workspace-write",
+    "network_access": false,
+    "native_command": "python -B -m unittest discover -s v19_native_tests -p test_recovery.py -v",
+    "node_runtime_major": 22,
+    "python_runtime_major": 3,
+    "unrelated_mcp_disabled": [
+      "node_repl",
+      "github",
+      "memory",
+      "firecrawl",
+      "cloudflare-api",
+      "context7",
+      "filesystem",
+      "mcp-gsc",
+      "shared-browser",
+      "chrome-devtools",
+      "god-prompt-mcp",
+      "godprompt-checkpoint-pilot",
+      "mcp-trendpulse",
+      "mcp-web-validator"
+    ]
+  },
+  "interventions": {
+    "baseline": "No active MCP servers. Ordinary code and native tests; no GodPrompt prompt or skill.",
+    "generic_godprompt": "One actual successful godprompt.get_tailored_guidance with task_type=DEBUG phase=execute compact=true max_chars=600 BEFORE source edits. No other MCP calls.",
+    "evidence_mcp": "One actual successful godprompt_evidence.get_failure_evidence with empty input BEFORE source edits, returning the externally frozen task-bound native RED and bounded source snippet with SHA identity. No other MCP calls.",
+    "causal_scope": "Compare joint tool/prompt/evidence policy, not isolate text causality or assert automated root-cause determination."
+  },
+  "calibration": {
+    "native_red_all": true,
+    "untouched_hidden_red_all": true,
+    "reference_a_green_all": true,
+    "reference_b_green_all": true,
+    "mutant_rejected_all": true,
+    "hidden_grader_rounds": 3,
+    "hidden_variants_per_task": 4,
+    "private_human_blinded_review": false
+  },
+  "tasks": [
+    {
+      "id": "tenacity-710",
+      "repo": "jd/tenacity",
+      "issue": 710,
+      "source_dir": "tenacity",
+      "source_sha": "aac059c906170ee7b6ce1aa086a226f3aded5c99",
+      "source_url": "https://github.com/jd/tenacity.git",
+      "source_file": "tenacity/wait.py",
+      "source_sha256": "243bf2d3e8346e811509888bc92adb3d7ac3913f5e920f83e21324d7aeec6dcd",
+      "regression_sha256": "1ba9edc7e870ae275ed8d998293eed78586d19249715b5b1edaed7832e33b24e",
+      "packet_file_sha256": "d23578c14b6d27e8073e1e2b94ef631833bbc4fad795544a333aceaa4069a67d",
+      "evidence_sha256": "6e703a062c412c24fdde01c03deddd42ed291d722b5ac7a15889599198e1ead4",
+      "native_tests": 5,
+      "hidden_passes": {
+        "untouched": 4,
+        "reference_a": 10,
+        "reference_b": 10,
+        "mutant": 8
+      },
+      "hidden_total": 10,
+      "timeout_seconds": 300,
+      "order": [
+        "baseline",
+        "generic_godprompt",
+        "evidence_mcp"
+      ],
+      "description": "A configured zero exponential-backoff multiplier unexpectedly yields the maximum wait at large retry attempt counts. Repair the overflow behavior while preserving configured minimums, optional jitter and normal positive-multiplier backoff."
+    },
+    {
+      "id": "rich-4270",
+      "repo": "Textualize/rich",
+      "issue": 4270,
+      "source_dir": "rich",
+      "source_sha": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+      "source_url": "https://github.com/Textualize/rich.git",
+      "source_file": "rich/cells.py",
+      "source_sha256": "0996761abc298c6a0bf2d6079d165bb264d439b9945cfca846e4be8aaf99fa89",
+      "regression_sha256": "f69eefe4cf130da92b1429e37c707caf39f9a314c45e6e1616f7f7d6f16fe37c",
+      "packet_file_sha256": "7e3241768760df7b596742ec4dc7ce8ce593b280586e00afcc942b3277a25b55",
+      "evidence_sha256": "7d423fe86dcea43ebdf9c283a05b6038c910f16e7075a9066a6a82bf2397e978",
+      "native_tests": 3,
+      "hidden_passes": {
+        "untouched": 7,
+        "reference_a": 15,
+        "reference_b": 15,
+        "mutant": 6
+      },
+      "hidden_total": 15,
+      "timeout_seconds": 300,
+      "order": [
+        "generic_godprompt",
+        "evidence_mcp",
+        "baseline"
+      ],
+      "description": "Leading Unicode zero-width joiner followed by a visible character is incorrectly measured as zero cell width. Repair consistency for ASCII, wide glyphs and emoji sequences, without breaking normal joined emoji or empty text."
+    },
+    {
+      "id": "requests-4965",
+      "repo": "psf/requests",
+      "issue": 4965,
+      "source_dir": "requests",
+      "source_sha": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
+      "source_url": "https://github.com/psf/requests.git",
+      "source_file": "src/requests/models.py",
+      "source_sha256": "2d4b5a2738256b3d10cbe8b6e5ad572b9579b847396de6b4093affa5e328150c",
+      "regression_sha256": "5a340ff6b786e0d2fef86fae7316de4b0452122af66ccedfa49140bb26cd982d",
+      "packet_file_sha256": "b9ba25a60ee67c55231cb1eb0fb96b290eb009e7081590f8d56cf569abad88b8",
+      "evidence_sha256": "906fdb375a6ccddcfa95286e642b7611f06d143965d9b01fab4e4b93a0a909cc",
+      "native_tests": 2,
+      "hidden_passes": {
+        "untouched": 2,
+        "reference_a": 7,
+        "reference_b": 7,
+        "mutant": 2
+      },
+      "hidden_total": 7,
+      "timeout_seconds": 420,
+      "order": [
+        "evidence_mcp",
+        "baseline",
+        "generic_godprompt"
+      ],
+      "description": "When Response.content raises due to a broken stream, a second content read may silently yield empty bytes and lose the original error. Preserve the error on subsequent reads while retaining normal successful caching and response.text behavior."
+    },
+    {
+      "id": "pytest-15410",
+      "repo": "pytest-dev/pytest",
+      "issue": 15410,
+      "source_dir": "pytest",
+      "source_sha": "718929265449ca33040264152ba5e7022e766a52",
+      "source_url": "https://github.com/pytest-dev/pytest.git",
+      "source_file": "src/_pytest/_io/terminalwriter.py",
+      "source_sha256": "2228822b77f72bd07cc32da0556820df94d260a92b85cc308c6fcf70174a3778",
+      "regression_sha256": "e0056dee7522a54d1d860c4e2b390ddcfe9bbb49cc0985b599fcf4f234e5ee67",
+      "packet_file_sha256": "1bae28a9744a2d2ec95000eb43342da7b96d17ee3d9cb46dfd163f94473966fb",
+      "evidence_sha256": "e7106cbf455b610e35cf92b73b71c1540bb3888cbc605ad6738e31a9329b3693",
+      "native_tests": 3,
+      "hidden_passes": {
+        "untouched": 4,
+        "reference_a": 8,
+        "reference_b": 8,
+        "mutant": 4
+      },
+      "hidden_total": 8,
+      "timeout_seconds": 360,
+      "order": [
+        "baseline",
+        "generic_godprompt",
+        "evidence_mcp"
+      ],
+      "description": "PYTEST_THEME environment variable is advertised for Python syntax highlighting but has no effect on ANSI colors. Apply valid theme styles, reject invalid theme values and preserve no-theme/default output and theme-mode compatibility."
+    },
+    {
+      "id": "click-3914",
+      "repo": "pallets/click",
+      "issue": 3914,
+      "source_dir": "click",
+      "source_sha": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+      "source_url": "https://github.com/pallets/click.git",
+      "source_file": "src/click/core.py",
+      "source_sha256": "009801cc5f3ea315db8134f6e65193cf655684b57a9d56ec2b4628407046b7e2",
+      "regression_sha256": "2844902260a8e424fba34e8e198bb8c4a2cae3ed2896501af8c97c999aaeaaad",
+      "packet_file_sha256": "8eb4a2a2bc777eef92a52a24007f36e907d522bf3056723bc60e6b6acc712039",
+      "evidence_sha256": "e1d6250bf023bde63acc16996e7a5dd0c5ff428bbfd7bc470bd1c244d4d93405",
+      "native_tests": 3,
+      "hidden_passes": {
+        "untouched": 4,
+        "reference_a": 9,
+        "reference_b": 9,
+        "mutant": 4
+      },
+      "hidden_total": 9,
+      "timeout_seconds": 300,
+      "order": [
+        "generic_godprompt",
+        "evidence_mcp",
+        "baseline"
+      ],
+      "description": "For a required Click option with show_envvar=True and an automatic context environment prefix, help mentions the derived variable but runtime error hints omit it. Preserve explicit envvar precedence and show_envvar=False behavior."
+    }
+  ],
+  "limits": {
+    "original_denominator": 15,
+    "no_retry_or_postflight_upgrade": true,
+    "no_global_git_trust_disable": true,
+    "no_network_or_paid_keys": true,
+    "no_upstream_writes": true,
+    "no_production_changes": true,
+    "frozen_native_test_mutation_forbidden": true,
+    "minimum_accepted_native_tests": 2,
+    "main_effect_vs_baseline_at_least_percent": 15,
+    "model_reported_input_overhead_guardrail_percent": 10,
+    "require_second_unseen_cohort_and_blinded_review_for_replicability_claim": true
+  },
+  "caveats": [
+    "Five matched tasks have same-author hidden graders and reference solutions, not independent blinded human adjudication.",
+    "12 selected issue candidates are not equivalent to 12 graded independent bugs; only five are pilot-ready.",
+    "Public issue reports sometimes include suggested fixes; agent prompts omit answer-bearing body and offline scope forbids issue fetch.",
+    "Evidence arm returns bound public code/test observations, not a model diagnosis or a verified root cause.",
+    "Trial effects may include extra process/tool overhead, differing prompts, model stochasticity and cached-token accounting.",
+    "Without a second unseen cohort and independent grading, no repeatable gain can be established even if pilot meets numeric thresholds."
+  ]
+}

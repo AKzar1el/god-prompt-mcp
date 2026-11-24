@@ -1,0 +1,77 @@
+{
+  "tenacity-710|baseline": {
+    "sha256": "672995e6beecb056024d2288208b2dd3e8840cb601d787ba6b5b5c8b5151fb2a",
+    "status": "VALID_CORRECT",
+    "seconds": 145.16
+  },
+  "tenacity-710|generic_godprompt": {
+    "sha256": "03e961ae576bbab1c6f7191de5ea0629f53936db3364a085a60e1e60f4b8465e",
+    "status": "VALID_CORRECT",
+    "seconds": 208.2
+  },
+  "tenacity-710|evidence_mcp": {
+    "sha256": "0c3ae2fd78ca9904062cdada45ffcc25d83116977841b3fe012a9562b21d14dd",
+    "status": "VALID_CORRECT",
+    "seconds": 202.726
+  },
+  "rich-4270|generic_godprompt": {
+    "sha256": "439c723da02c3f54b32b8d7d63c18696436403e01957be17122f35051c5b464e",
+    "status": "VALID_CORRECT",
+    "seconds": 231.465
+  },
+  "rich-4270|evidence_mcp": {
+    "sha256": "6e4700b1d75b5df96ff77ab13e1f5d0dd0ff651893a8f74ee86a8eb24c69b2d9",
+    "status": "VALID_CORRECT",
+    "seconds": 169.577
+  },
+  "rich-4270|baseline": {
+    "sha256": "f82e2d446fe5fa465c51077f54cba5bc570a99f994c5f26aa08b09b78e208e0a",
+    "status": "VALID_CORRECT",
+    "seconds": 98.4
+  },
+  "requests-4965|evidence_mcp": {
+    "sha256": "ebecf61c2b78c9a5ce82ead2d5b46a6ddc88c74206b3c23bfa069ea0dfdc4d8e",
+    "status": "VALID_CORRECT",
+    "seconds": 180.209
+  },
+  "requests-4965|baseline": {
+    "sha256": "106c396c43faacaf2a96fb670971045fcee907aab363aee8a4f79351cd671d26",
+    "status": "VALID_CORRECT",
+    "seconds": 160.933
+  },
+  "requests-4965|generic_godprompt": {
+    "sha256": "0698f0c953a620d76f57d4b556566c8ed1d78aa0e6c95160162e77ab8205f65c",
+    "status": "VALID_CORRECT",
+    "seconds": 157.383
+  },
+  "pytest-15410|baseline": {
+    "sha256": "01e643e15fac1265df1e11406d4c457938a859a036c2a29e58f7240cdfd09fb5",
+    "status": "VALID_CORRECT",
+    "seconds": 190.291
+  },
+  "pytest-15410|generic_godprompt": {
+    "sha256": "4f36f26c5cad0c35161ed0ac0fe3124c11a8fff04db98815dca4fa3a6016bfdd",
+    "status": "VALID_CORRECT",
+    "seconds": 203.077
+  },
+  "pytest-15410|evidence_mcp": {
+    "sha256": "d07d8603a7f39bb4d9739cd5220b1d661caabd284de983b7c7ea14239c9f0a24",
+    "status": "VALID_CORRECT",
+    "seconds": 177.618
+  },
+  "click-3914|generic_godprompt": {
+    "sha256": "ec48b0aa51b3166ff7d4125515e59024b4f132355c9936c9829545178866af8a",
+    "status": "VALID_CORRECT",
+    "seconds": 207.55
+  },
+  "click-3914|evidence_mcp": {
+    "sha256": "07cf502467635d06ab45319f46c5c32e04a94c9cc574a99c7d8ffba3693f420b",
+    "status": "INVALID_TIMEOUT",
+    "seconds": 300.182
+  },
+  "click-3914|baseline": {
+    "sha256": "99b2ccff99e50788f5333cc8c89d38cb45d9e51f3933f6c950d80f3469be0d3f",
+    "status": "VALID_CORRECT",
+    "seconds": 226.834
+  }
+}

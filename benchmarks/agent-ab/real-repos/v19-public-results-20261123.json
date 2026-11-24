@@ -1,0 +1,484 @@
+{
+  "schema": "godprompt.v19.public-three-arm-original-results.v1",
+  "study": "V19-source-evidence-5-repos-15-first-runs-20261123",
+  "frozen_manifest_sha256": "8a75174ba0592b79bfe12732bed18c0c567e319d2285b2cbc2638daa349e11d9",
+  "frozen_runner_sha256": "1423057f0c4c06c297be11075c7b47cd114c0d5b3a21b1a64fbb5ef7c957cd05",
+  "intended_sample_size": 15,
+  "actual_original_runs": 15,
+  "independent_raw_log_audit_passed": true,
+  "expected_tasks": [
+    "tenacity-710",
+    "rich-4270",
+    "requests-4965",
+    "pytest-15410",
+    "click-3914"
+  ],
+  "review_draft_only": true,
+  "human_blinded_review_completed": false,
+  "second_unseen_replication_cohort_completed": false,
+  "no_production_change": true,
+  "effect_requirement": {
+    "minimum_replicated_wall_time_gain_percent": 15,
+    "upper_model_reported_input_overhead_guardrail_percent": 10,
+    "no_correctness_regression": true
+  },
+  "by_arm": {
+    "baseline": {
+      "original_attempts": 5,
+      "accepted": 5,
+      "all_attempt_wall_seconds": 821.618,
+      "seconds_per_accepted_fix": 164.324,
+      "known_model_reported_input_tokens": 1415169,
+      "missing_token_usage": 0,
+      "actual_mcp_calls": 0
+    },
+    "generic_godprompt": {
+      "original_attempts": 5,
+      "accepted": 5,
+      "all_attempt_wall_seconds": 1007.675,
+      "seconds_per_accepted_fix": 201.535,
+      "known_model_reported_input_tokens": 2819148,
+      "missing_token_usage": 0,
+      "actual_mcp_calls": 5
+    },
+    "evidence_mcp": {
+      "original_attempts": 5,
+      "accepted": 4,
+      "all_attempt_wall_seconds": 1030.312,
+      "seconds_per_accepted_fix": 257.578,
+      "known_model_reported_input_tokens": 1337349,
+      "missing_token_usage": 1,
+      "actual_mcp_calls": 5
+    }
+  },
+  "directional_gain_percent_per_accepted_fix": {
+    "generic_vs_baseline": -22.64,
+    "evidence_vs_baseline": -56.75
+  },
+  "reported_input_token_change_percent": {
+    "generic_vs_baseline": 99.21,
+    "evidence_vs_baseline": null
+  },
+  "all_original_rows": [
+    {
+      "id": "tenacity-710",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "672995e6beecb056024d2288208b2dd3e8840cb601d787ba6b5b5c8b5151fb2a",
+      "original_jsonl_sha256": "84e4bb5df175f251cd77a07352b06b99f5041bf641d7eb7b34426f21153057c6",
+      "original_stderr_sha256": "b5bf39c056aa8c04e617302d0189ab34947b38462ebb07bd488f1084455d1230",
+      "accepted": true,
+      "wall_seconds": 145.16,
+      "hidden_passed": 10,
+      "hidden_total": 10,
+      "native_test_count": 5,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 243665,
+        "cached_input_tokens": 218112,
+        "output_tokens": 2167
+      },
+      "actual_mcp_calls": []
+    },
+    {
+      "id": "tenacity-710",
+      "arm": "generic_godprompt",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "03e961ae576bbab1c6f7191de5ea0629f53936db3364a085a60e1e60f4b8465e",
+      "original_jsonl_sha256": "d0f501daa3e95db3466da3f62f028e671d88367f8dfac5020bf4260fbaeb66fd",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 208.2,
+      "hidden_passed": 10,
+      "hidden_total": 10,
+      "native_test_count": 5,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 699565,
+        "cached_input_tokens": 657920,
+        "output_tokens": 3468
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": true,
+          "exact_evidence_args": false,
+          "expected_frozen_packet": false
+        }
+      ]
+    },
+    {
+      "id": "tenacity-710",
+      "arm": "evidence_mcp",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "0c3ae2fd78ca9904062cdada45ffcc25d83116977841b3fe012a9562b21d14dd",
+      "original_jsonl_sha256": "ed5f480dc1889849f4f3e43338936c83ea215ea7b05158e52242564ee0842a40",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 202.726,
+      "hidden_passed": 10,
+      "hidden_total": 10,
+      "native_test_count": 5,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 354904,
+        "cached_input_tokens": 318464,
+        "output_tokens": 3424
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt_evidence",
+          "tool": "get_failure_evidence",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": false,
+          "exact_evidence_args": true,
+          "expected_frozen_packet": true
+        }
+      ]
+    },
+    {
+      "id": "rich-4270",
+      "arm": "generic_godprompt",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "439c723da02c3f54b32b8d7d63c18696436403e01957be17122f35051c5b464e",
+      "original_jsonl_sha256": "f70b92c70ff637c22b1912882983257dab4b5f9240fdaed7502e095842a50ae2",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 231.465,
+      "hidden_passed": 15,
+      "hidden_total": 15,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 548816,
+        "cached_input_tokens": 513408,
+        "output_tokens": 5209
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": true,
+          "exact_evidence_args": false,
+          "expected_frozen_packet": false
+        }
+      ]
+    },
+    {
+      "id": "rich-4270",
+      "arm": "evidence_mcp",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "6e4700b1d75b5df96ff77ab13e1f5d0dd0ff651893a8f74ee86a8eb24c69b2d9",
+      "original_jsonl_sha256": "3647aa7f01fd2ff9511fcb0e00c0482d16d4812b163d138a2ad883422cc55793",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 169.577,
+      "hidden_passed": 15,
+      "hidden_total": 15,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 242447,
+        "cached_input_tokens": 220416,
+        "output_tokens": 3038
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt_evidence",
+          "tool": "get_failure_evidence",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": false,
+          "exact_evidence_args": true,
+          "expected_frozen_packet": true
+        }
+      ]
+    },
+    {
+      "id": "rich-4270",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "f82e2d446fe5fa465c51077f54cba5bc570a99f994c5f26aa08b09b78e208e0a",
+      "original_jsonl_sha256": "c7aa5294ea9e1817a2ac756f49910fa2eef41badf1648a6a460b191f27072b12",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 98.4,
+      "hidden_passed": 15,
+      "hidden_total": 15,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 253956,
+        "cached_input_tokens": 226560,
+        "output_tokens": 1945
+      },
+      "actual_mcp_calls": []
+    },
+    {
+      "id": "requests-4965",
+      "arm": "evidence_mcp",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "ebecf61c2b78c9a5ce82ead2d5b46a6ddc88c74206b3c23bfa069ea0dfdc4d8e",
+      "original_jsonl_sha256": "0f5b48b04a7b4d2221ec526b3a108835abd02692bd08b4b98ce814ed96095f0c",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 180.209,
+      "hidden_passed": 7,
+      "hidden_total": 7,
+      "native_test_count": 2,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 470249,
+        "cached_input_tokens": 391296,
+        "output_tokens": 4510
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt_evidence",
+          "tool": "get_failure_evidence",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": false,
+          "exact_evidence_args": true,
+          "expected_frozen_packet": true
+        }
+      ]
+    },
+    {
+      "id": "requests-4965",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "106c396c43faacaf2a96fb670971045fcee907aab363aee8a4f79351cd671d26",
+      "original_jsonl_sha256": "83d679f2be0127fcb58d43a443f7a62785ae35f56789d366837e07a316f0f9fc",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 160.933,
+      "hidden_passed": 7,
+      "hidden_total": 7,
+      "native_test_count": 2,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 291769,
+        "cached_input_tokens": 253440,
+        "output_tokens": 2683
+      },
+      "actual_mcp_calls": []
+    },
+    {
+      "id": "requests-4965",
+      "arm": "generic_godprompt",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "0698f0c953a620d76f57d4b556566c8ed1d78aa0e6c95160162e77ab8205f65c",
+      "original_jsonl_sha256": "952773c9563b977d5e5780f56cabbae8d56dab6f4c3d3c1bba2a62719ca20003",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 157.383,
+      "hidden_passed": 7,
+      "hidden_total": 7,
+      "native_test_count": 2,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 449660,
+        "cached_input_tokens": 406784,
+        "output_tokens": 3784
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": true,
+          "exact_evidence_args": false,
+          "expected_frozen_packet": false
+        }
+      ]
+    },
+    {
+      "id": "pytest-15410",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "01e643e15fac1265df1e11406d4c457938a859a036c2a29e58f7240cdfd09fb5",
+      "original_jsonl_sha256": "4d04f950d108bcc0bdff0738415db919ecccb3a22979f58a1b6b34960a358d50",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 190.291,
+      "hidden_passed": 8,
+      "hidden_total": 8,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 297051,
+        "cached_input_tokens": 257664,
+        "output_tokens": 3768
+      },
+      "actual_mcp_calls": []
+    },
+    {
+      "id": "pytest-15410",
+      "arm": "generic_godprompt",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "4f36f26c5cad0c35161ed0ac0fe3124c11a8fff04db98815dca4fa3a6016bfdd",
+      "original_jsonl_sha256": "7a1eddc33ca28338c68af52acf1c09510f95cbd6fc185476fe1048c45caf2f41",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 203.077,
+      "hidden_passed": 8,
+      "hidden_total": 8,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 432900,
+        "cached_input_tokens": 387072,
+        "output_tokens": 3985
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": true,
+          "exact_evidence_args": false,
+          "expected_frozen_packet": false
+        }
+      ]
+    },
+    {
+      "id": "pytest-15410",
+      "arm": "evidence_mcp",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "d07d8603a7f39bb4d9739cd5220b1d661caabd284de983b7c7ea14239c9f0a24",
+      "original_jsonl_sha256": "05016000b45b6ca9e3ab28e053f66f92c294f1dac8e84affb6b1337ec46db996",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 177.618,
+      "hidden_passed": 8,
+      "hidden_total": 8,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 269749,
+        "cached_input_tokens": 246016,
+        "output_tokens": 3141
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt_evidence",
+          "tool": "get_failure_evidence",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": false,
+          "exact_evidence_args": true,
+          "expected_frozen_packet": true
+        }
+      ]
+    },
+    {
+      "id": "click-3914",
+      "arm": "generic_godprompt",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "ec48b0aa51b3166ff7d4125515e59024b4f132355c9936c9829545178866af8a",
+      "original_jsonl_sha256": "996b596ecff6cc465317d0e703898bee41247c099cc18a94d18d50fcf10ce93b",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 207.55,
+      "hidden_passed": 9,
+      "hidden_total": 9,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 688207,
+        "cached_input_tokens": 626304,
+        "output_tokens": 3055
+      },
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt",
+          "tool": "get_tailored_guidance",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": true,
+          "exact_evidence_args": false,
+          "expected_frozen_packet": false
+        }
+      ]
+    },
+    {
+      "id": "click-3914",
+      "arm": "evidence_mcp",
+      "original_status": "INVALID_TIMEOUT",
+      "original_receipt_sha256": "07cf502467635d06ab45319f46c5c32e04a94c9cc574a99c7d8ffba3693f420b",
+      "original_jsonl_sha256": "447cbc2504c2696b02f1f2bcdfc7a93eadfba4cc005d03054a7e39bdb95bc8bb",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": false,
+      "wall_seconds": 300.182,
+      "hidden_passed": 9,
+      "hidden_total": 9,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": null,
+      "actual_mcp_calls": [
+        {
+          "server": "godprompt_evidence",
+          "tool": "get_failure_evidence",
+          "success": true,
+          "before_source_edit": true,
+          "exact_generic_args": false,
+          "exact_evidence_args": true,
+          "expected_frozen_packet": true
+        }
+      ]
+    },
+    {
+      "id": "click-3914",
+      "arm": "baseline",
+      "original_status": "VALID_CORRECT",
+      "original_receipt_sha256": "99b2ccff99e50788f5333cc8c89d38cb45d9e51f3933f6c950d80f3469be0d3f",
+      "original_jsonl_sha256": "6d07b9b2f27071a0d1d8b15f7bad3a38f3185e6c3bae68ea7b9b35053a47b7c8",
+      "original_stderr_sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721",
+      "accepted": true,
+      "wall_seconds": 226.834,
+      "hidden_passed": 9,
+      "hidden_total": 9,
+      "native_test_count": 3,
+      "native_test_exit": 0,
+      "grader_exit": 0,
+      "model_reported_usage": {
+        "input_tokens": 328728,
+        "cached_input_tokens": 285952,
+        "output_tokens": 2564
+      },
+      "actual_mcp_calls": []
+    }
+  ],
+  "conclusion": "NO_REPLICABLE_PRODUCTION_GAIN_CLAIM",
+  "caveats": [
+    "One first-run attempt per arm for only five cases. This is a directional pilot, not a repeatable performance claim.",
+    "Private behavior graders, calibration mutants and reference solutions were authored by the same researcher; independent blinded human review is missing.",
+    "Real native test failure and exact task-bound evidence calls were independently checked from authentic JSONL, not model self-reported fixes.",
+    "Reported input tokens include cache and are not a verified billed cost measure.",
+    "All original timeouts, failed treatments, invalid or incorrect attempts remain in the fixed denominator.",
+    "Benchmark research is isolated from live GodPrompt runtime and npm package."
+  ]
+}
