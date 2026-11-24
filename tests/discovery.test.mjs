@@ -96,3 +96,23 @@ test("advertises POST on rejected MCP GET requests", async () => {
   assert.equal(response.status, 405);
   assert.equal(response.headers.get("allow"), "POST");
 });
+
+test("serves the configured OpenAI domain challenge only at the exact read-only route", async () => {
+  const url = PUBLIC_ORIGIN + "/.well-known/openai-apps-challenge";
+  const token = "test-challenge-token_123456789";
+  const env = { OPENAI_APPS_CHALLENGE: token };
+  const get = await worker.fetch(new Request(url), env);
+  assert.equal(get.status, 200);
+  assert.equal(await get.text(), token);
+  assert.match(get.headers.get("content-type"), /^text\/plain/);
+  assert.equal(get.headers.get("cache-control"), "no-store");
+  const head = await worker.fetch(new Request(url, { method: "HEAD" }), env);
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), "");
+  for (const bad of [undefined, {}, { OPENAI_APPS_CHALLENGE: "" },
+    { OPENAI_APPS_CHALLENGE: "short" }, { OPENAI_APPS_CHALLENGE: token + "\n" }]) {
+    assert.equal((await worker.fetch(new Request(url), bad)).status, 404);
+  }
+  assert.equal((await worker.fetch(new Request(url, { method: "POST" }), env)).status, 404);
+  assert.equal((await worker.fetch(new Request(url + "/extra"), env)).status, 404);
+});
