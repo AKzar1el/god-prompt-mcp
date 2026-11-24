@@ -1,21 +1,31 @@
 # GodPrompt hosted service terms
 
-**Proposed publication text ? operator review required**
+**Effective: 24 November 2026**
 
-These terms concern the public hosted GodPrompt tool service and the GodPrompt Engineering plugin. The publisher is identified in the [legal notice](https://tomiseregi.si/legal); support is available through the [contact page](https://tomiseregi.si/contact).
+These terms apply to the public hosted GodPrompt tool service, including the GodPrompt Engineering plugin for ChatGPT and Codex. The publisher is Tomi ?eregi, Slovenia, identified in the [legal notice](https://tomiseregi.si/legal). Support and questions are welcome via the [contact page](https://tomiseregi.si/contact). These terms concern the hosted tool service, not the separate terms of your calling client.
 
-## Scope of the service
+## 1. Scope and availability
 
-The remote tools produce software-engineering guidance, analyses of supplied information, test ideas and evidence-review reports. They do not read your repositories, run commands or tests, deploy software, change external state, authenticate reported evidence or authorize a release. The service does not process payments. A separate standalone Skill is available for instruction-only workflows.
+The remote tools provide software-engineering guidance and structured review of supplied requirements, examples, tool contracts, dependency information and reported evidence. They do not read repositories or local files, execute commands or tests, deploy software, alter external state, authenticate reported evidence, or independently authorize or verify a release.
 
-## Authorized use and data
+The hosted service is currently offered without a separate service fee or payment flow. Your client may have its own fees, limits and terms. Availability, rate limits and compatibility may change, and the service may be temporarily restricted or suspended to maintain security or reliability. No paid subscription or service-level agreement is offered through this plugin.
 
-Use the service only for lawful work you are authorized to perform. Provide only information you have permission to share. Do not send credentials, private keys, personal information, confidential material, payment card details or other sensitive information; use minimized and redacted samples. Do not overload the service, interfere with its operation, or attempt unauthorized access. See the [proposed hosted privacy notice](hosted-service-privacy.md).
+## 2. Authorized use and data
 
-## Review outputs
+Use the service only for lawful work you are authorized to perform. Submit only information you have permission to share. Do not send credentials, private keys, payment card data, protected health information, government identifiers, personal or confidential information, or other sensitive material. Use minimized and appropriately redacted or synthetic examples. Do not attempt unauthorized access, deliberately overload the service, circumvent applicable security controls or interfere with others' use.
 
-Advisory results can be incomplete or mistaken. Independently check requirements, source code, tests, permissions, security and approvals before relying on them for a consequential decision. Tool results do not constitute independent verification, certification or professional approval. Availability and compatibility may change; no paid subscription or service-level agreement is offered by this plugin.
+Data handling and the available privacy controls are described in the [hosted-service privacy notice](hosted-service-privacy.md).
 
-## Open-source software and rights
+## 3. Advisory results
 
-The repository's [MIT license](../LICENSE) applies to the open-source software. These proposed hosted-service terms do not restrict the rights granted by that license. Nothing in these terms excludes rights, remedies or responsibilities that cannot lawfully be excluded under applicable law. The operator must approve the final terms and applicable legal details before publishing them as effective terms.
+Outputs are advisory and may be incomplete or incorrect. Independently validate requirements, code, test results, permissions, security and approvals before relying on the outputs or making consequential decisions. The tools do not constitute independent verification, certification, professional approval or permission to proceed with a deployment.
+
+The service is provided without a guarantee of uninterrupted availability or fitness for a particular task, except where applicable law provides otherwise. Nothing in these terms limits or excludes rights, remedies or responsibilities that cannot lawfully be limited or excluded, including applicable mandatory consumer protections.
+
+## 4. Open-source software and changes
+
+The repository's [MIT license](../LICENSE) applies to the open-source software. These hosted-service terms do not restrict rights granted by that license. If the hosted service or its terms change, the current terms and their effective date will be published at this URL. Any change is subject to applicable law.
+
+## 5. Contact
+
+For service questions or concerns, use the [publisher's contact page](https://tomiseregi.si/contact). For personal-data requests, follow the hosted-service privacy notice.
