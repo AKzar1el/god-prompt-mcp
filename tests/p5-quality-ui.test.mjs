@@ -3,6 +3,16 @@ import assert from "node:assert/strict";
 import vm from "node:vm";
 import { QUALITY_UI_URI,QUALITY_UI_MIME,QUALITY_UI_HTML } from "../dist/quality-view.js";
 const META={"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{name:"p5-app-test",version:"1.0.0"},"io.modelcontextprotocol/clientCapabilities":{}};
+function extractInlineScript(html){
+  // This is a strict assertion for the generated static HTML fixture, not
+  // an HTML sanitizer. HTML tag names are case-insensitive.
+  const openingTags=[...html.matchAll(/<script\b[^>]*>/gi)];
+  assert.equal(openingTags.length,1);
+  assert.match(openingTags[0][0],/^<script\s*>$/i);
+  const script=html.match(/<script\s*>([\s\S]*?)<\/script\s*>/i)?.[1];
+  assert.ok(script);
+  return script;
+}
 async function req(worker,method,params,id){
   const response=await worker.fetch(new Request("https://example.test/mcp",{
     method:"POST",
@@ -34,8 +44,15 @@ test("P5 MCP Apps standalone view has restrictive CSP and no exfiltration primit
   assert.match(QUALITY_UI_HTML,/object-src 'none'/);
   assert.match(QUALITY_UI_HTML,/ui\/notifications\/tool-result/);
   assert.match(QUALITY_UI_HTML,/textContent/);
-  assert.doesNotMatch(QUALITY_UI_HTML,/\bfetch\s*\(|\bXMLHttpRequest\b|\beval\s*\(|<script\s+src=|\.innerHTML\s*=/);
+  assert.doesNotMatch(QUALITY_UI_HTML,/\bfetch\s*\(|\bXMLHttpRequest\b|\beval\s*\(|\.innerHTML\s*=/);
+  assert.doesNotMatch(QUALITY_UI_HTML,/<script\b[^>]*\bsrc\s*=/i);
+  extractInlineScript(QUALITY_UI_HTML);
   assert.ok(QUALITY_UI_HTML.length<16000);
+});
+test("P5 static script assertions handle mixed-case tags and reject external or extra scripts",()=>{
+  assert.equal(extractInlineScript("<ScRiPt>42</sCrIpT>"),"42");
+  assert.throws(()=>extractInlineScript('<SCRIPT SRC = "https://example.invalid/a.js"></SCRIPT>'));
+  assert.throws(()=>extractInlineScript("<script>42</script><SCRIPT>43</SCRIPT>"));
 });
 test("P5 app handshake, structured result and interactive severity filter work in sandbox simulation",()=>{
   class Elem {
@@ -51,8 +68,7 @@ test("P5 app handshake, structured result and interactive severity filter work i
   const sent=[],handlers={};
   const parent={postMessage(msg){sent.push(msg)}};
   const win={parent,addEventListener(name,fn){handlers[name]=fn}};
-  const script=QUALITY_UI_HTML.match(/<script>([\s\S]*?)<\/script>/)?.[1];
-  assert.ok(script);
+  const script=extractInlineScript(QUALITY_UI_HTML);
   vm.runInNewContext(script,{window:win,document:doc,console});
   assert.equal(sent[0].method,"ui/initialize");
   handlers.message({source:parent,data:{jsonrpc:"2.0",id:1,result:{protocolVersion:"2026-01-26"}}});

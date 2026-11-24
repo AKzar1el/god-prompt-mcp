@@ -7,6 +7,12 @@ const read = async path => readFile(new URL(path, base), "utf8");
 const json = async path => JSON.parse(await read(path));
 const remote = "https://god-prompt-mcp.tomi-seregi99.workers.dev/mcp";
 const name = "god-prompt-mcp";
+function assertExactRemoteMetadata(metadata) {
+  // The generated YAML uses a single double-quoted URL field. Check the
+  // complete value rather than accepting the endpoint anywhere in the text.
+  const fields = [...metadata.matchAll(/^[ \t]*url:[ \t]*(.*?)[ \t]*\r?$/gm)].map(match => match[1]);
+  assert.deepEqual(fields, [JSON.stringify(remote)]);
+}
 const allTools = [
   "classify_task", "get_tailored_guidance", "audit_requirements", "build_test_matrix",
   "create_work_contract", "review_work_evidence", "review_code_change",
@@ -55,11 +61,26 @@ test("OpenAI Skill registers one remote dependency and only scoped activation", 
   assert.match(metadata, /dependencies:\s*\n\s+tools:\s*\n\s+- type:\s*["']?mcp/);
   assert.match(metadata, /value:\s*["']?god-prompt-mcp/);
   assert.match(metadata, /transport:\s*["']?streamable_http/);
-  assert.ok(metadata.includes(remote));
+  assertExactRemoteMetadata(metadata);
   for (const tool of allTools) assert.ok(routes.includes(String.fromCharCode(96) + tool + String.fromCharCode(96)), tool);
   assert.match(routes, /If the MCP is unavailable/i);
   assert.match(routes, /bounded, sanitized input/i);
   assert.match(routes, /not authorization/i);
+});
+
+test("OpenAI metadata rejects lookalike endpoints and duplicate URL fields", () => {
+  assertExactRemoteMetadata("      url: " + JSON.stringify(remote) + "\n");
+  for (const wrong of [
+    "https://example.invalid/?next=" + remote,
+    remote + "/unexpected",
+    "https://example.invalid/",
+  ]) {
+    assert.throws(() => assertExactRemoteMetadata("      url: " + JSON.stringify(wrong)));
+  }
+  assert.throws(() => assertExactRemoteMetadata("# " + remote));
+  assert.throws(() => assertExactRemoteMetadata(
+    "      url: " + JSON.stringify(remote) + "\n      url: \"https://example.invalid/\"\n",
+  ));
 });
 
 test("representative positive, negative and unsafe-input cases retain explicit routing", async () => {
