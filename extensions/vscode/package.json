@@ -1,0 +1,57 @@
+{
+  "name": "godprompt-engineering",
+  "displayName": "GodPrompt Engineering",
+  "description": "Focused engineering workflows, task briefs and verification checklists in VS Code.",
+  "version": "0.1.0",
+  "publisher": "tomiseregi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AKzar1el/god-prompt-mcp.git",
+    "directory": "extensions/vscode"
+  },
+  "homepage": "https://tomiseregi.si/projects/god-prompt",
+  "bugs": {
+    "url": "https://github.com/AKzar1el/god-prompt-mcp/issues"
+  },
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other",
+    "Snippets"
+  ],
+  "keywords": [
+    "engineering",
+    "workflow",
+    "prompt",
+    "verification",
+    "checklist"
+  ],
+  "main": "./dist/extension.cjs",
+  "extensionKind": [
+    "ui"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "godpromptEngineering.openGuide",
+        "title": "GodPrompt: Open Workflow Guide"
+      },
+      {
+        "command": "godpromptEngineering.draftBrief",
+        "title": "GodPrompt: Draft Task Brief"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "npm run build && node --test test/workflow.test.cjs",
+    "test:host": "node test/launch-host.cjs",
+    "vscode:prepublish": "npm test",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "4.1.1"
+  }
+}

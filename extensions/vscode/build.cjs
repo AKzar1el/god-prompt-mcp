@@ -1,0 +1,17 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const crypto = require("node:crypto");
+const { buildGuidance } = require("./src/workflow.cjs");
+const root = path.resolve(__dirname, "../..");
+const refs = path.join(root, "skills", "god-prompt", "references");
+const protocols = fs.readFileSync(path.join(refs, "01-PROTOCOLS.md"), "utf8");
+const gates = fs.readFileSync(path.join(refs, "02-GATES.md"), "utf8");
+const version = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version;
+const guidance = buildGuidance(protocols, gates, version);
+const hash = value => crypto.createHash("sha256").update(value, "utf8").digest("hex");
+guidance.source_sha256 = { protocols: hash(protocols), gates: hash(gates) };
+const out = path.join(__dirname, "dist");
+fs.mkdirSync(out, { recursive: true });
+fs.writeFileSync(path.join(out, "guidance.json"), JSON.stringify(guidance) + "\n");
+for (const file of ["workflow.cjs", "extension.cjs"]) fs.copyFileSync(path.join(__dirname, "src", file), path.join(out, file));
+fs.copyFileSync(path.join(root, "LICENSE"), path.join(__dirname, "LICENSE"));
