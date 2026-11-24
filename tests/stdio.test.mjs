@@ -321,6 +321,50 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     if (expected !== "SHIP") assert.ok(!result.alternative_task_types.includes("SHIP"), description);
   }
 
+  // Preserve the remaining reviewed PR #215 cases against current main.
+  const historicalIntentCases = [
+    ["Do not under any circumstances in any environment deploy the old patch, instead deploy the approved hotfix","SHIP"],
+    ["Never, ever, ship the old patch; ship the approved hotfix instead","SHIP"],
+    ["Don't deploy the old patch, but deploy the approved hotfix instead","SHIP"],
+    ["Do not publish the old package, instead publish the validated release","SHIP"],
+    ["Do not deploy anything, instead inspect the logs","ANALYZE"],
+    ["You shouldn't publish the release; review the diff","ANALYZE"],
+    ["You mustn't deploy the old release; deploy the approved hotfix instead","SHIP"],
+    ["Review the deploy workflow and release checklist","ANALYZE",true],
+    ["Could you inspect the push permissions and merge policy?","ANALYZE",true],
+    ["Please can you review the release and deploy checklist?","ANALYZE",true],
+    ["Could you inspect the deploy workflow, then ship the approved build?","SHIP",false],
+    // Current explicit follow-up routing retains both the requested audit
+    // and the separate affirmative deploy intent; SHIP is not authorization.
+    ["Audit the publish workflow then deploy the approved build","SHIP",false],
+    ["Review the release plan, then publish the approved version","SHIP",false],
+    ["Should we publish the current release?","UNCLASSIFIED"],
+    ["Is it wise to ship this build?","UNCLASSIFIED"],
+    ["Can you deploy the approved release?","SHIP"],
+    ["Please publish the validated package","SHIP"],
+    ["Not deploy or publish any release","UNCLASSIFIED"],
+    ["Not deploy this change; review the diff instead","ANALYZE"],
+    ["Not build anything; inspect existing behavior","ANALYZE"],
+    ["Not fix the login bug; inspect logs first","ANALYZE"],
+    ["Not deploy the old patch; deploy the approved hotfix instead","SHIP"],
+    ["Not only deploy this release","SHIP"],
+    ["Please not just ship it","SHIP"],
+    ["Don't only deploy the approved release","SHIP"],
+    ["You shouldn't only publish the approved patch","SHIP"],
+    ["Not only build the requested API","BUILD"],
+    ["Not just fix the failing login","DEBUG"],
+    ["Do not build the old endpoint, instead build the new API","BUILD"],
+    ["Do not build anything, instead review existing behavior","ANALYZE"],
+    ["You mustn't build a new feature; inspect existing logic.","ANALYZE"],
+    ["Don't fix the abandoned issue, instead fix the current crash","DEBUG"],
+    ["You shouldn't fix the bug; inspect the logs instead.","ANALYZE"],
+  ];
+  for (const [index, [description, expected, suppressShip]] of historicalIntentCases.entries()) {
+    const result = await classify(child, pending, `historical-intent-${index}`, description);
+    assert.equal(result.task_type, expected, description);
+    if (suppressShip === true) assert.ok(!result.alternative_task_types.includes("SHIP"), description);
+  }
+
   const negatedBuildCases = [
     ["Do not implement or build anything. Review this existing module only.", "ANALYZE"],
     ["Do not create a new feature; inspect the current behavior instead.", "ANALYZE"],

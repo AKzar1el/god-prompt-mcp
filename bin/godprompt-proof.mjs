@@ -9,6 +9,7 @@ import { mkdir, open, readFile, lstat, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { reviewWorkEvidence } from "../dist/work-contract.js";
 import {
   codexifyEvidence, validateWorkContractEnvelope, CODEXIFY_BUNDLE_SCHEMA,
 } from "../dist/codexify-evidence.js";
@@ -547,7 +548,7 @@ export async function localWorkflow(project, {
     warning: "Version tracks a deterministic preview, not an approved rule set. Repeated self-reports are not independent evidence, and no policy is automatically applied.",
   };
 }
-const PROOF_USAGE = "Usage: godprompt-proof github|github-snapshot|codexify|pack|learn|learn-review|lessons|metrics|workflow [--name value ...]";
+const PROOF_USAGE = "Usage: godprompt-proof github|github-snapshot|codexify|pack|review|learn|learn-review|lessons|metrics|workflow [--name value ...]";
 const PROOF_HELP = [
   "GodPrompt proof bridge (optional local CLI; Node.js 22+)",
   PROOF_USAGE,
@@ -557,6 +558,7 @@ const PROOF_HELP = [
   "  github-snapshot Review a caller-supplied GitHub export offline",
   "  codexify        Review a caller-supplied Codexify command export offline",
   "  pack            Create an offline caller-supplied proof bundle",
+  "  review          Assess an unverified v1 evidence bundle locally (no network)",
   "",
   "Local feedback commands:",
   "  learn-review    Save generic HOLD lessons from a reviewed report",
@@ -576,6 +578,7 @@ function parseOptions(argv) {
     github: ["repo", "sha", "contract", "map", "pr"],
     "github-snapshot": ["repo", "sha", "contract", "map", "snapshot", "pr"],
     codexify: ["contract", "export"],
+    review: ["bundle", "contract", "export"],
     pack: ["contract","repo","sha","map","pr","snapshot","codexify"],
     learn: ["project", "outcome", "pattern", "lesson", "verified"],
     lessons: ["project"],
@@ -627,6 +630,23 @@ export async function cli(argv = process.argv.slice(2)) {
       contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
       exportData: await readSmallJson(opts.export),
     });
+  }
+  if (command === "review") {
+    if (opts.bundle && (opts.contract || opts.export)) {
+      fail("Choose either --bundle or --contract and --export for review");
+    }
+    if (!opts.bundle && (!opts.contract || !opts.export)) {
+      fail("review requires --bundle or both --contract and --export");
+    }
+    const bundle = opts.bundle ? await readSmallJson(opts.bundle) : await codexifyEvidence({
+      contract: validateWorkContractEnvelope(await readSmallJson(opts.contract)),
+      exportData: await readSmallJson(opts.export),
+    });
+    if (!bundle || bundle.schema !== BUNDLE_SCHEMA || !bundle.review_input ||
+        bundle.independently_verified !== false || bundle.completion_authorized !== false) {
+      fail("Expected an unverified v1 GodPrompt evidence bundle");
+    }
+    return reviewWorkEvidence(bundle.review_input);
   }
   if(command==="pack"){
     if(!opts.contract||!opts.repo||!opts.sha)fail("pack requires --contract --repo --sha");
