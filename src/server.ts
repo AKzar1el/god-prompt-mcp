@@ -167,9 +167,12 @@ function hasAffirmativeActionTrigger(text: string, trigger: string): boolean {
   // matchAll clones the global regex: no shared lastIndex across requests.
   const matches = text.matchAll(triggerRegex(trigger).all);
   for (const match of matches) {
-    const prefix = text.slice(0, match.index + match[1].length).split(/[.!?;,]/).at(-1) ?? "";
-    // A forbidden downstream action is not a requested deployment action.
-    if (!/(?:\b(?:do not|don't|never|without|avoid|must not|should not|no)\s+(?:(?!(?:but|then|however)\b)[a-z0-9-]+\s+){0,3})$/.test(prefix)) {
+    // Commas can appear inside emphatic negative instructions. Only an
+    // explicit contrast or a new sentence restores affirmative intent.
+    const prefix = (text.slice(0, match.index + match[1].length).split(/[.!?;]/).at(-1) ?? "")
+      .replace(/,/g, " ");
+    // "Not only/just deploy" adds requirements rather than forbidding them.
+    if (!/(?:\b(?:(?:(?:do|must|should)\s+not|(?:must|should)n't|don't|not)(?!\s+(?:only|just)\b)|never|without|avoid|no)\s+(?:(?!(?:but|then|however|instead)\b)[a-z0-9-]+\s+)*)$/.test(prefix)) {
       return true;
     }
   }
@@ -185,16 +188,23 @@ function hasPrimaryPlanningIntent(text: string): boolean {
   return (primaryPlan || requestedArtifact) && !separateAction;
 }
 
-function requestedShippingVerb(text: string): string | null {
+function requestedShippingVerb(text: string, inspectionFirst: boolean): string | null {
   // Only an actual shipping instruction can outrank a product noun such as
   // "feature"; references to release plans or notes are not release commands.
   const direct = /^(?:(?:please|can you|could you|would you|help me(?: to)?|let's)\s+)*(deploy|release|publish|push|merge|ship|launch)\b/.exec(text);
-  const followup = /(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(deploy|release|publish|push|merge|ship|launch)\b/.exec(text);
   if (direct?.[1] === "release" &&
     /^\s+(?:plan|notes|roadmap|strategy|checklist|schedule)\b/.test(text.slice(direct[0].length))) {
     return null;
   }
-  return direct?.[1] ?? followup?.[1] ?? null;
+  if (direct?.[1]) return direct[1];
+  const followups = text.matchAll(/(?:\b(?:and|then)\s+(?:then\s+)?|[;,]\s*(?:(?:and|then)\s+)?)(?:please\s+)?(deploy|release|publish|push|merge|ship|launch)\b/g);
+  const artifact = /^\s+(?:workflows?|procedures?|checklists?|permissions?|polic(?:y|ies)|rules?|scripts?|configs?|configurations?|documentation|docs|notes|plans?|guides?|pipelines?|process(?:es)?|steps?|code|settings?)\b/;
+  for (const match of followups) {
+    // An inspection of "push and merge permissions" is not a ship request.
+    if (inspectionFirst && artifact.test(text.slice(match.index + match[0].length))) continue;
+    return match[1];
+  }
+  return null;
 }
 
 function requestedFollowupBuildVerb(text: string): string | null {
@@ -291,10 +301,13 @@ function classifyTask(description: string): {
   );
   const inspectionRequested = TASK_TYPES.ANALYZE.triggers
     .some((trigger) => hasTrigger(normalized, trigger));
+  const inspectionFirst = /^(?:(?:please\s+)?(?:can|could|would|will)\s+you\s+(?:please\s+)?|please\s+)?(?:audit|review|check|analyze|inspect|assess|evaluate|verify|validate|test)\b/.test(normalized);
+  const shippingAdviceQuestion = /^(?:should\s+(?:i|we|you)\b|(?:would|is)\s+it\s+(?:be\s+)?(?:safe|wise|a good idea)\s+to\b)/.test(normalized) &&
+    /\b(?:deploy|release|publish|push|merge|ship|launch)\b/.test(normalized);
   const affirmativeBuild = ["create", "implement", "add", "build", "make"]
     .some((trigger) => hasAffirmativeActionTrigger(normalized, trigger));
   const primaryPlanningIntent = hasPrimaryPlanningIntent(normalized);
-  const shippingVerb = requestedShippingVerb(normalized);
+  const shippingVerb = requestedShippingVerb(normalized, inspectionFirst);
   const followupBuildVerb = requestedFollowupBuildVerb(normalized);
   const primaryBuildVerb = shippingVerb === null
     ? requestedPrimaryBuildVerb(normalized) : null;
@@ -302,6 +315,7 @@ function classifyTask(description: string): {
   const writingRequested = /^(?:(?:please|can you|could you|would you|help me(?: to)?)\s+)*(?:write|draft|prepare|edit|translate|create)\b/.test(normalized);
 
   for (const [type, info] of Object.entries(TASK_TYPES)) {
+    if (shippingAdviceQuestion && (type === "SHIP" || type === "BUILD")) continue;
     // An inspection request is not authorization to build/debug just because it names a feature or bug.
     if (inspectionRequested && ((type === "BUILD" && !affirmativeBuild) ||
       (type === "DEBUG" && !affirmativeDebug))) continue;
