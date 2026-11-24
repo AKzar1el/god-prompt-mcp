@@ -499,9 +499,9 @@ export function registerGodPromptTools(server: McpServer): void {
         .max(1000, "Task description must be at most 1000 characters")
         .trim()
         .min(3, "Task description must contain at least 3 characters of meaningful text")
-        .regex(/[\p{L}\p{N}]/u, "Task description must include a letter or number")
+        .refine(value => /[\p{L}\p{N}]/u.test(value), "Task description must include a letter or number")
         .describe(
-          "The task description to classify, e.g. 'fix the login bug' or 'build a REST API for user auth'"
+          "The task description to classify; include at least one Unicode letter or number, e.g. 'fix the login bug' or 'build a REST API for user auth'"
         ),
     },
       annotations: READ_ONLY_ANNOTATIONS,
