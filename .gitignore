@@ -5,3 +5,5 @@ dist/
 # Never commit optional local learning history.
 feedback.jsonl
 *.godprompt-feedback.jsonl
+# Generated benchmark receipts are retained as CI artifacts, not source.
+/benchmarks/public-toolkit/results/

@@ -15,12 +15,15 @@ const scope = { schema_version: 2, run_id: run,
 
 function toolEvents(tool, id, options = {}) {
   const base = { ...scope, call_id: id, tool, resolved_tool: tool };
-  const start = { ...base, event: "tool_start", timestamp: time(),
+  // A real host records start, worker exit, then finish. Use one clock
+  // snapshot so a millisecond rollover cannot reverse the synthetic events.
+  const now = Date.now();
+  const start = { ...base, event: "tool_start", timestamp: new Date(now - 2).toISOString(),
     ...(tool === "exec_command" ? { command_preview: "node --version" } : {}) };
-  const finish = { ...base, event: "tool_finish", timestamp: time(), status: "ok" };
+  const finish = { ...base, event: "tool_finish", timestamp: new Date(now).toISOString(), status: "ok" };
   return tool === "exec_command"
     ? [start, {
-      schema_version: 2, event: "tool_worker_exit", timestamp: time(),
+      schema_version: 2, event: "tool_worker_exit", timestamp: new Date(now - 1).toISOString(),
       run_id: run, call_id: id, worker_kind: "exec",
       exit_code: options.exit_code ?? 0,
       success: options.exit_code === undefined || options.exit_code === 0,

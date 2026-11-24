@@ -289,6 +289,13 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     ["deploy the approved change but do not publish a release", "SHIP"],
     ["Don\u2019t deploy the endpoint; audit it instead", "ANALYZE"],
     ["Don\u2019t deploy the old release; deploy the approved patch instead", "SHIP"],
+    ["Not deploy this change", "UNCLASSIFIED"],
+    ["Never, ever, deploy the release", "UNCLASSIFIED"],
+    ["Do not under any circumstances on any production environment ever deploy this patch", "UNCLASSIFIED"],
+    ["Do not, under any circumstances, deploy the release; audit it first", "ANALYZE"],
+    ["Mustn't deploy the release", "UNCLASSIFIED"],
+    ["Don't deploy the old patch, instead deploy the approved hotfix", "SHIP"],
+    ["Do not just deploy the approved release", "SHIP"],
   ];
   for (const [description, expected] of negatedShipCases) {
     const result = await classify(child, pending, `negated-ship-${description.length}`, description);
@@ -296,6 +303,22 @@ test("builds a stdio MCP server exposing current GodPrompt content", async (t) =
     if (expected !== "SHIP") {
       assert.ok(!result.matched_signals.includes("deploy"), description);
     }
+  }
+
+  const shippingInspectionCases = [
+    ["Review this deploy procedure and publish checklist", "ANALYZE"],
+    ["Inspect push and merge permissions before integration", "ANALYZE"],
+    ["Can you review the deploy workflow and release checklist?", "ANALYZE"],
+    ["Would you please audit the deploy and publish procedures?", "ANALYZE"],
+    ["Should I deploy this patch to production?", "UNCLASSIFIED"],
+    ["Would it be safe to merge the approved change?", "UNCLASSIFIED"],
+    ["Review and deploy the approved release", "SHIP"],
+    ["Can you review and then deploy the approved release?", "SHIP"],
+  ];
+  for (const [index, [description, expected]] of shippingInspectionCases.entries()) {
+    const result = await classify(child, pending, `shipping-inspection-${index}`, description);
+    assert.equal(result.task_type, expected, description);
+    if (expected !== "SHIP") assert.ok(!result.alternative_task_types.includes("SHIP"), description);
   }
 
   const negatedBuildCases = [
