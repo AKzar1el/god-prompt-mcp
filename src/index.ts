@@ -42,8 +42,27 @@ const mcpHandler = createMcpHandler(createServer, {
 });
 
 export default {
-  fetch(request: Request) {
+  fetch(request: Request, env?: { OPENAI_APPS_CHALLENGE?: string }) {
     const pathname = new URL(request.url).pathname;
+
+    if (
+      (request.method === "GET" || request.method === "HEAD") &&
+      pathname === "/.well-known/openai-apps-challenge"
+    ) {
+      // OpenAI requires a public, exact challenge string to verify this origin.
+      // Provision it as a Worker binding, never in the package or source.
+      const challenge = env?.OPENAI_APPS_CHALLENGE;
+      if (!challenge || !/^[A-Za-z0-9_-]{16,256}$/.test(challenge)) {
+        return new Response("Not Found", { status: 404 });
+      }
+      return new Response(request.method === "HEAD" ? null : challenge, {
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "cache-control": "no-store",
+          "x-content-type-options": "nosniff",
+        },
+      });
+    }
 
     if (
       (request.method === "GET" || request.method === "HEAD") &&
