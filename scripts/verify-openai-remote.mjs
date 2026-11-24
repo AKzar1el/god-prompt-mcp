@@ -11,7 +11,7 @@ assert.equal(URL_.protocol, "https:");
 assert.equal(URL_.hostname, "god-prompt-mcp.tomi-seregi99.workers.dev");
 const meta={
   "io.modelcontextprotocol/protocolVersion":"2026-07-28",
-  "io.modelcontextprotocol/clientInfo":{name:"godprompt-openai-preview-ci",version:"1.4.2"},
+  "io.modelcontextprotocol/clientInfo":{name:"godprompt-openai-preview-ci",version:"1.5.0"},
   "io.modelcontextprotocol/clientCapabilities":{},
 };
 async function request(method,id,name,args){
@@ -38,7 +38,7 @@ async function request(method,id,name,args){
 async function probe(){
   const listed=await request("tools/list",101);
   const tools=listed.tools??[];
-  assert.equal(tools.length,22,"Hosted GodPrompt v1.4.2 must advertise exactly 22 public tools");
+  assert.equal(tools.length,22,"Hosted GodPrompt v1.5.0 must advertise exactly 22 public tools");
   for(const name of ["audit_agent_trajectory","trace_change_impact","review_mcp_tool_contracts",
     "audit_agent_instructions","design_adversarial_tests"]){
     const tool=tools.find(x=>x.name===name);

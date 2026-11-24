@@ -4,12 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const guide = await readFile(new URL("../llms-install.md", import.meta.url), "utf8");
 
-test("Cline verification is version-aware for v1.1.1 and v1.4.2", () => {
+test("Cline verification is version-aware for v1.1.1 and v1.5.0", () => {
   const verification = guide.split("## Verify\n")[1]?.split("\n## ")[0];
   assert.ok(verification, "Expected Cline verification instructions");
   assert.match(verification, /v1\.1\.1/);
   assert.match(verification, /nine tools/i);
-  assert.match(verification, /v1\.4\.2/);
+  assert.match(verification, /v1\.5\.0/);
   assert.match(verification, /22 tools/i);
   for (const name of [
     "get_god_prompt",
